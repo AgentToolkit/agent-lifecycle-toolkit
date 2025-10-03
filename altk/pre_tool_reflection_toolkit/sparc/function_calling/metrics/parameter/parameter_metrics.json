@@ -1,0 +1,613 @@
+[
+    {
+        "name": "parameter_hallucination_check",
+        "task_description": "You are an expert evaluator assessing whether a **specific parameter value**-identified as `parameter_name`-in a tool call is **grounded** in the provided conversation history or tool specification, or whether it is **hallucinated**.\n\nYour task is to make a **strictly evidence-based** judgment. Evaluate this parameter alone-ignore other parameters or external knowledge. The value must:\n- Be explicitly supported by the dialogue, prior tool calls, or tool specification\n- Be appropriate for the context and user intent\n- Respect constraint rules defined in the specification\n\nIMPORTANT: Evaluate ONLY the **specific parameter value** provided. Do not evaluate the entire tool call correctness, other parameters, or the function itself. Focus solely on whether this parameter value is grounded in the conversation or specification.\n---\n\n### Rating Scale\n\nAssign a score from 1 to 5 based on how clearly the value is grounded:\n\n**5 - Perfectly Grounded**  \nExplicitly stated in conversation or matches a clearly documented and contextually appropriate default.\n\n**4 - Mostly Grounded**  \nNot directly quoted but clearly follows from the conversation or is a minor variation on a documented default.\n\n**3 - Ambiguous**  \nRequires non-trivial inference or transformation to relate the value to the dialogue or specification.\n\n**2 - Mostly Ungrounded**  \nLoosely related, incorrectly formatted, or partially contradicts the spec or context.\n\n**1 - Completely Ungrounded**  \nInvented, unrelated, or clearly in conflict with the dialogue or specification.\n\nBe conservative in your scoring: Use 1-3 for weak or unverified grounding, and 4-5 only when evidence is explicit or clearly reliable.\n\n---\n\n### Acceptable Sources for Grounding\nA value may be considered grounded if it comes from:\n- Explicit user input\n- Clearly implied user intent (minimal inference)\n- Assistant statements explicitly confirmed by the user\n- Outputs of previous tool calls\n- Documented default values in the tool specification\n\n---\n\n### Ungrounded Patterns\nMark a value ungrounded if:\n- It is absent from both conversation and tool spec\n- It depends on vague or missing input (e.g., \"tomorrow\" without a date format)\n- It uses the wrong type, unit, or format\n- It contradicts other parameters or tool constraints\n- It inaccurately rephrases or transforms the user's input\n\n---\n\n### Handling Defaults\nA default value may be accepted only if:\n- It is explicitly documented in the tool spec\n- It fits the context of the user's request\n- It does not contradict stated or implied intent\nOtherwise, treat the value as ungrounded.\n\n---\n\n### Parameter Relationships\nEnsure this parameter does not contradict other parameters in the same call.\nExample: If `add_day=false` and `day=\"Sunday\"` but the spec says `add_day` must be true to use `day`, the `day` value is ungrounded.\n\n---\n\n### Final Guideline\nLarge language models frequently hallucinate parameter values or apply defaults inappropriately. Your careful and conservative evaluation prevents propagation of such errors.",
+        "jsonschema": {
+            "title": "parameter_hallucination_check",
+            "description": "Assessment of tool call parameter hallucination, following the rubric defined above.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "evidence": {
+                    "type": "string",
+                    "description": "Provide EXACT quotes from the conversation history (user messages, assistant responses, previous tool outputs) or tool specification that directly support your assessment. For grounded values, cite the specific text where this value originates. For ungrounded values, demonstrate the absence of supporting evidence or cite contradictory information."
+                },
+                "explanation": {
+                    "type": "string",
+                    "description": "Explain in detail why the specific parameter value is grounded or ungrounded. Reference exact sources from the conversation or tool specification that either support or contradict the parameter value. Address: 1) Where the value originated from, 2) Whether this source is sufficient for grounding, 3) Any format or type compliance issues, 4) Any contradictions with other parameters or specifications, and 5) For default values, whether they're documented and appropriate for this context."
+                },
+                "output": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "threshold_low": 4,
+                    "threshold_high": 5,
+                    "description": "Parameter Hallucination Score (1-5):\n\n- 5: Perfectly grounded\n  The parameter value is directly quoted in the conversation or exactly matches a documented default that fits the user's intent.\n  Example:\n  User: \"Book a hotel in Rome.\"\n  → Tool call: search_hotels(city=\"Rome\")\n\n- 4: Grounded via logical reasoning\n  The value is not directly quoted but clearly follows from the conversation through straightforward, logic-based inference.\n  Example:\n  User: \"I'd like a room for me and my wife.\"\n  → Tool call: search_hotels(guests=2)\n\n- 3: Ambiguous\n  The value might relate to the conversation or domain context, but grounding requires assumptions or nontrivial interpretation not clearly supported by evidence.\n  Example:\n  User: \"Let's go somewhere warm.\"\n  → Tool call: search_hotels(city=\"Barcelona\")\n\n- 2: Likely hallucinated\n  The value is loosely connected to the topic but lacks grounding in the conversation or tool specification, or only partially aligns.\n  Example:\n  User: \"Find hotels.\"\n  → Tool call: search_hotels(city=\"Berlin\")\n  (No city mentioned)\n\n- 1: Clearly hallucinated\n  The parameter value is invented, irrelevant, or contradicts the dialogue or tool specification.\n  Example:\n  User: \"Book a hotel.\"\n  → Tool call: search_hotels(city=\"Mars\")"
+                },
+                "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "threshold_low": 0,
+                    "threshold_high": 1,
+                    "description": "Confidence in the accuracy of this assessment (range: 0.0-1.0). Assign higher confidence when evidence is clear, complete, and consistent, and lower confidence when it is ambiguous, incomplete, or conflicting."
+                },
+                "correction": {
+                    "type": "object",
+                    "properties": {
+                        "reason_types": {
+                            "type": "array",
+                            "description": "Types of issues with the parameter value, if any. Use one or more of these values: FORMAT_ERROR (wrong format or type), MISSING_INFORMATION (needs more data), PARAMETER_CONTRADICTION (conflicts with other parameters), DEFAULT_ISSUE (inappropriate default), OTHER (explain in reasons).",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "FORMAT_ERROR",
+                                    "MISSING_INFORMATION",
+                                    "PARAMETER_CONTRADICTION",
+                                    "DEFAULT_ISSUE",
+                                    "OTHER"
+                                ]
+                            }
+                        },
+                        "reasons": {
+                            "type": "string",
+                            "description": "Concise explanation of the specific issues with the parameter value."
+                        },
+                        "parameter": {
+                            "type": "object",
+                            "description": "Object containing parameter name as key and corrected value as value. Use 'need_more_information' as the key and clarification question for the user if additional information is required. Use 'need_more_tool_calls' if the value cannot be corrected without additional tool calls. If the value is well-grounded, return an empty object {}.",
+                            "additionalProperties": true
+                        }
+                    },
+                    "description": "For well-grounded values: Provide an empty object {}. For ungrounded values: Provide an object with reason_types, reasons, and parameter correction.",
+                    "required": []
+                },
+                "actionable_recommendations": {
+                    "type": "array",
+                    "description": "Provide specific, actionable recommendations for the agent developer to prevent parameter value hallucination. Only provide recommendations when problems are detected. Include multiple detailed suggestions where appropriate, such as:\n\n1. PARAMETER_DOCUMENTATION: Suggest specific clarifications to parameter descriptions that would help prevent hallucination, e.g., 'Update the \"username\" parameter description to: \"Must be explicitly provided by the user in conversation. No default value is permitted. Do not infer or guess usernames.\"'\n\n2. EXPLICIT_VALUE_EXTRACTION: Recommend concrete techniques for extracting parameter values reliably from user input, like 'Implement a structured extraction pattern for the \"count\" parameter that requires an explicit number from the user before proceeding, such as \"How many tweets would you like to see? (default is 10)\"'\n\n3. DEFAULT_VALUE_HANDLING: Propose specific parameter documentation improvements for default values, e.g., 'Add to the \"count\" parameter description: \"Default: 10 if not specified by user. Never invent a count value; use default or ask user.\"'\n\n4. FORMAT_SPECIFICATION_IMPROVEMENTS: Suggest clearer format requirements in parameter documentation, like 'For the \"date\" parameter, specify: \"Must be in ISO format YYYY-MM-DD. Example: 2024-06-22. Do not use other date formats.\"'\n\n5. TYPE_VALIDATION_RULES: Propose validation logic for parameter types, such as 'Implement pre-call validation that ensures integer parameters like \"count\" are provided as numbers without quotes or text.'\n\n6. SYSTEM_PROMPT_ADDITIONS: Recommend specific additions to the system prompt that would help the agent avoid hallucination, e.g., 'Add to the system prompt: \"For parameters like 'count', always use explicitly provided values from the user. If not specified, use documented defaults or ask for clarification.\"'\n\n7. PARAMETER_NAMING_CONVENTIONS: Suggest improvements to parameter naming that would make their purpose clearer, e.g., 'Rename \"target_lang\" to \"language_code\" to clarify it should be an ISO code, not a full language name.'\n\n8. PRE_CALL_REFLECTION_STRATEGIES: Recommend strategies for the agent to reflect on parameter values before making tool calls, such as 'Implement a pre-call reflection step that checks if all required parameters are grounded in user input before proceeding with the function call.'\n\n9. PARAMETER_SOURCE_TRACKING: Suggest implementing a mechanism to track where each parameter value originated from (e.g., user input, default value) to improve transparency and debugging.\n\n10. CLARIFICATION_PROMPTS: Recommend adding clarification prompts when parameter values are ambiguous or missing, e.g., 'If the \"count\" parameter is not specified, ask the user: \"How many items would you like to retrieve? (default is 10)\"'\n\n11. OTHER: Any other specific recommendations that would help prevent similar parameter hallucination issues in the future.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "recommendation": {
+                                "type": "string",
+                                "description": "A specific, actionable recommendation to improve the agent's parameter handling process.",
+                                "enum": [
+                                    "PARAMETER_DOCUMENTATION",
+                                    "EXPLICIT_VALUE_EXTRACTION",
+                                    "DEFAULT_VALUE_HANDLING",
+                                    "FORMAT_SPECIFICATION_IMPROVEMENTS",
+                                    "TYPE_VALIDATION_RULES",
+                                    "SYSTEM_PROMPT_ADDITIONS",
+                                    "PARAMETER_NAMING_CONVENTIONS",
+                                    "PRE_CALL_REFLECTION_STRATEGIES",
+                                    "PARAMETER_SOURCE_TRACKING",
+                                    "CLARIFICATION_PROMPTS",
+                                    "OTHER"
+                                ]
+                            },
+                            "details": {
+                                "type": "string",
+                                "description": "Detailed explanation of the recommendation, including what specific changes should be made, how they will improve parameter handling, and any relevant examples or best practices."
+                            }
+                        },
+                        "required": [
+                            "recommendation",
+                            "details"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "explanation",
+                "evidence",
+                "output",
+                "confidence",
+                "correction",
+                "actionable_recommendations"
+            ]
+        },
+        "examples": [
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "user",
+                            "content": "Translate 'hello' to Spanish."
+                        }
+                    ],
+                    "tool_inventory": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "translate_text",
+                                "description": "Translate given text",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "type": "string",
+                                            "description": "The text to be translated"
+                                        },
+                                        "target_lang": {
+                                            "type": "string",
+                                            "description": "The target language code, e.g., 'en' for English"
+                                        }
+                                    },
+                                    "required": [
+                                        "text",
+                                        "target_lang"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "tool_call": {
+                        "id": "call_001",
+                        "type": "function",
+                        "function": {
+                            "name": "translate_text",
+                            "arguments": "{ \"text\": \"hello\", \"target_lang\": \"es\" }"
+                        }
+                    },
+                    "parameter_name": "target_lang",
+                    "parameter_value": "es"
+                },
+                "output": {
+                    "evidence": "User request: \"Translate 'hello' to Spanish.\" Tool specification for translate_text includes parameter target_lang of type string.",
+                    "explanation": "The parameter value target_lang='es' is properly grounded in the conversation. The user explicitly requested translation \"to Spanish\" and the agent correctly converted this to the ISO language code 'es' for Spanish. This conversion from the common language name to its standard code is a reasonable and expected transformation that requires minimal inference. The tool specification indicates target_lang should be a string, and 'es' is the appropriate ISO code for Spanish.",
+                    "output": 5,
+                    "confidence": 0.96,
+                    "correction": {},
+                    "actionable_recommendations": []
+                }
+            },
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "user",
+                            "content": "Fetch my latest tweets."
+                        }
+                    ],
+                    "tool_inventory": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "get_tweets",
+                                "description": "Retrieve recent tweets",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "username": {
+                                            "type": "string",
+                                            "description": "The Twitter username to fetch tweets for"
+                                        },
+                                        "count": {
+                                            "type": "integer",
+                                            "description": "The number of recent tweets to retrieve"
+                                        }
+                                    },
+                                    "required": [
+                                        "username",
+                                        "count"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "tool_call": {
+                        "id": "call_001",
+                        "type": "function",
+                        "function": {
+                            "name": "get_tweets",
+                            "arguments": "{ \"username\": \"elonmusk\", \"count\": 20 }"
+                        }
+                    },
+                    "parameter_name": "count",
+                    "parameter_value": 20
+                },
+                "output": {
+                    "evidence": "User request: \"Fetch my latest tweets.\" - contains no mention of any specific count or number of tweets. Tool specification does not document a default value for the count parameter.",
+                    "explanation": "The parameter value count=20 is ungrounded and appears to be hallucinated. The user requested \"latest tweets\" but did not specify any count or quantity. The tool specification defines count as an integer parameter but does not document a default value. The agent appears to have arbitrarily chosen the value 20 without any basis in the conversation or tool specification. Without user specification or a documented default, the agent should either ask the user how many tweets they want to see or use a reasonable, documented default value if one exists.",
+                    "output": 1,
+                    "confidence": 0.95,
+                    "correction": {
+                        "reason_types": [
+                            "MISSING_INFORMATION"
+                        ],
+                        "reasons": "Count value 20 is invented without user specification or documented default.",
+                        "parameter": {
+                            "need_more_information": "How many tweets would you like to retrieve? Please specify a number."
+                        }
+                    },
+                    "actionable_recommendations": [
+                        {
+                            "recommendation": "PARAMETER_DOCUMENTATION",
+                            "details": "Update the 'count' parameter description to: 'Number of tweets to retrieve. Default: 10 if not specified. Do not invent count values; use the default if not explicitly provided by the user.'"
+                        },
+                        {
+                            "recommendation": "SYSTEM_PROMPT_ADDITIONS",
+                            "details": "Add to the system prompt: 'For the get_tweets function, only use explicitly provided count values from the user. When count is not specified, always use the default value of 10. Never invent arbitrary count values.'"
+                        },
+                        {
+                            "recommendation": "PRE_CALL_REFLECTION_STRATEGIES",
+                            "details": "Implement a pre-call reflection step that checks if all required parameters are grounded in user input before proceeding with the function call."
+                        }
+                    ]
+                }
+            },
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "user",
+                            "content": "Can you show me just a few of my latest messages?"
+                        }
+                    ],
+                    "tool_inventory": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "get_messages",
+                                "description": "Retrieve user's messages",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "integer",
+                                            "description": "The ID of the user whose messages are being retrieved"
+                                        },
+                                        "limit": {
+                                            "type": "integer",
+                                            "description": "The maximum number of messages to retrieve"
+                                        }
+                                    },
+                                    "required": [
+                                        "user_id",
+                                        "limit"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "tool_call": {
+                        "id": "call_002",
+                        "type": "function",
+                        "function": {
+                            "name": "get_messages",
+                            "arguments": "{ \"user_id\": 456, \"limit\": 3 }"
+                        }
+                    },
+                    "parameter_name": "limit",
+                    "parameter_value": 3
+                },
+                "output": {
+                    "evidence": "User said: 'just a few of my latest messages.' The phrase 'a few' is vague and subjective, and while 3 is a reasonable interpretation, it is not explicitly stated.",
+                    "explanation": "The value limit=3 is a plausible interpretation of the user's request for 'a few' messages. However, the term is ambiguous and does not unambiguously support the specific value of 3. The assistant made a judgment call based on conversational context, but without explicit grounding or a documented default, the score is 3.",
+                    "output": 3,
+                    "confidence": 0.79,
+                    "correction": {
+                        "reason_types": [
+                            "MISSING_INFORMATION"
+                        ],
+                        "reasons": "The user's phrasing is vague and does not explicitly support the value 3. Clarification is needed to ensure the correct value is used.",
+                        "parameter": {
+                            "need_more_information": "You asked for 'a few' messages. Could you specify how many exactly you'd like to see?"
+                        }
+                    },
+                    "actionable_recommendations": [
+                        {
+                            "recommendation": "PRE_CALL_REFLECTION_STRATEGIES",
+                            "details": "Encourage the assistant to clarify vague quantifiers like 'a few' with a specific number before making a tool call."
+                        },
+                        {
+                            "recommendation": "CLARIFICATION_PROMPTS",
+                            "details": "Prompt the user for an exact number when their request includes ambiguous terms such as 'some' or 'a few.'"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "name": "parameter_value_format_alignment",
+        "task_description": "Evaluate whether the specific parameter value (named in \"parameter_name\") conforms exactly to the required type, format, and unit conventions defined in the API specification.\n\nYour judgment must be strictly evidence-based: rely exclusively on the provided API documentation and the parameter value. Do not assume or infer formatting rules that are not explicitly documented.\n\nIMPORTANT: Evaluate ONLY the **specific parameter value** provided to ensure it meets the exact type, format, and unit requirements. Do not evaluate the entire tool call correctness, other parameters, or the function itself. Focus solely on whether this parameter value aligns with the specification.\n---\n\n### 1. Data Type Compliance (Output = 4-5)\n- Check that the value matches the required data type (e.g., string, integer, boolean, object, array)\n- Verify that numbers are represented as numeric types, not strings\n- Ensure strings are quoted correctly if required\n- Confirm booleans are true/false (not \"true\"/\"false\") when the type is boolean\n\n---\n\n### 2. Format Specification Compliance\n- Validate adherence to documented format constraints, including:\n  - Date and time formats (e.g., ISO 8601, YYYY-MM-DD, timezone presence)\n  - Currency (e.g., $USD, symbol placement, decimal precision)\n  - Special patterns (e.g., phone numbers, email addresses, postal codes)\n- Enforce regular expressions or formatting rules defined in the schema\n\n---\n\n### 3. Unit Compliance\n- Verify presence or absence of unit suffixes/prefixes as specified (e.g., \"kg\", \"seconds\")\n- Confirm unit types are consistent with spec (e.g., Celsius vs Fahrenheit)\n- Reject any extra units when raw values are required\n\n---\n\n### 4. Consistency Requirements\n- Ensure values are consistent with related parameters (e.g., both timestamps in UTC)\n- Validate compatibility with other parameter values in the same call\n\n---\n\n### Format Alignment Rating Scale\n- **5 - Perfect Alignment**: Value exactly matches required type, format, and units\n- **4 - Minor Deviation**: Value is fundamentally correct but with minor formatting issues\n- **3 - Moderate Deviation**: Type or format is partially incorrect; may cause issues\n- **2 - Major Deviation**: Type and format are significantly wrong; likely to fail\n- **1 - Complete Mismatch**: Value is entirely incompatible with specification\n\n---\n\n### Final Rule\nBe conservative in your assessment:\n- If the spec is ambiguous and the value seems plausible, prefer a higher score (4-5)\n- If the spec is clear and the value deviates, assign a lower score (1-3)\n\nYour evaluation is critical: even minor formatting issues can lead to tool failures or incorrect outputs. Careful review ensures reliability in downstream tool use.",
+        "jsonschema": {
+            "title": "parameter_value_format_alignment",
+            "description": "Assessment of a parameter value's compliance with required type, format, and unit specifications, based on the rubric above.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "evidence": {
+                    "type": "string",
+                    "description": "Quote the specification's type/format definition and include the actual parameter value provided. Cite EXACT text from the tool specification that supports your judgment."
+                },
+                "explanation": {
+                    "type": "string",
+                    "description": "Explain clearly why the parameter value conforms or does not conform to the specification's requirements. Address data type, format, units, and any pattern or constraint violations. For incorrect values, describe exactly what is wrong."
+                },
+                "output": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "threshold_low": 4,
+                    "threshold_high": 5,
+                    "description": "An integer from 1 to 5 indicating how well the parameter value conforms to the required type, format, and unit as defined in the API specification.\n\nScore meanings:\n\n5 - Perfect Alignment: The value exactly matches the expected type, format, and unit. Example: expected date in 'YYYY-MM-DD', value is '2025-08-05'.\n\n4 - Minor Deviation: The value has small formatting issues (e.g., missing leading zeros) but is still likely to be accepted by the API or parser unless strict validation is enforced. Example: expected '2025-08-05', value is '2025-8-5'.\n\n3 - Moderate Deviation: The value partially matches the expected format but is likely to be rejected or misinterpreted by automatic processing. Example: expected 'YYYY-MM-DD', value is 'August 5, 2025'.\n\n2 - Major Deviation: The value significantly violates the expected type, format, or unit and is very likely to fail. Example: expected 'YYYY-MM-DD', value is '08/05/2025'.\n\n1 - Complete Mismatch: The value is entirely incompatible with the required format or type. Example: expected boolean, value is 'maybe'."
+                },
+                "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "threshold_low": 0,
+                    "threshold_high": 1,
+                    "description": "Confidence in the accuracy of this assessment (range: 0.0-1.0). Assign higher confidence when evidence is clear, complete, and consistent, and lower confidence when it is ambiguous, incomplete, or conflicting."
+                },
+                "correction": {
+                    "type": "object",
+                    "description": "If output >= 4, return {}. If output <= 3, provide reason_types, explanation, and a corrected parameter.",
+                    "properties": {
+                        "reason_types": {
+                            "type": "array",
+                            "description": "List of format issues identified. Use one or more of: TYPE_ERROR, FORMAT_ERROR, UNIT_ERROR, PATTERN_ERROR, CONSISTENCY_ERROR, OTHER.",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "TYPE_ERROR",
+                                    "FORMAT_ERROR",
+                                    "UNIT_ERROR",
+                                    "PATTERN_ERROR",
+                                    "CONSISTENCY_ERROR",
+                                    "OTHER"
+                                ]
+                            }
+                        },
+                        "reasons": {
+                            "type": "string",
+                            "description": "Short explanation of the specific issue(s) with the value's format, type, or unit."
+                        },
+                        "parameter": {
+                            "type": "object",
+                            "description": "An object containing the corrected parameter value in the form: { \"<parameter_name>\": <corrected_value> }. If you cannot correct the value, use 'need_more_information' as the key and provide a clarification question for the user. Use 'need_more_tool_calls' if the value cannot be corrected without additional tool calls. If the value is well-formatted, return an empty object {}.",
+                            "additionalProperties": true
+                        }
+                    },
+                    "required": []
+                },
+                "actionable_recommendations": {
+                    "type": "array",
+                    "description": "Provide actionable suggestions for avoiding this type of error in the future, only if there is an issue. Address root causes like unclear format specs, missing examples, or lack of validation. Include suggestions such as:\n\n1. PARAMETER_FORMAT_DOCUMENTATION: Clarify or expand parameter format expectations in the API documentation.\n2. PARAMETER_EXAMPLES: Add example values with correct formatting in the parameter documentation.\n3. PARAMETER_VALIDATION: Introduce regex or rule-based format validation in the API to catch errors before tool calls.\n4. PARAMETER_CONVERSION: Add conversion helpers for user input to ensure correct formatting.\n5. UNIT_STANDARDS: Standardize unit expectations and flag missing or incorrect units in the tools implementation.\n\n6. PARAMETER_NAMING_CONVENTIONS: Suggest clearer parameter names that indicate expected formats or units.\n7. SYSTEM_PROMPT_ADDITIONS: Recommend specific additions to the system prompt that would help the agent avoid similar format issues in the future.\n8. PRE_CALL_REFLECTION_STRATEGIES: Propose strategies for the agent to reflect on parameter values before making tool calls, such as checking if all required parameters are grounded in user input.\n9. PARAMETER_SOURCE_TRACKING: Suggest implementing a mechanism to track where each parameter value originated from (e.g., user input, default value) to improve transparency and debugging.\n10. CLARIFICATION_PROMPTS: Recommend adding clarification prompts when parameter values are ambiguous or missing, e.g., asking the user for specific formats or units.\n\n11. OTHER: Any other specific recommendations that would help prevent similar format issues in the future.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "recommendation": {
+                                "type": "string",
+                                "description": "A specific, actionable recommendation to improve the agent's parameter handling process.",
+                                "enum": [
+                                    "PARAMETER_FORMAT_DOCUMENTATION",
+                                    "PARAMETER_EXAMPLES",
+                                    "PARAMETER_VALIDATION",
+                                    "PARAMETER_CONVERSION",
+                                    "UNIT_STANDARDS",
+                                    "PARAMETER_NAMING_CONVENTIONS",
+                                    "SYSTEM_PROMPT_ADDITIONS",
+                                    "PRE_CALL_REFLECTION_STRATEGIES",
+                                    "PARAMETER_SOURCE_TRACKING",
+                                    "CLARIFICATION_PROMPTS",
+                                    "OTHER"
+                                ]
+                            },
+                            "details": {
+                                "type": "string",
+                                "description": "Detailed explanation of the recommendation, including what specific changes should be made, how they will improve parameter handling, and any relevant examples or best practices."
+                            }
+                        },
+                        "required": [
+                            "recommendation",
+                            "details"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "explanation",
+                "evidence",
+                "output",
+                "confidence",
+                "correction",
+                "actionable_recommendations"
+            ]
+        },
+        "examples": [
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "user",
+                            "content": "Set a short countdown for 12 minutes."
+                        }
+                    ],
+                    "tool_inventory": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "set_timer",
+                                "description": "Set a countdown timer",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "duration": {
+                                            "type": "string",
+                                            "description": "Duration in the format 'number + unit' (e.g., '5 minutes', '30 seconds')"
+                                        }
+                                    },
+                                    "required": [
+                                        "duration"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "tool_call": {
+                        "id": "call_001",
+                        "type": "function",
+                        "function": {
+                            "name": "set_timer",
+                            "arguments": "{ \"duration\": \"12 minutes\" }"
+                        }
+                    },
+                    "parameter_name": "duration",
+                    "parameter_value": "12 minutes"
+                },
+                "output": {
+                    "evidence": "The tool spec states that 'duration' must be a string in the format 'number + unit', with examples such as '5 minutes' and '30 seconds'. The value '12 minutes' follows this format precisely: it consists of a number followed by a space and a valid time unit.",
+                    "explanation": "The parameter value '12 minutes' aligns perfectly with the required type, structure, and unit conventions defined in the spec. While not explicitly given as an example, it is fully consistent with the format and requires no normalization or interpretation.",
+                    "output": 5,
+                    "confidence": 0.99,
+                    "correction": {},
+                    "actionable_recommendations": []
+                }
+            },
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "user",
+                            "content": "Start a countdown for 5 minutes."
+                        }
+                    ],
+                    "tool_inventory": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "set_timer",
+                                "description": "Set a countdown timer",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "duration": {
+                                            "type": "string",
+                                            "description": "Duration in the format 'number + unit' (e.g., '5 minutes', '30 seconds')"
+                                        }
+                                    },
+                                    "required": [
+                                        "duration"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "tool_call": {
+                        "id": "call_001",
+                        "type": "function",
+                        "function": {
+                            "name": "set_timer",
+                            "arguments": "{ \"duration\": \"300000\" }"
+                        }
+                    },
+                    "parameter_name": "duration",
+                    "parameter_value": "300000"
+                },
+                "output": {
+                    "evidence": "The tool specification defines 'duration' as a string following the 'number + unit' format (e.g., '5 minutes'). The value '300000' is a string, but it lacks a time unit and does not follow the documented pattern.",
+                    "explanation": "The value is likely intended to represent milliseconds, but the format is both undocumented and inconsistent with the specification. It fails both unit and pattern requirements, and cannot be reliably interpreted as valid input without assumptions or external conventions.",
+                    "output": 2,
+                    "confidence": 0.95,
+                    "correction": {
+                        "reason_types": [
+                            "FORMAT_ERROR",
+                            "UNIT_ERROR"
+                        ],
+                        "reasons": "Missing explicit time unit and nonconformant format. Specification requires 'number + unit' format, which this value does not follow.",
+                        "parameter": {
+                            "duration": "5 minutes"
+                        }
+                    },
+                    "actionable_recommendations": [
+                        {
+                            "recommendation": "PARAMETER_FORMAT_DOCUMENTATION",
+                            "details": "Update the 'duration' parameter documentation to be more explicit: 'Duration must be provided as a string with a numeric value followed by a space and then a time unit (e.g., \"5 minutes\", \"30 seconds\"). Millisecond values without units are not supported. Raw numeric values without units will be rejected.'"
+                        },
+                        {
+                            "recommendation": "PARAMETER_VALIDATION",
+                            "details": "Implement regex validation for the 'duration' parameter that enforces the 'number + unit' format with a required space between them, e.g., /^\\d+\\s+[a-z]+$/i, and clearly rejects pure numeric values with an informative error message."
+                        },
+                        {
+                            "recommendation": "PARAMETER_CONVERSION",
+                            "details": "Add a conversion helper that automatically formats numeric-only values to the required format by appending appropriate units based on the magnitude of the number (e.g., convert '300000' to '5 minutes'). This would prevent tool call failures while maintaining the intended functionality."
+                        }
+                    ]
+                }
+            },
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "user",
+                            "content": "Set a timer for five minutes please."
+                        }
+                    ],
+                    "tool_inventory": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "set_timer",
+                                "description": "Set a countdown timer",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "duration": {
+                                            "type": "string",
+                                            "description": "Duration in the format 'number + unit' (e.g., '5 minutes', '30 seconds')"
+                                        }
+                                    },
+                                    "required": [
+                                        "duration"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "tool_call": {
+                        "id": "call_001",
+                        "type": "function",
+                        "function": {
+                            "name": "set_timer",
+                            "arguments": "{ \"duration\": \"5Minutes\" }"
+                        }
+                    },
+                    "parameter_name": "duration",
+                    "parameter_value": "5Minutes"
+                },
+                "output": {
+                    "evidence": "The specification explicitly defines the duration format as 'number + unit' with examples like '5 minutes'. The given value '5Minutes' omits the required space, resulting in a concatenated string.",
+                    "explanation": "The input conveys the intended meaning and includes all required semantic elements (number and unit), but the lack of a space between them breaks the documented pattern. This deviation is moderate-it introduces a risk of failure in strict parsers that expect a space-separated format.",
+                    "output": 3,
+                    "confidence": 0.89,
+                    "correction": {
+                        "reason_types": [
+                            "FORMAT_ERROR"
+                        ],
+                        "reasons": "Value contains both components but violates the explicit formatting requirement of space separation.",
+                        "parameter": {
+                            "duration": "5 minutes"
+                        }
+                    },
+                    "actionable_recommendations": [
+                        {
+                            "recommendation": "PARAMETER_FORMAT_DOCUMENTATION",
+                            "details": "Enhance the documentation for the 'duration' parameter to explicitly highlight the importance of the space separator: 'Duration MUST include a space between the numeric value and the unit (e.g., \"5 minutes\" not \"5minutes\"). The space separator is required for proper parsing.'"
+                        },
+                        {
+                            "recommendation": "PARAMETER_VALIDATION",
+                            "details": "Implement regex-based validation that specifically checks for the presence of a space between the number and unit, e.g., /^(\\d+)\\s+(\\w+)$/, and provides a clear error message when this pattern is violated: 'Duration format error: Please ensure there is a space between the number and unit (e.g., \"5 minutes\").'"
+                        },
+                        {
+                            "recommendation": "PARAMETER_CONVERSION",
+                            "details": "Add automatic reformatting that can detect and correct common format errors like missing spaces between numbers and units, ensuring the API remains robust against minor formatting issues."
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+]

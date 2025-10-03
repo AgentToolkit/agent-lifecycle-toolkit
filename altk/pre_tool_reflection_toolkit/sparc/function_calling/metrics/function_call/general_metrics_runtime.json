@@ -1,0 +1,580 @@
+[
+    {
+        "name": "general_hallucination_check",
+        "task_description": "Evaluate whether each parameter value in the function call is correct and **directly supported** by the provided conversation history and adhere the API specification. Your assessment must be based **strictly on explicit evidence** from these sources and correctly formatted based on the API specifications. Do **not** assume or hallucinate any information that is not clearly documented and provided.\n\n---\n\n#### 1. Grounding Sources\n\nA parameter value is considered grounded if it originates from one of the following:\n\n- An explicit user message in the conversation  \n- An assistant message that the user confirmed or acknowledged  \n- The output of a previous tool call  \n- A documented default value in the API specification  \n\n---\n\n#### 2. Parameter Value Classification\n\nEach parameter value must be labeled using one of the following categories:\n\n- **CORRECT**  \n  The value is explicitly mentioned, clearly implied in the conversation, or matches a documented default.\n\n- **MISSING_INFORMATION**  \n  The value is underspecified or incomplete given the current context (e.g., '05/06' when a full date is required).\n\n- **FORMAT ERROR**  \n  The value is conceptually correct but incorrectly formatted (e.g., wrong units, casing, or structure) based on the API specifications and descriptions.\n\n- **CONTRADICTORY_VALUES**  \n  The value violates documented constraints or logical relationships between parameters (e.g., `start_time` should be < `end_time`).\n\n- **DEFAULT_ISSUE**  \n  The default value of the parameter is not the correct value based on the conversation history.\n\n---\n\n#### 3. Handling Default Values\n\n- Optional parameters may only use default values that are **explicitly documented** in the API specification.  \n- Defaults that are assumed or undocumented count as hallucinations.  \n- If no value is provided and no default exists, the parameter should be omitted.\n\n---\n\n#### 4. Acceptable Transformations\n\nSome transformations are permitted, but only when grounded:\n\n- **Synonyms** (e.g., \"NYC\" -> \"New York\") are allowed only when normalized in the conversation.  \n- **Unit conversions** are valid only if the conversation explicitly mentions the conversion.  \n- **Format changes** (e.g., date or time reformatting) are acceptable only if acknowledged by the assistant or supported by the specification.\n\n---\n\n#### 5. Multi-Call Context\n\nIf the tool call appears in a sequence:\n\n- You may use outputs from earlier tool calls to justify parameter values.  \n- Consider dependencies and ordering between calls when assessing grounding.  \n\n---\n\n#### Conservative Judgment Principle\n\nWhen in doubt, err on the side of caution. If grounding cannot be clearly established, treat the parameter as incorrect.\n",
+        "jsonschema": {
+            "title": "general_hallucination_check",
+            "description": "Assessment of tool call grounding accuracy, following the rubric defined in the task description.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "evidence": {
+                    "type": "string",
+                    "description": "Provide EXACT quotes from user messages, assistant responses, prior tool outputs, or API specifications that demonstrate whether each parameter value is grounded. Do not paraphrase or interpret-use only direct evidence."
+                },
+                "explanation": {
+                    "type": "string",
+                    "description": "For EACH parameter value, explain its grounding status by referencing specific evidence from the conversation or tool specification. Indicate whether the value is correctly grounded, hallucinated, needs more information, has format errors, or contradicts other parameters."
+                },
+                "output": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "threshold_low": 4,
+                    "threshold_high": 5,
+                    "description": "Reflection Quality Score (1-5):\n\n- 5: All values are correct - fully grounded and well-formatted.\n  All parameter values are explicitly grounded in the conversation or tool output, and exactly match the expected types, formats, and units.\n  Example:\n  User: \"Book a hotel in Paris for two adults from August 10th to 12th.\"\n  \u2192 Tool call includes: location: \"Paris\", guests: 2, check_in: \"2025-08-10\", check_out: \"2025-08-12\"\n\n- 4: All values are correct based on the conversation history and tool specifications - can be logically inferred (can be implicitly grounded).\n  Some parameter values are not directly mentioned but can be logically inferred from the context. No evidence of hallucination.\n  Example:\n  User: \"I want to book a hotel in Tokyo for me and my wife.\"\n  \u2192 Tool call includes: location: \"Tokyo\", guests: 2\n\n- 3: One or more values are probably incorrect or ungrounded - ambiguous or undetermined\n  It's unclear whether some parameter values are grounded. They might be inferred, hallucinated, or drawn from partial context, or some parameter values partially match the expected format but are likely to be rejected or misinterpreted by automatic processing.\n  Example:\n  User: \"Book a hotel in Rome.\"\n  \u2192 Tool call includes: location: \"Rome\", guests: 2\n\n- 2: One or more values are probably incorrect - likely hallucinated or incorrect format.\n  Several parameter values do not align with the conversation context and are likely hallucinated, or have format errors.\n  Example:\n  User: \"Find a hotel.\"\n  \u2192 Tool call includes: location: \"New York\", guests: 4\n\n- 1: One or more values are clearly incorrect - certainly hallucinated or fabricated.\n  Some parameter values are clearly invented, irrelevant, contradict known context, or do not follow the API specifications.\n  Example:\n  User: \"Remind me to call John.\"\n  \u2192 Tool call includes: location: \"Barcelona\", guests: 6, check_in: \"2025-07-01\""
+                },
+                "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "threshold_low": 0,
+                    "threshold_high": 1,
+                    "description": "Confidence in the accuracy of this assessment (range: 0.0-1.0). Assign higher confidence when evidence is clear, complete, and consistent, and lower confidence when it is ambiguous, incomplete, or conflicting."
+                },
+                "correction": {
+                    "type": "object",
+                    "description": "Corrections to the tool call. For correctly grounded calls, use an empty object {}. For flawed calls, include parameter_issues and optionally a corrected tool_call if the full correction can be reconstructed.",
+                    "properties": {
+                        "parameter_issues": {
+                            "type": "array",
+                            "description": "List of parameters with issues. Leave empty if no issues were found.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "parameter_name": {
+                                        "type": "string",
+                                        "description": "Name of the parameter with an issue."
+                                    },
+                                    "reason_types": {
+                                        "type": "array",
+                                        "description": "One or more categories explaining the issue with this parameter value.",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "MISSING_INFORMATION",
+                                                "FORMAT_ERROR",
+                                                "CONTRADICTORY_VALUES",
+                                                "DEFAULT_ISSUE",
+                                                "OTHER"
+                                            ]
+                                        }
+                                    },
+                                    "reasons": {
+                                        "type": "string",
+                                        "description": "Brief explanation of the issue(s) for this parameter."
+                                    },
+                                    "corrected_value": {
+                                        "type": "object",
+                                        "description": "Object containing parameter name as key and corrected value as value. Use 'need_more_information' as the key and clarification question for the user if additional information is required. Use 'need_more_tool_calls' if the value cannot be corrected without additional tool calls. If the value is well-grounded, return an empty object {}.",
+                                        "additionalProperties": true
+                                    }
+                                },
+                                "required": []
+                            }
+                        },
+                        "tool_call": {
+                            "type": "object",
+                            "description": "Complete corrected tool call, including all fixed arguments. Must be included if a full reconstruction is possible.",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "Name of the function to call."
+                                },
+                                "arguments": {
+                                    "type": "object",
+                                    "description": "Set of corrected arguments for the function call, including both modified and retained values.",
+                                    "additionalProperties": true
+                                }
+                            },
+                            "required": []
+                        }
+                    },
+                    "required": []
+                }
+            },
+            "required": [
+                "evidence",
+                "explanation",
+                "output",
+                "confidence",
+                "correction"
+            ]
+        },
+        "examples": [
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "assistant",
+                            "content": "Logged in as user 55; auth token acquired."
+                        },
+                        {
+                            "role": "assistant",
+                            "content": "Ready to fetch your profile."
+                        }
+                    ],
+                    "tool_inventory": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "get_user_profile",
+                                "description": "Retrieves a user's profile details",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "integer",
+                                            "description": "The ID of the user whose profile is being retrieved"
+                                        }
+                                    },
+                                    "required": [
+                                        "user_id"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "tool_call": {
+                        "id": "call_001",
+                        "type": "function",
+                        "function": {
+                            "name": "get_user_profile",
+                            "arguments": "{ \"user_id\": 55 }"
+                        }
+                    }
+                },
+                "output": {
+                    "evidence": "Assistant message: \"Logged in as user 55; auth token acquired.\"",
+                    "explanation": "The user_id=55 parameter is properly grounded in the conversation history, as evidenced by the assistant's explicit statement \"Logged in as user 55.\"",
+                    "output": 5,
+                    "confidence": 0.95,
+                    "correction": {}
+                }
+            },
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "assistant",
+                            "content": "Ready to fetch your profile."
+                        }
+                    ],
+                    "tool_inventory": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "get_user_profile",
+                                "description": "Retrieves a user's profile details",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "integer",
+                                            "description": "The ID of the user whose profile is being retrieved"
+                                        }
+                                    },
+                                    "required": [
+                                        "user_id"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "tool_call": {
+                        "id": "call_001",
+                        "type": "function",
+                        "function": {
+                            "name": "get_user_profile",
+                            "arguments": "{ \"user_id\": 42 }"
+                        }
+                    }
+                },
+                "output": {
+                    "evidence": "Complete conversation history contains no mention of user ID 42. Tool specification for get_user_profile does not specify any default value for the user_id parameter.",
+                    "explanation": "The user_id=42 parameter is a hallucinated value with no grounding in the conversation or tool specification.",
+                    "output": 1,
+                    "confidence": 0.91,
+                    "correction": {
+                        "parameter_issues": [
+                            {
+                                "parameter_name": "user_id",
+                                "reason_types": [
+                                    "MISSING_INFORMATION"
+                                ],
+                                "reasons": "Value 42 is invented without any basis in conversation or specification",
+                                "corrected_value": {
+                                    "need_more_information": "Please provide the user ID to retrieve the profile."
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "user",
+                            "content": "I want to book a flight to Rome on 19-07-2024. I want to fly business class."
+                        }
+                    ],
+                    "tool_inventory": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "book_flight",
+                                "description": "Books a flight to a specified destination on a given date.",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "destination": {
+                                            "type": "string",
+                                            "description": "The destination city or airport for the flight"
+                                        },
+                                        "departure_date": {
+                                            "type": "string",
+                                            "description": "The date of departure, in YYYY-MM-DD format, e.g., '2024-07-19'"
+                                        },
+                                        "seat_class": {
+                                            "type": "string",
+                                            "description": "The class of the seat (must be one of: economy, business, or first)",
+                                            "enum": [
+                                                "economy",
+                                                "business",
+                                                "first"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "destination",
+                                        "departure_date",
+                                        "seat_class"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "tool_call": {
+                        "id": "call_001",
+                        "type": "function",
+                        "function": {
+                            "name": "book_flight",
+                            "arguments": "{ \"destination\": \"Rome\", \"departure_date\": \"19-07-2024\", \"seat_class\": \"business\" }"
+                        }
+                    }
+                },
+                "output": {
+                    "evidence": "- User message: \"I want to book a flight to Rome on 19-07-2024. I want to fly business class.\"\n- Tool spec requires 'departure_date' in YYYY-MM-DD format.\n- 'seat_class' is correctly grounded as 'business'.",
+                    "explanation": "The 'destination' parameter is correctly grounded as 'Rome'. The 'departure_date' is incorrectly formatted as '19-07-2024' instead of the required 'YYYY-MM-DD' format. The 'seat_class' is correctly grounded as 'business', but the date format error needs to be addressed.",
+                    "output": 2,
+                    "confidence": 0.95,
+                    "correction": {
+                        "parameter_issues": [
+                            {
+                                "parameter_name": "departure_date",
+                                "reason_types": [
+                                    "FORMAT_ERROR"
+                                ],
+                                "reasons": "The date format '19-07-2024' does not conform to the required 'YYYY-MM-DD' format.",
+                                "corrected_value": {
+                                    "departure_date": "2024-07-19"
+                                }
+                            }
+                        ],
+                        "tool_call": {
+                            "name": "book_flight",
+                            "arguments": {
+                                "destination": "Rome",
+                                "departure_date": "2024-07-19",
+                                "seat_class": "business"
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "name": "general_value_format_alignment",
+        "task_description": "Evaluate whether ALL parameter values in the function call conform to the required type, format, and unit conventions defined in the API specification.\n\nYour judgment must be strictly evidence-based: rely exclusively on the provided API documentation and the parameter values. Do not assume or infer formatting rules that are not explicitly documented.\n\nIMPORTANT: Evaluate ALL parameter values in the tool call to ensure they meet the exact type, format, and unit requirements. Consider the collective format compliance of the entire function call.\n---\n\n### 1. Data Type Compliance\n- Check that each value matches the required data type (e.g., string, integer, boolean, object, array)\n- Verify that numbers are represented as numeric types, not strings\n- Ensure strings are quoted correctly if required\n- Confirm booleans are true/false (not \"true\"/\"false\") when the type is boolean\n\n---\n\n### 2. Format Specification Compliance\n- Validate adherence to documented format constraints for each parameter, including:\n  - Date and time formats (e.g., ISO 8601, YYYY-MM-DD, timezone presence)\n  - Currency (e.g., $USD, symbol placement, decimal precision)\n  - Special patterns (e.g., phone numbers, email addresses, postal codes)\n- Enforce regular expressions or formatting rules defined in the schema\n\n---\n\n### 3. Unit Compliance\n- Verify presence or absence of unit suffixes/prefixes as specified (e.g., \"kg\", \"seconds\")\n- Confirm unit types are consistent with spec (e.g., Celsius vs Fahrenheit)\n- Reject any extra units when raw values are required\n\n---\n\n### 4. Consistency Requirements\n- Ensure values are consistent with related parameters (e.g., both timestamps in UTC)\n- Validate compatibility between parameter values in the same call\n- Check that parameter relationships don't violate constraints\n\n---\n\n### Format Alignment Rating Scale\n- **5 - Perfect Alignment**: All parameter values exactly match required types, formats, and units\n- **4 - Minor Deviation**: All values are fundamentally correct but some have minor formatting issues that are still likely to be accepted by the API or parser unless strict validation is enforced\n- **3 - Moderate Deviation**: Some parameter types or formats are partially incorrect; may cause issues\n- **2 - Major Deviation**: Multiple parameters have significant type and format violations; likely to fail\n- **1 - Complete Mismatch**: One or more parameter values are entirely incompatible with specification\n\n---\n\n### Final Rule\nBe conservative in your assessment:\n- If the spec is ambiguous and values seem plausible, prefer a higher score (4-5)\n- If the spec is clear and values deviate, assign a lower score (1-3)\n- Consider the cumulative impact of all format issues across parameters\n\nYour evaluation is critical: even minor formatting issues can lead to tool failures or incorrect outputs. Careful review ensures reliability in downstream tool use.",
+        "jsonschema": {
+            "title": "general_value_format_alignment",
+            "description": "Assessment of all parameter values' compliance with required type, format, and unit specifications, based on the rubric above.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "evidence": {
+                    "type": "string",
+                    "description": "Quote the specification's type/format definitions for each parameter and include the actual parameter values provided. Cite EXACT text from the tool specification that supports your judgment."
+                },
+                "explanation": {
+                    "type": "string",
+                    "description": "For each parameter value, explain why it conforms or does not conform to the specification's requirements. Address data type, format, units, and any pattern or constraint violations. For incorrect values, describe exactly what is wrong and how it affects the overall tool call."
+                },
+                "output": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "threshold_low": 4,
+                    "threshold_high": 5,
+                    "description": "An integer from 1 to 5 indicating how well all parameter values conform to the required types, formats, and units as defined in the API specification.\n\nScore meanings:\n\n5 - Perfect Alignment: All parameter values exactly match the expected types, formats, and units. Example: all dates in 'YYYY-MM-DD', all numbers as integers, all strings properly formatted.\n\n4 - Minor Deviation: All values are fundamentally correct but some have small formatting issues (e.g., missing leading zeros) that are still likely to be accepted by the API or parser unless strict validation is enforced. Example: expected '2025-08-05', value is '2025-8-5'.\n\n3 - Moderate Deviation: Some parameter values partially match the expected format but are likely to be rejected or misinterpreted by automatic processing. Example: mix of correct and incorrectly formatted dates.\n\n2 - Major Deviation: Multiple parameter values significantly violate the expected type, format, or unit and are very likely to fail. Example: wrong data types, completely wrong formats.\n\n1 - Complete Mismatch: One or more parameter values are entirely incompatible with the required format or type. Example: expected boolean, value is 'maybe'; expected date, value is random text."
+                },
+                "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "threshold_low": 0,
+                    "threshold_high": 1,
+                    "description": "Confidence in the accuracy of this assessment (range: 0.0-1.0). Assign higher confidence when evidence is clear, complete, and consistent, and lower confidence when it is ambiguous, incomplete, or conflicting."
+                },
+                "correction": {
+                    "type": "object",
+                    "description": "If output >= 4, return {}. If output <= 3, provide parameter_issues and a corrected tool_call.",
+                    "properties": {
+                        "parameter_issues": {
+                            "type": "array",
+                            "description": "List of parameters with format issues. Leave empty if no issues were found.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "parameter_name": {
+                                        "type": "string",
+                                        "description": "Name of the parameter with a format issue."
+                                    },
+                                    "reason_types": {
+                                        "type": "array",
+                                        "description": "List of format issues identified. Use one or more of: TYPE_ERROR, FORMAT_ERROR, UNIT_ERROR, PATTERN_ERROR, CONSISTENCY_ERROR, OTHER.",
+                                        "items": {
+                                            "type": "string",
+                                            "enum": [
+                                                "TYPE_ERROR",
+                                                "FORMAT_ERROR",
+                                                "UNIT_ERROR",
+                                                "PATTERN_ERROR",
+                                                "CONSISTENCY_ERROR",
+                                                "OTHER"
+                                            ]
+                                        }
+                                    },
+                                    "reasons": {
+                                        "type": "string",
+                                        "description": "Short explanation of the specific issue(s) with the parameter's format, type, or unit."
+                                    },
+                                    "corrected_value": {
+                                        "type": "object",
+                                        "description": "An object containing the corrected parameter value in the form: { \"<parameter_name>\": <corrected_value> }. If you cannot correct the value, use 'need_more_information' as the key and provide a clarification question for the user. Use 'need_more_tool_calls' if the value cannot be corrected without additional tool calls. If the value is well-formatted, return an empty object {}.",
+                                        "additionalProperties": true
+                                    }
+                                },
+                                "required": [
+                                    "parameter_name",
+                                    "reason_types",
+                                    "reasons",
+                                    "corrected_value"
+                                ]
+                            }
+                        },
+                        "tool_call": {
+                            "type": "object",
+                            "description": "Complete corrected tool call with all format issues fixed, including both modified and retained parameter values. Must be included if a full reconstruction is possible.",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "Name of the function to call."
+                                },
+                                "arguments": {
+                                    "type": "object",
+                                    "description": "Set of corrected arguments for the function call, with all format issues resolved.",
+                                    "additionalProperties": true
+                                }
+                            },
+                            "required": [
+                                "name",
+                                "arguments"
+                            ]
+                        }
+                    },
+                    "required": []
+                }
+            },
+            "required": [
+                "evidence",
+                "explanation",
+                "output",
+                "confidence",
+                "correction"
+            ]
+        },
+        "examples": [
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "user",
+                            "content": "Book a flight to Paris on 2025-08-15 for 2 adults in economy class."
+                        }
+                    ],
+                    "tool_inventory": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "book_flight",
+                                "description": "Books a flight with specified parameters",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "destination": {
+                                            "type": "string",
+                                            "description": "Destination city"
+                                        },
+                                        "departure_date": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "description": "Date in YYYY-MM-DD format"
+                                        },
+                                        "passengers": {
+                                            "type": "integer",
+                                            "description": "Number of passengers"
+                                        },
+                                        "class": {
+                                            "type": "string",
+                                            "enum": [
+                                                "economy",
+                                                "business",
+                                                "first"
+                                            ],
+                                            "description": "Flight class"
+                                        }
+                                    },
+                                    "required": [
+                                        "destination",
+                                        "departure_date",
+                                        "passengers",
+                                        "class"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "tool_call": {
+                        "id": "call_001",
+                        "type": "function",
+                        "function": {
+                            "name": "book_flight",
+                            "arguments": "{\"destination\": \"Paris\", \"departure_date\": \"2025-08-15\", \"passengers\": 2, \"class\": \"economy\"}"
+                        }
+                    }
+                },
+                "output": {
+                    "evidence": "Tool spec requires: destination (string), departure_date (string, YYYY-MM-DD format), passengers (integer), class (enum: economy/business/first). Values provided: 'Paris' (string), '2025-08-15' (string, YYYY-MM-DD), 2 (integer), 'economy' (valid enum).",
+                    "explanation": "All parameter values perfectly conform to their specifications: destination is a proper string, departure_date follows the exact YYYY-MM-DD format, passengers is provided as an integer (not string), and class matches one of the required enum values. No format issues detected.",
+                    "output": 5,
+                    "confidence": 0.98,
+                    "correction": {}
+                }
+            },
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "user",
+                            "content": "Set a timer for 5 minutes and schedule a meeting for tomorrow at 3 PM."
+                        }
+                    ],
+                    "tool_inventory": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "set_timer_and_meeting",
+                                "description": "Sets a timer and schedules a meeting",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "timer_duration": {
+                                            "type": "string",
+                                            "pattern": "^\\d+\\s+(minutes?|seconds?|hours?)$",
+                                            "description": "Duration in format 'number unit' (e.g., '5 minutes')"
+                                        },
+                                        "meeting_date": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "description": "Date in YYYY-MM-DD format"
+                                        },
+                                        "meeting_time": {
+                                            "type": "string",
+                                            "pattern": "^([01]?[0-9]|2[0-3]):[0-5][0-9]$",
+                                            "description": "Time in HH:MM 24-hour format"
+                                        }
+                                    },
+                                    "required": [
+                                        "timer_duration",
+                                        "meeting_date",
+                                        "meeting_time"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "tool_call": {
+                        "id": "call_002",
+                        "type": "function",
+                        "function": {
+                            "name": "set_timer_and_meeting",
+                            "arguments": "{\"timer_duration\": \"300\", \"meeting_date\": \"tomorrow\", \"meeting_time\": \"3 PM\"}"
+                        }
+                    }
+                },
+                "output": {
+                    "evidence": "Tool spec requires: timer_duration (string matching pattern '^\\d+\\s+(minutes?|seconds?|hours?)$'), meeting_date (string, YYYY-MM-DD format), meeting_time (string, HH:MM 24-hour format). Values provided: '300' (no unit, violates pattern), 'tomorrow' (not YYYY-MM-DD), '3 PM' (not 24-hour format).",
+                    "explanation": "All three parameters have significant format violations: timer_duration '300' lacks the required unit and space (should be '5 minutes'), meeting_date 'tomorrow' doesn't follow YYYY-MM-DD format (should be '2025-08-07'), and meeting_time '3 PM' uses 12-hour format instead of required 24-hour HH:MM (should be '15:00'). These errors will likely cause API rejection.",
+                    "output": 2,
+                    "confidence": 0.92,
+                    "correction": {
+                        "parameter_issues": [
+                            {
+                                "parameter_name": "timer_duration",
+                                "reason_types": [
+                                    "FORMAT_ERROR",
+                                    "UNIT_ERROR"
+                                ],
+                                "reasons": "Value '300' lacks required unit and space format, should be '5 minutes'",
+                                "corrected_value": {
+                                    "timer_duration": "5 minutes"
+                                }
+                            },
+                            {
+                                "parameter_name": "meeting_date",
+                                "reason_types": [
+                                    "FORMAT_ERROR"
+                                ],
+                                "reasons": "Value 'tomorrow' doesn't follow required YYYY-MM-DD format",
+                                "corrected_value": {
+                                    "meeting_date": "2025-08-07"
+                                }
+                            },
+                            {
+                                "parameter_name": "meeting_time",
+                                "reason_types": [
+                                    "FORMAT_ERROR"
+                                ],
+                                "reasons": "Value '3 PM' uses 12-hour format instead of required 24-hour HH:MM",
+                                "corrected_value": {
+                                    "meeting_time": "15:00"
+                                }
+                            }
+                        ],
+                        "tool_call": {
+                            "name": "set_timer_and_meeting",
+                            "arguments": {
+                                "timer_duration": "5 minutes",
+                                "meeting_date": "2025-08-07",
+                                "meeting_time": "15:00"
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+]

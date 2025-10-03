@@ -1,0 +1,3 @@
+Parameter location is not a recognized parameter for the tool TripadvisorSearchHotels.
+Parameter geoId is a required parameter for TripadvisorSearchHotels, but it is missing.
+Possible fix: Parameter geoId can be assigned to geoId in var4 from memory.

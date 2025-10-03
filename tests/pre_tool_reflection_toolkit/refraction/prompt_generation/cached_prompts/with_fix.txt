@@ -1,0 +1,11 @@
+Please fix the provided tool call based on the provided suggestion.
+
+<tool_call>[
+{'name': 'SkyScrapperFlightSearch', 'arguments': {'originSkyId': '$var1.skyId$', 'originEntityId': '$var1.entityId$', 'date': '2024-08-15'}, 'label': 'var3'}
+]</tool_call>
+
+The following is a suggested correction. Use this as a guidance to fix the above tool call.
+
+<tool_call>[
+{'name': 'SkyScrapperFlightSearch', 'arguments': {'originSkyId': '$var1.skyId$', 'destinationSkyId': '$var2.skyId$', 'originEntityId': '$var1.entityId$', 'destinationEntityId': '$var2.entityId$', 'date': '2024-08-15'}, 'label': 'var3'}
+]</tool_call>

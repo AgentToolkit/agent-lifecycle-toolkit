@@ -1,0 +1,2 @@
+Parameter destinationSkyId is a required parameter for SkyScrapperFlightSearch, but it is missing.
+Parameter destinationEntityId is a required parameter for SkyScrapperFlightSearch, but it is missing.

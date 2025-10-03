@@ -1,0 +1,131 @@
+[project]
+name = "agent-lifecycle-toolkit"
+requires-python = ">=3.11"
+version = "0.2.0"
+classifiers = [
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "ibm-watsonx-ai>=1.0.0", 
+    "jinja2>=3.1.6",
+    "jsonschema>=4.0.0",
+    "langchain-chroma>=0.1.4",
+    "langchain-community>=0.3.21",
+    "langchain-core>=0.3.72",
+    "langchain-huggingface>=0.3.0",
+    "litellm>=1.0.0, <1.77.2",
+    "llm-sandbox[docker]>=0.2.5",
+    "nestful-wrapper>=0.1.4",
+    "nl2flow>=0.1.2",
+    "nltk>=3.9.1",
+    "numpy<2 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "numpy>=2.1.2; sys_platform != 'darwin' or platform_machine != 'x86_64'",
+    "openai>=1.0.0",
+    "pydantic>=2.0.0",
+    "scipy>=1.16.1",
+    "sentence-transformers>=5.0.0",
+    "smolagents>=1.21.3",
+    "torch==2.2.2 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "torch>=2.5.1 ; sys_platform != 'darwin' or platform_machine != 'x86_64'",
+    "transformers>=4.53.3",
+    "trl>=0.12.2",
+    "typing-extensions>=4.0.0",
+]
+
+description = "The Agent Lifecycle Toolkit (ALTK) is a library of components to help agent builders improve their agent with minimal integration effort and setup."
+keywords = [
+    "LLM",
+    "NLP",
+    "RAG",
+    "data",
+    "devtools",
+    "index",
+    "retrieval",
+    "generation",
+    "agent",
+]
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["altk"]
+
+[dependency-groups]
+dev = [
+    "docling>=2.38.1",
+    "pre-commit>=4.2.0",
+    "pytest>=8.2.1",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.14.1",
+    "bertopic>=0.17.3",
+    "scikit-learn>=1.7.1",
+    "ruff>=0.13.2",
+    "mellea>=0.0.6",
+    "mypy>=1.18.2",
+]
+
+[project.optional-dependencies]
+docs = [
+    "mkdocs-material",
+    "mkdocs-jupyter",
+    "mkdocs-click",
+    "mkdocstrings[python]",
+    "griffe_inherited_docstrings",
+    "griffe-pydantic",
+    "mkdocs-awesome-nav",
+    "mkdocs-include-markdown-plugin>=7.1.8",
+    "mkdocs-enumerate-headings-plugin"
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+explicit = true
+
+[[tool.uv.index]]
+name = "artifactory-ibm"
+url = "na.artifactory.swg-devops.com/artifactory/api/pypi/res-dba-artifactory-pypi-local/simple"
+publish-url = "https://na.artifactory.swg-devops.com/artifactory/api/pypi/res-dba-artifactory-pypi-local"
+explicit = true
+
+[tool.ruff.lint]
+select = [
+    "E4", 
+    "E7", 
+    "E9", 
+    "F", 
+    "B"
+]
+ignore = [
+    "B905" # ignore requiring `strict` to be specified when using `zip`
+]
+unfixable = [
+    "B" # don't attempt to fix bugbear issues
+]
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+    "E402", # ignore import violations
+    "F401", # ignore unused import violations
+]
+"**/tests/*" = [
+    "E402", # ignore import violations
+    "F401", # ignore unused import violations
+]
+
+
+[tool.pytest.ini_options]
+log_cli = true
+addopts = "--ignore=test-case-generation-toolkit/test_case_generation_toolkit/utils/test_case_generation.py -m \"not llm and not refract_extra\""
+markers = [
+    "llm: marks tests as LLM provider tests (expensive, run only with -m llm)",
+    "refract_extra: extra tests from refraction"
+]

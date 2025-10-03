@@ -1,0 +1,656 @@
+[
+    {
+        "source_name": "originEntityId",
+        "target_name": "skyId",
+        "probability": 0.8591442704200745,
+        "is_mapped": false
+    },
+    {
+        "source_name": "destinationEntityId",
+        "target_name": "skyId",
+        "probability": 0.8502644598484039,
+        "is_mapped": false
+    },
+    {
+        "source_name": "adults",
+        "target_name": "children",
+        "probability": 0.8547216951847076,
+        "is_mapped": false
+    },
+    {
+        "source_name": "children",
+        "target_name": "adults",
+        "probability": 0.8547216951847076,
+        "is_mapped": false
+    },
+    {
+        "source_name": "limit",
+        "target_name": "product_id",
+        "probability": 0.857288658618927,
+        "is_mapped": false
+    },
+    {
+        "source_name": "flightId",
+        "target_name": "skyId",
+        "probability": 0.8714290261268616,
+        "is_mapped": false
+    },
+    {
+        "source_name": "originAirportId",
+        "target_name": "skyId",
+        "probability": 0.9059033095836639,
+        "is_mapped": false
+    },
+    {
+        "source_name": "originAirportName",
+        "target_name": "skyId",
+        "probability": 0.8581149578094482,
+        "is_mapped": false
+    },
+    {
+        "source_name": "destinationAirportId",
+        "target_name": "skyId",
+        "probability": 0.9064617156982422,
+        "is_mapped": false
+    },
+    {
+        "source_name": "destinationAirportName",
+        "target_name": "skyId",
+        "probability": 0.8664444088935852,
+        "is_mapped": false
+    },
+    {
+        "source_name": "carrierId",
+        "target_name": "skyId",
+        "probability": 0.8732238411903381,
+        "is_mapped": false
+    },
+    {
+        "source_name": "query",
+        "target_name": "type",
+        "probability": 0.8778461515903473,
+        "is_mapped": false
+    },
+    {
+        "source_name": "skyId",
+        "target_name": "destinationAirportId",
+        "probability": 0.9064617156982422,
+        "is_mapped": false
+    },
+    {
+        "source_name": "entityId",
+        "target_name": "destinationAirportId",
+        "probability": 0.8817864060401917,
+        "is_mapped": false
+    },
+    {
+        "source_name": "name",
+        "target_name": "id",
+        "probability": 0.8684146404266357,
+        "is_mapped": false
+    },
+    {
+        "source_name": "type",
+        "target_name": "query",
+        "probability": 0.8778461515903473,
+        "is_mapped": false
+    },
+    {
+        "source_name": "rating",
+        "target_name": "query",
+        "probability": 0.8684626221656799,
+        "is_mapped": false
+    },
+    {
+        "source_name": "id",
+        "target_name": "username_or_id_or_url",
+        "probability": 0.889615923166275,
+        "is_mapped": false
+    },
+    {
+        "source_name": "title",
+        "target_name": "query",
+        "probability": 0.8734749257564545,
+        "is_mapped": false
+    },
+    {
+        "source_name": "restaurantsId",
+        "target_name": "awardInfo",
+        "probability": 0.9002376794815063,
+        "is_mapped": false
+    },
+    {
+        "source_name": "currentOpenStatusText",
+        "target_name": "restaurantsId",
+        "probability": 0.8532444536685944,
+        "is_mapped": false
+    },
+    {
+        "source_name": "priceTag",
+        "target_name": "restaurantsId",
+        "probability": 0.8666959702968597,
+        "is_mapped": false
+    },
+    {
+        "source_name": "menuUrl",
+        "target_name": "restaurantsId",
+        "probability": 0.8849454820156097,
+        "is_mapped": false
+    },
+    {
+        "source_name": "parentGeoName",
+        "target_name": "restaurantsId",
+        "probability": 0.8595110476016998,
+        "is_mapped": false
+    },
+    {
+        "source_name": "awardInfo",
+        "target_name": "restaurantsId",
+        "probability": 0.9002376794815063,
+        "is_mapped": false
+    },
+    {
+        "source_name": "heroImgUrl",
+        "target_name": "restaurantsId",
+        "probability": 0.8525794744491577,
+        "is_mapped": false
+    },
+    {
+        "source_name": "language",
+        "target_name": "query",
+        "probability": 0.8682579398155212,
+        "is_mapped": false
+    },
+    {
+        "source_name": "business_id",
+        "target_name": "google_id",
+        "probability": 0.9037352800369263,
+        "is_mapped": false
+    },
+    {
+        "source_name": "google_id",
+        "target_name": "business_id",
+        "probability": 0.9037352800369263,
+        "is_mapped": false
+    },
+    {
+        "source_name": "place_id",
+        "target_name": "business_id",
+        "probability": 0.8840452134609222,
+        "is_mapped": false
+    },
+    {
+        "source_name": "review_count",
+        "target_name": "author_review_count",
+        "probability": 0.9106747508049011,
+        "is_mapped": false
+    },
+    {
+        "source_name": "reviews_link",
+        "target_name": "review_link",
+        "probability": 0.958854079246521,
+        "is_mapped": false
+    },
+    {
+        "source_name": "owner_id",
+        "target_name": "business_id",
+        "probability": 0.8656726479530334,
+        "is_mapped": false
+    },
+    {
+        "source_name": "owner_link",
+        "target_name": "author_link",
+        "probability": 0.8543536961078644,
+        "is_mapped": false
+    },
+    {
+        "source_name": "owner_name",
+        "target_name": "author_name",
+        "probability": 0.8709776103496552,
+        "is_mapped": false
+    },
+    {
+        "source_name": "country",
+        "target_name": "query",
+        "probability": 0.8650663197040558,
+        "is_mapped": false
+    },
+    {
+        "source_name": "review_id",
+        "target_name": "business_id",
+        "probability": 0.9036397635936737,
+        "is_mapped": false
+    },
+    {
+        "source_name": "review_datetime_utc",
+        "target_name": "owner_response_datetime_utc",
+        "probability": 0.8550464510917664,
+        "is_mapped": false
+    },
+    {
+        "source_name": "review_link",
+        "target_name": "reviews_link",
+        "probability": 0.958854079246521,
+        "is_mapped": false
+    },
+    {
+        "source_name": "author_id",
+        "target_name": "owner_id",
+        "probability": 0.8622152209281921,
+        "is_mapped": false
+    },
+    {
+        "source_name": "author_link",
+        "target_name": "reviews_link",
+        "probability": 0.906565397977829,
+        "is_mapped": false
+    },
+    {
+        "source_name": "author_name",
+        "target_name": "reviews_link",
+        "probability": 0.8812769949436188,
+        "is_mapped": false
+    },
+    {
+        "source_name": "author_review_count",
+        "target_name": "review_count",
+        "probability": 0.9106747508049011,
+        "is_mapped": false
+    },
+    {
+        "source_name": "owner_response_datetime_utc",
+        "target_name": "review_datetime_utc",
+        "probability": 0.8550464510917664,
+        "is_mapped": false
+    },
+    {
+        "source_name": "author_reviews_link",
+        "target_name": "reviews_link",
+        "probability": 0.8650541007518768,
+        "is_mapped": false
+    },
+    {
+        "source_name": "page",
+        "target_name": "product_id",
+        "probability": 0.8550142347812653,
+        "is_mapped": false
+    },
+    {
+        "source_name": "product_id",
+        "target_name": "limit",
+        "probability": 0.857288658618927,
+        "is_mapped": false
+    },
+    {
+        "source_name": "keyword",
+        "target_name": "bookUrl",
+        "probability": 0.8679841756820679,
+        "is_mapped": false
+    },
+    {
+        "source_name": "bookId",
+        "target_name": "keyword",
+        "probability": 0.8578489422798157,
+        "is_mapped": false
+    },
+    {
+        "source_name": "bookUrl",
+        "target_name": "keyword",
+        "probability": 0.8679841756820679,
+        "is_mapped": false
+    },
+    {
+        "source_name": "publishedYear",
+        "target_name": "keyword",
+        "probability": 0.8556229472160339,
+        "is_mapped": false
+    },
+    {
+        "source_name": "artist_id",
+        "target_name": "artistId",
+        "probability": 0.9047922492027283,
+        "is_mapped": false
+    },
+    {
+        "source_name": "url",
+        "target_name": "shareUrl",
+        "probability": 0.8932855725288391,
+        "is_mapped": false
+    },
+    {
+        "source_name": "image_url",
+        "target_name": "shareUrl",
+        "probability": 0.8752809464931488,
+        "is_mapped": false
+    },
+    {
+        "source_name": "artistId",
+        "target_name": "artist_id",
+        "probability": 0.9047922492027283,
+        "is_mapped": false
+    },
+    {
+        "source_name": "errorId",
+        "target_name": "artist_id",
+        "probability": 0.8859617710113525,
+        "is_mapped": false
+    },
+    {
+        "source_name": "shareUrl",
+        "target_name": "url",
+        "probability": 0.8932855725288391,
+        "is_mapped": false
+    },
+    {
+        "source_name": "biography",
+        "target_name": "profile_pic_url_hd",
+        "probability": 0.8622326254844666,
+        "is_mapped": false
+    },
+    {
+        "source_name": "username_or_id_or_url",
+        "target_name": "profile_pic_url",
+        "probability": 0.8966958522796631,
+        "is_mapped": false
+    },
+    {
+        "source_name": "biography_email",
+        "target_name": "profile_pic_url_hd",
+        "probability": 0.8718711137771606,
+        "is_mapped": false
+    },
+    {
+        "source_name": "can_hide_public_contacts",
+        "target_name": "has_anonymous_profile_picture",
+        "probability": 0.8603168427944183,
+        "is_mapped": false
+    },
+    {
+        "source_name": "contact_phone_number",
+        "target_name": "profile_pic_url_hd",
+        "probability": 0.8631532788276672,
+        "is_mapped": false
+    },
+    {
+        "source_name": "external_url",
+        "target_name": "profile_pic_url_hd",
+        "probability": 0.8600927889347076,
+        "is_mapped": false
+    },
+    {
+        "source_name": "fbid_v2",
+        "target_name": "profile_pic_url_hd",
+        "probability": 0.8549796342849731,
+        "is_mapped": false
+    },
+    {
+        "source_name": "follower_count",
+        "target_name": "third_party_downloads_enabled",
+        "probability": 0.854259729385376,
+        "is_mapped": false
+    },
+    {
+        "source_name": "following_count",
+        "target_name": "third_party_downloads_enabled",
+        "probability": 0.862840861082077,
+        "is_mapped": false
+    },
+    {
+        "source_name": "full_name",
+        "target_name": "username_or_id_or_url",
+        "probability": 0.8906726837158203,
+        "is_mapped": false
+    },
+    {
+        "source_name": "has_anonymous_profile_picture",
+        "target_name": "has_igtv_series",
+        "probability": 0.864654004573822,
+        "is_mapped": false
+    },
+    {
+        "source_name": "has_igtv_series",
+        "target_name": "has_anonymous_profile_picture",
+        "probability": 0.864654004573822,
+        "is_mapped": false
+    },
+    {
+        "source_name": "is_favorite",
+        "target_name": "is_favorite_for_stories",
+        "probability": 0.9272008538246155,
+        "is_mapped": false
+    },
+    {
+        "source_name": "is_favorite_for_clips",
+        "target_name": "is_favorite",
+        "probability": 0.913145512342453,
+        "is_mapped": false
+    },
+    {
+        "source_name": "is_favorite_for_igtv",
+        "target_name": "is_favorite",
+        "probability": 0.9262599050998688,
+        "is_mapped": false
+    },
+    {
+        "source_name": "is_favorite_for_stories",
+        "target_name": "is_favorite",
+        "probability": 0.9272008538246155,
+        "is_mapped": false
+    },
+    {
+        "source_name": "is_parenting_account",
+        "target_name": "has_anonymous_profile_picture",
+        "probability": 0.8555517196655273,
+        "is_mapped": false
+    },
+    {
+        "source_name": "latest_reel_media",
+        "target_name": "media_count",
+        "probability": 0.8567671179771423,
+        "is_mapped": false
+    },
+    {
+        "source_name": "media_count",
+        "target_name": "latest_reel_media",
+        "probability": 0.8567671179771423,
+        "is_mapped": false
+    },
+    {
+        "source_name": "profile_context",
+        "target_name": "profile_pic_id",
+        "probability": 0.8744286894798279,
+        "is_mapped": false
+    },
+    {
+        "source_name": "profile_pic_id",
+        "target_name": "profile_pic_url_hd",
+        "probability": 0.9362039864063263,
+        "is_mapped": false
+    },
+    {
+        "source_name": "profile_pic_url",
+        "target_name": "profile_pic_id",
+        "probability": 0.9152950048446655,
+        "is_mapped": false
+    },
+    {
+        "source_name": "profile_pic_url_hd",
+        "target_name": "profile_pic_id",
+        "probability": 0.9362039864063263,
+        "is_mapped": false
+    },
+    {
+        "source_name": "public_email",
+        "target_name": "profile_pic_url_hd",
+        "probability": 0.8606520295143127,
+        "is_mapped": false
+    },
+    {
+        "source_name": "third_party_downloads_enabled",
+        "target_name": "following_count",
+        "probability": 0.862840861082077,
+        "is_mapped": false
+    },
+    {
+        "source_name": "username",
+        "target_name": "username_or_id_or_url",
+        "probability": 0.8815512359142303,
+        "is_mapped": false
+    },
+    {
+        "source_name": "is_possible_scammer",
+        "target_name": "is_video",
+        "probability": 0.8502183556556702,
+        "is_mapped": false
+    },
+    {
+        "source_name": "is_video",
+        "target_name": "is_possible_scammer",
+        "probability": 0.8502183556556702,
+        "is_mapped": false
+    },
+    {
+        "source_name": "ticker",
+        "target_name": "identifier",
+        "probability": 0.850621372461319,
+        "is_mapped": false
+    },
+    {
+        "source_name": "company",
+        "target_name": "filing",
+        "probability": 0.9107467532157898,
+        "is_mapped": false
+    },
+    {
+        "source_name": "filing",
+        "target_name": "company",
+        "probability": 0.9107467532157898,
+        "is_mapped": false
+    },
+    {
+        "source_name": "cik",
+        "target_name": "identifier",
+        "probability": 0.9201527833938599,
+        "is_mapped": false
+    },
+    {
+        "source_name": "identifier",
+        "target_name": "cik",
+        "probability": 0.9201527833938599,
+        "is_mapped": false
+    },
+    {
+        "source_name": "skyId",
+        "target_name": "originSkyId",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "skyId",
+        "target_name": "destinationSkyId",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "entityId",
+        "target_name": "originEntityId",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "entityId",
+        "target_name": "destinationEntityId",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "title",
+        "target_name": "query",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "Exchange Rate",
+        "target_name": "numbers",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "Ask Price",
+        "target_name": "numbers",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "quoteText",
+        "target_name": "keyword",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "id",
+        "target_name": "authorID",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "localtime",
+        "target_name": "numbers",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "location.name",
+        "target_name": "q",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "location.name",
+        "target_name": "query",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "short_name",
+        "target_name": "location",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "id",
+        "target_name": "artistId",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "username",
+        "target_name": "username_or_id_or_url",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "company.cik",
+        "target_name": "cik",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "filing.accessionNumber",
+        "target_name": "accessionNumber",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "company.cik",
+        "target_name": "identifier",
+        "probability": 1.0,
+        "is_mapped": false
+    },
+    {
+        "source_name": "short_name",
+        "target_name": "region",
+        "probability": 1.0,
+        "is_mapped": false
+    }
+]

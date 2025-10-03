@@ -1,0 +1,9 @@
+Please fix the provided tool call based on the issues outlined.
+
+<tool_call>[
+{'name': 'SkyScrapperFlightSearch', 'arguments': {'originSkyId': '$var1.skyId$', 'originEntityId': '$var1.entityId$', 'date': '2024-08-15'}, 'label': 'var3'}
+]</tool_call>
+
+The following are the identified issues:
+- Parameter destinationSkyId is a required parameter for SkyScrapperFlightSearch, but it is missing.
+- Parameter destinationEntityId is a required parameter for SkyScrapperFlightSearch, but it is missing.

@@ -1,0 +1,38 @@
+.venv
+*.pyc
+.env
+agent_lifecycle_toolkit.egg-info/
+build
+.DS_Store
+*.whl
+*.whl
+*.gz
+
+.ipynb_checkpoints/
+
+.pytest_cache
+# don't allow uv.lock to be tracked in subdirectories
+__pycache__
+
+# ignore refraction folders
+found_plans
+
+.vscode
+.devcontainer
+*.pyc
+#ignore toolops related folders and files
+.idea/
+*.csv
+
+tests/tool-enrichment/log
+
+# temporary planner files
+**output.sas
+**/plan.txt
+
+**/*.pddl
+**domain.pddl
+**problem.pddl
+
+**found_plans/
+**cached_mappings.json

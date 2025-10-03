@@ -1,0 +1,599 @@
+[
+    {
+        "name": "function_selection_appropriateness",
+        "task_description": "You are an evaluator assessing whether a specific function is an appropriate next step in a user-assistant conversation.\n\nTASK: Determine if the selected function aligns with the user's current request and is justified by the conversation history and tool inventory.\nIMPORTANT: Evaluate only the function selection appropriateness. Do not assess the function's execution, parameter values correctness, or any other aspect.\n\nEVALUATION CRITERIA:\n\n1. EVIDENCE SOURCES:\n- Use only the conversation history (system prompts, user and assistant turns, prior tool calls and outputs).\n- Use only the tool inventory, which includes function names and descriptions.\n- Do not infer capabilities, tool logic, or user goals beyond what is explicitly provided.\n\n2. DIALOGUE CONTEXT:\n- Conversations alternate between user and assistant.\n- Assistant turns may include multiple tool calls.\n- Tool calls may be:\n  - INDEPENDENT: order does not matter\n  - CHAINED: later calls depend on earlier ones\n- Consider the evolving context of the user's goal.\n\n3. APPROPRIATENESS DEFINITION:\nA function is appropriate if:\n- It addresses the user's stated or implied request.\n- It contributes meaningfully to the immediate goal.\n- It aligns with the documented function description.\n- It is not redundant with earlier tool calls (e.g. a duplication of the same tool call with the same parameters that is unnecessary).\n\nNote: More than one function may be appropriate. If this call satisfies a relevant part of the user's request, it is valid.\n\n4. WHEN INAPPROPRIATE:\nFlag the function as inappropriate only if:\n- A better function exists in the inventory\n- No valid function matches the request\n- The call is redundant or unnecessary\n\nProvide a corrected tool call if applicable, or use a placeholder such as:\n- {\"name\": \"no_function\"}\n- {\"name\": \"no_function_redundant\"}\n\n5. CONSERVATIVE JUDGMENT:\n- Do not assume tool behavior not stated in descriptions.\n- Do not reference tools or logic outside the inventory.\n- Do not invent user intent.\n- Do not penalize a valid call just because alternatives exist.\n\nOnly mark the function as inappropriate if clear, explicit evidence from the conversation or tool descriptions supports that judgment.\nOnly evaluate the function selection - e.g. if this is the right function name, but the parameter values are incorrect, mark it as a correct function selection with a maximum score - you MUST ignore parameter values mistakes.",
+        "jsonschema": {
+            "title": "function_selection_appropriateness",
+            "description": "Assessment of whether the selected function is an appropriate next step based on the user's request and the provided tool descriptions.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "evidence": {
+                    "type": "string",
+                    "description": "Cite exact quotes from the conversation history or tool inventory that support your rating. Do not paraphrase or interpret-include only directly quoted material that supports or challenges the function's appropriateness."
+                },
+                "explanation": {
+                    "type": "string",
+                    "description": "Explain why this function call does or does not match the user's immediate intent. Refer to specific conversation turns and tool descriptions. If inappropriate, state whether a better function exists, the function is unnecessary, or none in the inventory are suitable."
+                },
+                "output": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "threshold_low": 3,
+                    "threshold_high": 5,
+                    "description": "Function Selection Appropriateness Score (1-5):\n\n- 5: Clearly appropriate and well-justified\n  The selected function directly aligns with the user's request, is grounded in the conversation history, and matches the documented purpose in the tool inventory.\n  Example:\n  User: \"Can you check the weather in Rome tomorrow?\"\nSelected function: get_weather(city=\"Rome\", date=\"2025-08-06\")\n\n- 4: Reasonable choice with minor gaps\n  The function is a plausible and helpful next step based on the conversation, though some details (e.g., goal inference or chaining rationale) may not be fully explicit.  Example:\n  User: \"What's my email address?\"\n Selected function: get_user_id()\n  (A precondition for get_user_email(user_id=...) is this get_user_id())\n\n- 3: Ambiguous or weakly justified\n  The function may relate to the user's goal, but there is not enough evidence in the conversation or function description to clearly support it.\n  Example:\n  User: \"I'm planning a trip to Tokyo.\"\n  Selected function: get_weather(city=\"Tokyo\")\n  (User didn't request weather, but it's a useful proactive step)\n\n- 2: Likely inappropriate\n  The function does not clearly support the user's request or appears redundant given earlier tool calls.\n  Example:\n  User: \"Book me a restaurant in Berlin.\"\n  Selected function: get_weather(city=\"Berlin\")\n\n- 1: Clearly inappropriate or unjustified\n  The function is unrelated to the conversation, violates tool constraints, or invents a user goal.\n  Example:\n  User: \"Remind me to call Alex.\"\n  Selected function: get_weather(city=\"New York\")"
+                },
+                "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "threshold_low": 0,
+                    "threshold_high": 1,
+                    "description": "Confidence in the accuracy of this assessment (range: 0.0-1.0). Assign higher confidence when evidence is clear, complete, and consistent, and lower confidence when it is ambiguous, incomplete, or conflicting."
+                },
+                "correction": {
+                    "type": "object",
+                    "description": "Required when there are issues. Leave empty ({}) when there are no issues. For invalid function calls, specify the issue(s), explanation, and corrected tool call or placeholder.",
+                    "properties": {
+                        "reason_types": {
+                            "type": "array",
+                            "description": "Categories of issues with this function selection. Use one or more of: IRRELEVANT_FUNCTION, BETTER_FUNCTION_EXISTS, MISSING_FUNCTION, REDUNDANT_CALL, OTHER.",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "IRRELEVANT_FUNCTION",
+                                    "BETTER_FUNCTION_EXISTS",
+                                    "MISSING_FUNCTION",
+                                    "REDUNDANT_CALL",
+                                    "OTHER"
+                                ]
+                            }
+                        },
+                        "reasons": {
+                            "type": "string",
+                            "description": "Brief justification for why this function is inappropriate. State which criteria it violates and why."
+                        },
+                        "corrected_function_name": {
+                            "type": "string",
+                            "description": "Name of the corrected function to call. Use \"no_function\" if no function should be called, or \"no_function_redundant\" if the function call is unnecessary."
+                        }
+                    },
+                    "required": []
+                },
+                "actionable_recommendations": {
+                    "type": "array",
+                    "description": "Provide actionable recommendations to help the agent developer prevent function selection issues. Only include recommendations when the function selection was incorrect and the advice can genuinely help. Recommend only items that are important and can significantly improve the agent, such as:\n\n1. TOOL_DOCUMENTATION: Update the tool description to clarify requirements, usage details, connections to other tools (e.g., prerequisites or authentication steps that must occur before this tool call), edge cases, and other relevant information. Suggest the exact fix—addition, deletion, or adjustment.\n\n2. TOOL_USAGE_EXAMPLES: Add concrete usage examples to the tool description to help the agent understand when and how to use this function correctly. Include examples of user queries and, if relevant, prerequisite tool calls.\n\n3. INSTRUCTIONS_ADDITIONS: Add general instructions that can help the agent avoid such mistakes. Only include instructions that are essential and do not repeat existing ones. If an existing instruction (usually in the system prompt) can be improved, recommend updating it. Use this recommendation only if a clear, general instruction will significantly improve the agent in preventing this specific type of mistake.\n\n4. OTHER: If none of the above categories apply or if you have a unique recommendation, use this category. Be specific and actionable in your suggestions.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "recommendation": {
+                                "type": "string",
+                                "description": "A specific, actionable recommendation to improve the agent's function selection process.",
+                                "enum": [
+                                    "TOOL_DOCUMENTATION",
+                                    "TOOL_USAGE_EXAMPLES",
+                                    "INSTRUCTIONS_ADDITIONS",
+                                    "OTHER"
+                                ]
+                            },
+                            "tool_name": {
+                                "type": "string",
+                                "description": "The name of the tool to which the recommendation applies."
+                            },
+                            "details": {
+                                "type": "string",
+                                "description": "A detailed explanation of the recommendation, including what specific changes should be made, how they will improve function selection, and any relevant examples or best practices."
+                            },
+                            "quote": {
+                                "type": "string",
+                                "description": "The specific quote of the additions made to the tool documentation (description in the tool specification), examples (that will be added to the tool documentation), or instructions that will be added to the system prompt of the agent."
+                            }
+                        },
+                        "required": [
+                            "recommendation",
+                            "tool_name",
+                            "details",
+                            "quote"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "explanation",
+                "evidence",
+                "output",
+                "confidence",
+                "correction",
+                "actionable_recommendations"
+            ]
+        },
+        "examples": [
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                    {
+                        "role": "user",
+                        "content": "What time is it in Tokyo?"
+                    }
+                    ],
+                    "tools_inventory": [
+                    {
+                        "name": "translate_text",
+                        "description": "Translate text to a target language",
+                        "parameters": {
+                        "text": "string",
+                        "target": "string"
+                        }
+                    },
+                    {
+                        "name": "get_time",
+                        "description": "Retrieve current local time",
+                        "parameters": {
+                        "timezone": "string"
+                        }
+                    }
+                    ],
+                    "selected_function": "translate_text",
+                    "proposed_tool_call": {
+                    "id": "call_001",
+                    "type": "function",
+                    "function": {
+                        "name": "translate_text",
+                        "arguments": "{ \"text\": \"What time is it in Tokyo?\" }"
+                    }
+                    }
+                },
+                "output": {
+                    "evidence": "User request: \"What time is it in Tokyo?\"\nFunction called: translate_text\nBetter tool available: get_time",
+                    "explanation": "The function translate_text is completely inappropriate for the user's request. The user clearly asked for current time information, which should be handled by get_time.",
+                    "output": 1,
+                    "confidence": 0.95,
+                    "correction": {
+                    "reason_types": [
+                        "IRRELEVANT_FUNCTION",
+                        "BETTER_FUNCTION_EXISTS"
+                    ],
+                    "reasons": "translate_text translates text, not time. get_time directly answers the request.",
+                    "corrected_function_name": "get_time"
+                    },
+                    "actionable_recommendations": [
+                    {
+                        "recommendation": "TOOL_DOCUMENTATION",
+                        "tool_name": "get_time",
+                        "details": "Update the get_time description to make it clear it handles city names as well as timezones.",
+                        "quote": "Retrieve the current local time for a given timezone or city. Use this for all time-related queries."
+                    },
+                    {
+                        "recommendation": "OTHER",
+                        "tool_name": "get_time",
+                        "details": "Consider renaming get_time to get_local_time to make its purpose clearer and reduce confusion with other potential time-related tools.",
+                        "quote": "Rename get_time to get_local_time."
+                    }
+                    ]
+                }
+            },
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "user",
+                            "content": "What is the weather like in Paris?"
+                        }
+                    ],
+                    "tools_inventory": [
+                        {
+                            "name": "get_weather",
+                            "description": "Retrieve current weather conditions for a specified city.",
+                            "parameters": {
+                                "city": "string"
+                            }
+                        },
+                        {
+                            "name": "get_time",
+                            "description": "Retrieve current local time for a specified timezone.",
+                            "parameters": {
+                                "timezone": "string"
+                            }
+                        }
+                    ],
+                    "selected_function": "get_weather",
+                    "proposed_tool_call": {
+                        "id": "call_001",
+                        "type": "function",
+                        "function": {
+                            "name": "get_weather",
+                            "arguments": "{ \"city\": \"London\" }"
+                        }
+                    }
+                },
+                "output": {
+                    "evidence": "User request for weather in London is clear and unambiguous.",
+                    "explanation": "The function selection is appropriate as it directly addresses the user's request for weather information. Note: The mistake in the 'city' parameter is non relevant to the selection of the function.",
+                    "output": 5,
+                    "confidence": 0.95,
+                    "correction": {}
+                }
+            },
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                    {
+                        "role": "user",
+                        "content": "Can you help me understand what 'Bonjour' means?"
+                    }
+                    ],
+                    "tools_inventory": [
+                    {
+                        "name": "detect_language",
+                        "description": "Detect the language of the input text",
+                        "parameters": {
+                        "text": "string"
+                        }
+                    },
+                    {
+                        "name": "translate_text",
+                        "description": "Translate text to a target language. If the source language is not specified or unclear, use detect_language first.",
+                        "parameters": {
+                        "text": "string",
+                        "target": "string"
+                        }
+                    }
+                    ],
+                    "selected_function": "translate_text",
+                    "proposed_tool_call": {
+                    "id": "call_003",
+                    "type": "function",
+                    "function": {
+                        "name": "translate_text",
+                        "arguments": "{ \"text\": \"Bonjour\", \"target\": \"en\" }"
+                    }
+                    }
+                },
+                "output": {
+                    "evidence": "User request: 'Can you help me understand what Bonjour means?'\nFunction called: translate_text\nAmbiguity: user might want translation OR language detection.",
+                    "explanation": "The assistant chose translate_text, which is plausible, but the user might also be asking for language identification. A better approach would be to clarify intent or first run detect_language.",
+                    "output": 2,
+                    "confidence": 0.94,
+                    "correction": {
+                    "reason_types": [
+                        "BETTER_FUNCTION_EXISTS"
+                    ],
+                    "reasons": "The user may want language identification, not just translation.",
+                    "corrected_function_name": "detect_language"
+                    },
+                    "actionable_recommendations": [
+                    {
+                        "recommendation": "TOOL_DOCUMENTATION",
+                        "tool_name": "translate_text",
+                        "details": "Clarify in translate_text description that it requires knowing the target language, and if unknown, detect_language must be called first.",
+                        "quote": "This tool should get the target language, therefore if you don't know the target language, you must use detect_language first."
+                    },
+                    {
+                        "recommendation": "TOOL_USAGE_EXAMPLES",
+                        "tool_name": "translate_text",
+                        "details": "Add example to translate_text usage that demonstrates the need for detect_language.",
+                        "quote": "Example: User: \"What does 'Bonjour' mean?\" -> Tool call: detect_language with text: \"Bonjour\" and then translate_text with text: \"Bonjour\" and target: \"en\"."
+                    },
+                    {
+                        "recommendation": "INSTRUCTIONS_ADDITIONS",
+                        "tool_name": "translate_text",
+                        "details": "Add an instruction to clarify the use of detect_language in ambiguous cases.",
+                        "quote": "When you encounter a phrase in an unknown language, you must first use detect_language to identify the language. In ambiguous user requests, always clarify with the user before proceeding with the task."
+                    }
+                    ]
+                }
+            },
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                    {
+                        "role": "user",
+                        "content": "What is my email address?"
+                    },
+                    {
+                        "role": "assistant",
+                        "tool_call": {
+                            "name": "get_user_email",
+                            "arguments": {
+                                "user_id": "your_user_id"
+                            }
+                        }
+                    },
+                    {
+                        "role": "assistant",
+                        "tool_response": {"error": "User ID not found"}
+                    }
+                    ],
+                    "tools_inventory": [
+                    {
+                        "name": "get_user_id",
+                        "description": "Retrieve the user's unique identifier",
+                        "parameters": {}
+                    },
+                    {
+                        "name": "get_user_email",
+                        "description": "Retrieve the user's email address using their user ID",
+                        "parameters": {
+                        "user_id": "string"
+                        }
+                    }
+                    ],
+                    "selected_function": "get_user_email",
+                    "proposed_tool_call": {
+                        "name": "get_user_email",
+                        "arguments": {
+                            "user_id": "your_user_id"
+                        }
+                    }
+                },
+                "output": {
+                    "evidence": "",
+                    "explanation": "The function get_user_email is inappropriate because the previous attempt to call it failed due to a missing user ID. The correct next step is to call get_user_id to obtain the necessary identifier before retrying get_user_email.",
+                    "output": 1,
+                    "confidence": 0.96,
+                    "correction": {
+                        "reason_types": [
+                            "REDUNDANT_CALL"
+                        ],
+                        "reasons": "This is a redundant call to get_user_email without having the user_id and is a duplication of the previous incorrect call.",
+                        "corrected_function_name": "no_function_redundant"
+                    },
+                    "actionable_recommendations": [
+                        {
+                            "recommendation": "INSTRUCTIONS_ADDITIONS",
+                            "tool_name": "get_user_id",
+                            "details": "Add instructions to always retrieve necessary identifiers before dependent calls, and do not repeat tool calls that were previously unsuccessful - instead, try to obtain the missing information first.",
+                            "quote": "Always retrieve necessary values before dependent calls. Do not repeat tool calls that were previously unsuccessful - instead, try to obtain the missing information first from other tools or by asking the user clarifying questions."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "name": "agentic_constraints_satisfaction",
+        "task_description": "Evaluate whether the proposed tool call satisfies all agentic constraints required for execution.\n\nYour judgment must be based strictly on the provided conversation history and tools inventory. Do not infer or assume any constraints or workflows not explicitly documented.\nIMPORTANT: Evaluate only the agentic constraints satisfaction. Do not assess the function's execution, parameter values correctness, or any other aspect.\n\n---\n\n### 1. Explicit Prerequisites\n- Confirm that required prior actions (e.g., authentication, file upload) have been completed.\n- Accept only direct evidence such as: \"Auth token acquired\" or \"File uploaded successfully.\"\n\n---\n\n### 2. Tool Sequencing\n- Enforce sequencing only when the tool description explicitly states a required order.\n- If no such requirement is documented, assume calls can be executed independently.\n\n---\n\n### 3. Call Independence\n- Calls that are not explicitly marked as dependent may be treated as parallel or order-independent.\n- Do not impose workflow constraints unless specified.\n\n---\n\n### 4. Redundancy\n- Flag the tool call as redundant only if the same function with the same parameters was already executed and no contextual change justifies repetition.\n\n---\n\n### Final Rule\nYour evaluation must be conservative: flag constraint violations only when there is clear, explicit evidence. Do not assume or invent requirements not documented in the conversation or tool descriptions.",
+        "jsonschema": {
+            "title": "agentic_constraints_satisfaction",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "evidence": {
+                    "type": "string",
+                    "description": "Quote SPECIFIC lines from the conversation history or tool specifications that demonstrate whether prerequisites are satisfied or violated. Include exact text showing completions or absences of required steps."
+                },
+                "explanation": {
+                    "type": "string",
+                    "description": "Provide a detailed explanation of whether all prerequisite constraints are satisfied for this tool call. Address explicit dependencies, required sequence, parameter relationships, and potential redundancy. Base your explanation SOLELY on evidence from the provided conversation and tool specifications."
+                },
+                "output": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "threshold_low": 3,
+                    "threshold_high": 5,
+                    "description": "Agentic Constraints Satisfaction Score (1-5):\n\n- 5: Fully compliant with all known constraints\n  The tool call satisfies all documented prerequisites, sequencing rules, and redundancy checks based on explicit evidence in the conversation and tool inventory.\n  Example:\n  User: \"Here is my file.\"\n  Assistant: (File upload confirmed)\n  -> Tool call: summarize_uploaded_file(file_id=\"abc123\")\n\n- 4: Likely compliant, with minor uncertainty\n  All major constraints are satisfied, but some minor dependency or precondition may not be fully confirmed, though it is likely met based on adjacent context.\n  Example:\n  User: \"I've uploaded the file already.\"\n  (No explicit upload confirmation, but no contradiction)\n  -> Tool call: summarize_uploaded_file(file_id=\"abc123\")\n\n- 3: Ambiguous or undetermined\n  It is unclear whether all required conditions or dependencies are met. The call might be valid, but confirmation is lacking.\n  Example:\n  User: \"Can you summarize the document?\"\n  (No evidence of file upload or confirmation)\n  -> Tool call: summarize_uploaded_file(file_id=\"abc123\")\n\n- 2: Likely violates one or more constraints\n  At least one key constraint-such as missing authentication, a required prior step, or improper sequencing-appears unsatisfied.\n  Example:\n  User: \"Please delete my account.\"\n  (No authentication step documented)\n  -> Tool call: delete_account(user_id=\"456\")\n\n- 1: Clearly violates agentic constraints\n  The tool call ignores an explicit precondition, repeats a redundant action, or breaks an ordering rule described in the tool documentation.\n  Example:\n  Assistant already called: upload_file(name=\"report.pdf\")\n  -> Immediately repeats: upload_file(name=\"report.pdf\") without any contextual change"
+                },
+                "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "threshold_low": 0,
+                    "threshold_high": 1,
+                    "description": "Confidence in the accuracy of this assessment (range: 0.0-1.0). Assign higher confidence when evidence is clear, complete, and consistent, and lower confidence when it is ambiguous, incomplete, or conflicting."
+                },
+                "correction": {
+                    "type": "object",
+                    "description": "For satisfied constraints: Provide an empty object {}. For constraint violations: Provide an object with reason_types, reasons, and either prerequisite_tool_calls (for missing prerequisites) or corrected_function (for parameter issues).",
+                    "properties": {
+                        "reason_types": {
+                            "type": "array",
+                            "description": "Types of constraint violations identified",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "MISSING_PREREQUISITE",
+                                    "REDUNDANT_CALL",
+                                    "OTHER"
+                                ]
+                            }
+                        },
+                        "reasons": {
+                            "type": "string",
+                            "description": "Brief explanation of the specific constraint violations"
+                        },
+                        "prerequisite_tool_calls": {
+                            "type": "array",
+                            "description": "List of prerequisite tool calls that must be executed before this one",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Name of the prerequisite function"
+                                    }
+                                },
+                                "required": []
+                            }
+                        },
+                        "corrected_function_name": {
+                            "type": "string",
+                            "description": "Name of the corrected function to call. Use \"no_function\" if no function should be called, or \"no_function_redundant\" if the function call is unnecessary."
+                        }
+                    },
+                    "required": []
+                },
+                "actionable_recommendations": {
+                    "type": "array",
+                    "description": "Provide specific, actionable recommendations for the agent developer to address identified prerequisite or constraint satisfaction issues. Only provide recommendations when problems are detected. Include multiple detailed suggestions where appropriate, such as:\n\n1. PREREQUISITE_TRACKING: Suggest specific mechanisms for tracking and verifying completion of prerequisite steps, such as 'Implement a prerequisite tracking system that maintains a state object {\"authentication\": true, \"language_detected\": false, etc.} and checks this before making dependent calls'.\n\n2. TOOL_DEPENDENCY_DOCUMENTATION: Recommend explicit documentation of tool dependencies in function descriptions, like 'Update the translate_text function description to state: \"REQUIRES: Prior successful call to detect_language for the same text input. Example workflow: 1) detect_language -> 2) translate_text\"'.\n\n3. TOOL_CALL_SEQUENCING: Propose flowchart or decision tree implementations for proper tool sequencing, like 'Create a predefined workflow for file operations that enforces the sequence: 1) check_permissions -> 2) upload_file -> 3) process_file'.\n\n4. SYSTEM_PROMPT_ADDITIONS: Suggest specific instructions in the system prompt to enforce dependencies, such as 'Add to system prompt: \"Always perform language detection before translation. Never skip prerequisite steps, even when the source language seems obvious\"'.\n\n5. TOOL_SPECIFICATION_IMPROVEMENTS: Recommend enhancements to tool descriptions that highlight dependencies, like 'Add a \"Prerequisites\" section to each tool's description that lists required prior successful calls and their parameters'.\n\n6. ERROR_HANDLING_IMPROVEMENTS: Suggest specific error recovery procedures, such as 'If authentication fails, implement an automatic retry with explicit user notification: \"I'm having trouble authenticating. Let me try again with [authentication method]\"'.\n\n7. REDUNDANCY_DETECTION: Recommend logic for preventing redundant calls, like 'Implement a result caching mechanism that stores outputs from previous calls and checks if an identical call has already been made in the current session'.\n\n8. CONTEXTUAL_AWARENESS: Suggest improvements for maintaining awareness of conversation state, such as 'Create a context tracker that monitors which entities (files, queries, data objects) have been successfully processed and are available for subsequent operations'.\n\n9. MULTI_STEP_OPERATION_DOCUMENTATION: Recommend clearer documentation for operations requiring multiple steps, like 'Create a developer guide section on \"Chained Operations\" that details common sequences of tool calls with sample code and conversation examples'.\n\n10. AGENT_ARCHITECTURE_IMPROVEMENTS: Suggest architectural changes to better support dependencies, such as 'Implement a prerequisite validation middleware layer that intercepts all tool calls and verifies that required prior calls exist in the conversation history before proceeding'.\n\n11. OTHER: If none of the above categories fit or if you have a unique recommendation, use this category. Be specific and actionable in your suggestions.\n\nEnsure recommendations are thorough, specific, and directly address the root cause of the constraint satisfaction issue.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "recommendation": {
+                                "type": "string",
+                                "description": "A specific, actionable recommendation to improve the agent's ability to satisfy agentic constraints in future tool calls.",
+                                "enum": [
+                                    "PREREQUISITE_TRACKING",
+                                    "TOOL_DEPENDENCY_DOCUMENTATION",
+                                    "TOOL_CALL_SEQUENCING",
+                                    "SYSTEM_PROMPT_ADDITIONS",
+                                    "TOOL_SPECIFICATION_IMPROVEMENTS",
+                                    "ERROR_HANDLING_IMPROVEMENTS",
+                                    "REDUNDANCY_DETECTION",
+                                    "CONTEXTUAL_AWARENESS",
+                                    "MULTI_STEP_OPERATION_DOCUMENTATION",
+                                    "AGENT_ARCHITECTURE_IMPROVEMENTS",
+                                    "OTHER"
+                                ]
+                            },
+                            "tool_name": {
+                                "type": "string",
+                                "description": "The name of the tool to which the recommendation applies."
+                            },
+                            "details": {
+                                "type": "string",
+                                "description": "Detailed explanation of the recommendation, including what specific changes should be made, how they will improve the agent's ability to satisfy agentic constraints, and any relevant examples or best practices."
+                            },
+                            "quote": {
+                                "type": "string",
+                                "description": "The specific quote of the additions made to the documentation, examples, or instructions."
+                            }
+                        },
+                        "required": [
+                            "recommendation",
+                            "tool_name",
+                            "details",
+                            "quote"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "explanation",
+                "evidence",
+                "output",
+                "confidence",
+                "correction",
+                "actionable_recommendations"
+            ]
+        },
+        "examples": [
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "assistant",
+                            "content": "Auth token acquired for user 42."
+                        }
+                    ],
+                    "tools_inventory": [
+                        {
+                            "name": "get_order_history",
+                            "description": "Retrieve past orders",
+                            "parameters": {
+                                "user_id": "integer"
+                            }
+                        }
+                    ],
+                    "selected_function": "get_order_history",
+                    "proposed_tool_call": {
+                        "id": "call_002",
+                        "type": "function",
+                        "function": {
+                            "name": "get_order_history",
+                            "arguments": "{ \"user_id\": 42 }"
+                        }
+                    }
+                },
+                "output": {
+                    "evidence": "Assistant message explicitly states: \"Auth token acquired for user 42.\" The tool specification for get_order_history does not mention any additional prerequisites beyond authentication.",
+                    "explanation": "This tool call satisfies all agentic constraints. The prerequisite of authentication is explicitly confirmed in the conversation history with \"Auth token acquired for user 42.\" No additional sequencing requirements or redundant calls are indicated.",
+                    "output": 5,
+                    "confidence": 0.95,
+                    "correction": {},
+                    "actionable_recommendations": []
+                }
+            },
+            {
+                "user_kwargs": {
+                    "conversation_context": [
+                        {
+                            "role": "user",
+                            "content": "Translate 'Hola' to English."
+                        }
+                    ],
+                    "tools_inventory": [
+                        {
+                            "name": "translate_text",
+                            "description": "Translate text to target language. REQUIRES: Prior successful call to detect_language for the input text.",
+                            "parameters": {
+                                "text": "string",
+                                "target": "string"
+                            }
+                        },
+                        {
+                            "name": "detect_language",
+                            "description": "Detect the language of the input text",
+                            "parameters": {
+                                "text": "string"
+                            }
+                        }
+                    ],
+                    "selected_function": "translate_text",
+                    "proposed_tool_call": {
+                        "id": "call_002",
+                        "type": "function",
+                        "function": {
+                            "name": "translate_text",
+                            "arguments": "{ \"text\": \"Bonjour\", \"target\": \"en\" }"
+                        }
+                    }
+                },
+                "output": {
+                    "evidence": "Tool description explicitly states: \"translate_text: Translate text to target language. REQUIRES: Prior successful call to detect_language for the input text.\" The conversation history contains no detect_language call or language detection result.",
+                    "explanation": "This tool call violates an agentic constraint clearly stated in the tool description. The translate_text function explicitly requires a prior successful call to detect_language for the input text, as stated in its description. The conversation history shows no evidence of any detect_language call being made before this translate_text call.",
+                    "output": 1,
+                    "confidence": 0.95,
+                    "correction": {
+                        "reason_types": [
+                            "MISSING_PREREQUISITE"
+                        ],
+                        "reasons": "Missing required prerequisite detect_language call as explicitly stated in translate_text description",
+                        "prerequisite_tool_calls": [
+                            {
+                                "name": "detect_language"
+                            }
+                        ]
+                    },
+                    "actionable_recommendations": [
+                        {
+                            "recommendation": "PREREQUISITE_TRACKING",
+                            "tool_name": "translate_text",
+                            "details": "Implement a prerequisite tracking system that maintains a state object {\"language_detected\": false} and checks this before making dependent calls like translate_text.",
+                            "quote": "Implement a prerequisite tracking system that maintains a state object {\"language_detected\": false} and checks this before making dependent calls."
+                        },
+                        {
+                            "recommendation": "TOOL_DEPENDENCY_DOCUMENTATION",
+                            "tool_name": "translate_text",
+                            "details": "Update the translate_text function description to state: \"REQUIRES: Prior successful call to detect_language for the same text input. Example workflow: 1) detect_language -> 2) translate_text\".",
+                            "quote": "Update the translate_text function description to state: \"REQUIRES: Prior successful call to detect_language for the same text input. Example workflow: 1) detect_language -> 2) translate_text\"."
+                        },
+                        {
+                            "recommendation": "SYSTEM_PROMPT_ADDITIONS",
+                            "tool_name": "translate_text",
+                            "details": "Add to system prompt an explicit requirement for language detection before translation.",
+                            "quote": "Add to system prompt: \"Always perform language detection before translation. Never skip prerequisite steps, even when the source language seems obvious.\""
+                        },
+                        {
+                            "recommendation": "TOOL_CALL_SEQUENCING",
+                            "tool_name": "translate_text",
+                            "details": "Propose flowchart or decision tree implementations for proper tool sequencing, like 'Create a predefined workflow for translation that enforces the sequence: 1) detect_language -> 2) translate_text'.",
+                            "quote": "Propose flowchart or decision tree implementations for proper tool sequencing, like 'Create a predefined workflow for translation that enforces the sequence: 1) detect_language -> 2) translate_text'."
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+]
