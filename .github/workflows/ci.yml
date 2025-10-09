@@ -68,5 +68,7 @@ jobs:
         run: uv sync --frozen --all-extras
 
       - name: Run tests
+        env:
+          WX_API_KEY: ${{ secrets.WX_API_KEY }}
         run: |
           uv run pytest -v
