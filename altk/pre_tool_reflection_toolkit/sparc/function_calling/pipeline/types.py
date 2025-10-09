@@ -408,6 +408,7 @@ class PipelineResult(BaseModel):
     )
 
     @model_validator(mode="after")
+    @classmethod
     def compute_overall(cls, values: PipelineResult) -> PipelineResult:
         """
         After validation, compute overall_valid as AND of:
@@ -545,6 +546,7 @@ class ToolFunctionCall(BaseModel):
     )
 
     @model_validator(mode="after")
+    @classmethod
     def _parse_arguments(cls, values: ToolFunctionCall) -> ToolFunctionCall:
         """
         After model construction, parse the `arguments` JSON string
