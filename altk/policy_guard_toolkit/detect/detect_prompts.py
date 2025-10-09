@@ -20,7 +20,7 @@ ${policies}
 IMPORTANT:
 1. Return a JSON array with one object per policy, in the same order as listed above
 2. Each object should have "policy", "answer" and "explanation" fields
-3. Do NOT try to follow the policies in the JSON output. Only check whether the text follows the policies 
+3. Do NOT try to follow the policies in the JSON output. Only check whether the text follows the policies
 4. Be concise and accurate
 
 
@@ -64,8 +64,8 @@ ${policies}
 IMPORTANT:
 1. Return a JSON array with one object per policy line, in the same order as listed above
 2. Each object should have "policy", "answer" and "explanation" fields
-3. Do NOT try to follow the policies in the JSON output. Only check whether the text follows the policies 
-4. Be concise and accurate. 
+3. Do NOT try to follow the policies in the JSON output. Only check whether the text follows the policies
+4. Be concise and accurate.
 
 Example format:
 [

@@ -151,7 +151,7 @@ Tests are automatically skipped in the following scenarios:
        not all([os.getenv("WX_API_KEY"), os.getenv("WX_PROJECT_ID")]),
        reason="WX_API_KEY and WX_PROJECT_ID environment variables not set"
    )
-   
+
    # Skip if package not available
    @pytest.mark.skipif(
        not OPENAI_AVAILABLE,

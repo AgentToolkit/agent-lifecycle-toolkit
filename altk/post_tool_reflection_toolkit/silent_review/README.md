@@ -14,7 +14,7 @@ Best suited for tool responses that are verbose and/or based on tabular response
 
 
 ## Quick Start
-The below example should give you an idea of how to plug in this component into your agent pipeline: 
+The below example should give you an idea of how to plug in this component into your agent pipeline:
 ```python
 from altk.post_tool_reflection_toolkit.silent_review.silent_review import SilentReviewForJSONDataComponent
 from altk.post_tool_reflection_toolkit.core.toolkit import SilentReviewRunInput
@@ -56,14 +56,14 @@ print(result.outcome.value)
 
 
 ## Interface
-Expected input: 
-- user query, 
-- tool response, 
-- tool specification, 
-- tool input, 
+Expected input:
+- user query,
+- tool response,
+- tool specification,
+- tool input,
 - tool type
 
-Expected output: 
+Expected output:
 - Accomplished | Partially Accomplished | Not Accomplished
 
 

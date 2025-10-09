@@ -1,5 +1,5 @@
 # Refraction - Syntactic Validation of Tool Calls
-Refraction is a low-cost (no LLMs!), low-latency, domain-agnostic, data-agnostic, model-agnostic approach towards validation and repair for a sequence of tool calls, based on classical AI planning techniques. We have seen as much as 48% error correction in certain scenarios.        
+Refraction is a low-cost (no LLMs!), low-latency, domain-agnostic, data-agnostic, model-agnostic approach towards validation and repair for a sequence of tool calls, based on classical AI planning techniques. We have seen as much as 48% error correction in certain scenarios.
 
 ## Table of Contents
 - [When it is recommended to use this component](#when-it-is-recommended-to-use-this-component)
@@ -20,7 +20,7 @@ You can use refraction API to fix individual tool calls and tool call sequences,
 ```python
 import os
 from altk.pre_tool_reflection_toolkit.refraction.refraction import RefractionComponent
-from altk.pre_tool_reflection_toolkit.core.types import RefractionBuildInput, RefractionRunInput 
+from altk.pre_tool_reflection_toolkit.core.types import RefractionBuildInput, RefractionRunInput
 from altk.pre_tool_reflection_toolkit.core.config import RefractionConfig, RefractionMode
 from altk.toolkit_core.core.toolkit import AgentPhase
 
@@ -48,12 +48,12 @@ tool_specs = [{
 }]
 tool_call = {
     "id": "1",
-    "type": "function", 
+    "type": "function",
     "function": {
         "name": "send_email",
         "arguments": {
-            "to": ["team@company.com"], 
-            "subject": "Meeting Update", 
+            "to": ["team@company.com"],
+            "subject": "Meeting Update",
             "body": "Meeting scheduled for tomorrow."
         }
     }

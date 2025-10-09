@@ -120,7 +120,7 @@ messages = [
 # Tool call to validate (OpenAI format)
 tool_call = {
     "id": "1",
-    "type": "function", 
+    "type": "function",
     "function": {
         "name": "send_email",
         "arguments": '{"to": ["teams@company.com"], "subject": "Meeting Update", "body": "Meeting scheduled for tomorrow."}'
@@ -201,7 +201,7 @@ tool_call = {
     "id": "call_123",
     "type": "function",
     "function": {
-        "name": "get_weather", 
+        "name": "get_weather",
         "arguments": '{"location": "New York, NY", "units": "fahrenheit"}'
     }
 }
@@ -522,7 +522,7 @@ Validates tool call structure without LLM calls:
 # Missing required parameter
 {"to": ["user@example.com"]}  # Missing "subject" and "body"
 
-# Type mismatch  
+# Type mismatch
 {"participants": "user@example.com"}  # Should be array, not string
 
 # Constraint violation
@@ -540,7 +540,7 @@ User: "What's the weather?"
 Tool Call: book_flight(origin="JFK", destination="LAX")  # Wrong function
 
 # Parameter grounding issue
-User: "Call my mom at +1234567890"  
+User: "Call my mom at +1234567890"
 Tool Call: send_sms(phone_number="+9876543210")  # Different number
 
 # Parameter hallucination
@@ -573,7 +573,7 @@ User: "Set thermostat to 75 degrees"  # Assumes Fahrenheit in US context
 Tool Spec: {"temperature": {"description": "Temperature in Celsius"}}
 Transformation: 75°F → 23.9°C
 
-# Distance conversion  
+# Distance conversion
 User: "Calculate travel time for 50 miles at 60 mph"
 Tool Spec: {"distance_km": ..., "speed_kmh": ...}
 Transformation: 50 miles → 80.47 km, 60 mph → 96.56 km/h
@@ -594,7 +594,7 @@ def run_static_validation():
         track=Track.SYNTAX,
         execution_mode=SPARCExecutionMode.ASYNC,
     )
-    
+
     # Example: Missing required parameters
     tool_call = {
         "id": "1",
@@ -605,7 +605,7 @@ def run_static_validation():
             # Missing required "subject" and "body"
         }
     }
-    
+
     # Will detect: Missing required parameters "subject", "body"
 ```
 
@@ -624,13 +624,13 @@ def run_semantic_validation():
         execution_mode=SPARCExecutionMode.ASYNC,
         model_path="meta-llama/llama-4-maverick-17b-128e-instruct-fp8",
     )
-    
+
     # Example: Function selection misalignment
     conversation = [
         HumanMessage("What's the weather in New York?"),
         AIMessage("I'll check the weather for you.")
     ]
-    
+
     tool_call = {
         "id": "1",
         "type": "function",
@@ -639,7 +639,7 @@ def run_semantic_validation():
             "arguments": '{"origin": "JFK", "destination": "LAX"}'
         }
     }
-    
+
     # Will detect: Function intent misalignment
 ```
 
@@ -657,13 +657,13 @@ def run_transformation_validation():
         track=Track.TRANSFORMATIONS_ONLY,
         execution_mode=SPARCExecutionMode.ASYNC,
     )
-    
+
     # Example: Temperature unit conversion
     conversation = [
         HumanMessage("Set thermostat to 75 degrees Fahrenheit"),
         AIMessage("I'll set the thermostat.")
     ]
-    
+
     tool_call = {
         "id": "1",
         "type": "function",
@@ -673,7 +673,7 @@ def run_transformation_validation():
             # Should be ~24°C, not 75
         }
     }
-    
+
     # Will detect: Temperature conversion needed (75°F → 23.9°C)
     # Will suggest: {"temperature": 23.9}
 ```
@@ -690,7 +690,7 @@ class SPARCReflectionConfig(BaseModel):
     model_path: str = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
     execution_mode: SPARCExecutionMode = SPARCExecutionMode.SYNC
     general_metrics: Optional[List[str]] = None
-    function_metrics: Optional[List[str]] = None  
+    function_metrics: Optional[List[str]] = None
     parameter_metrics: Optional[List[str]] = None
     transform_enabled: bool = False
     verbose_logging: bool = False
@@ -706,7 +706,7 @@ Result of the reflection analysis.
 class SPARCReflectionResult(BaseModel):
     decision: SPARCReflectionDecision  # APPROVE, REJECT, ERROR
     issues: List[SPARCReflectionIssue] = []
-    
+
     @property
     def has_issues(self) -> bool:
         return len(self.issues) > 0
@@ -753,7 +753,7 @@ if sparc._initialization_error:
 result = sparc.process(run_input, phase=AgentPhase.RUNTIME)
 if result.output.reflection_result.decision == SPARCReflectionDecision.ERROR:
     # Handle error case
-    error_issues = [issue for issue in result.output.reflection_result.issues 
+    error_issues = [issue for issue in result.output.reflection_result.issues
                    if issue.issue_type == SPARCReflectionIssueType.ERROR]
 ```
 

@@ -18,13 +18,13 @@ The calculator supports the following operations:
 
 ## Operation Constraints
 
-- **Division by Zero is Not Allowed**  
-  The calculator **must not** allow division by zero.  
-  If a user attempts to divide by zero, the operation must be rejected and an appropriate error message should be shown  
+- **Division by Zero is Not Allowed**
+  The calculator **must not** allow division by zero.
+  If a user attempts to divide by zero, the operation must be rejected and an appropriate error message should be shown
   (e.g., `"Error: Division by zero is not allowed."`).
 
-- **Summing Numbers Whose Product is 365 is Not Allowed**  
-  The calculator **must not** allow addition of two or more numbers if their multiplication result equals `365`.  
-  For example, adding `5 + 73`  should be disallowed, because `5 * 73 = 365` .  
-  In such cases, the operation must be rejected with an error like:  
+- **Summing Numbers Whose Product is 365 is Not Allowed**
+  The calculator **must not** allow addition of two or more numbers if their multiplication result equals `365`.
+  For example, adding `5 + 73`  should be disallowed, because `5 * 73 = 365` .
+  In such cases, the operation must be rejected with an error like:
   `"Error: Addition of numbers whose product equals 365 is not allowed."`

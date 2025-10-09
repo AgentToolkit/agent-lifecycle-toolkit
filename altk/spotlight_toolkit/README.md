@@ -6,7 +6,7 @@
 </a>
 </p>
 
-SpotLight enables users to emphasize important spans within their prompt and steers the LLMs attention towards those spans. Expect to see between 5 and 40 point improvement on accuracy. 
+SpotLight enables users to emphasize important spans within their prompt and steers the LLMs attention towards those spans. Expect to see between 5 and 40 point improvement on accuracy.
 
 
 ## Table of Contents

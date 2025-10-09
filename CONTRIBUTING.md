@@ -26,7 +26,7 @@ We use [uv](https://docs.astral.sh/uv/) as package and project manager. To insta
 
 #### Environment variables
 
-We use `.env` to manage expected environment variables. We have a template in `.env.example` 
+We use `.env` to manage expected environment variables. We have a template in `.env.example`
 
 `cp .env.example .env`
 
@@ -53,9 +53,9 @@ The repository is divided into toolkits that consist of one or more components. 
 
 #### Adding components to a toolkit
 
-1. Be sure whatever dependencies are reflected in the group-level `pyproject.toml` not the top-level `pyproject.toml`. 
+1. Be sure whatever dependencies are reflected in the group-level `pyproject.toml` not the top-level `pyproject.toml`.
    1. Also, be careful about dependencies in other toolkits, uv may attempt to resolve to a higher version due to another toolkit, please attempt to resolve but feel free to contact a maintainer for assistance.
-2. Code should be placed in the module directory, with each component in its own directory. 
+2. Code should be placed in the module directory, with each component in its own directory.
 3. Each component should also have its own `README.md` to describe its usage
 4. The LLM provider is in `toolkit-core/llm`, please use LLMClient to call LLMs. Refer to its README for more information.
 5. A component should have a class that extends the base class defined in `core` along with:

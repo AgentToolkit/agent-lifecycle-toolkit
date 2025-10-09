@@ -251,9 +251,9 @@ class TestLiteLLMWatsonXStructuredOutput:
     def test_document_summary_validation(self, litellm_watsonx_structured_client):
         """Test document summary validation"""
         doc_text = """
-        Machine learning is a subset of artificial intelligence that focuses on 
-        algorithms that can learn from data. It has applications in various fields 
-        including healthcare, finance, and technology. The field is rapidly evolving 
+        Machine learning is a subset of artificial intelligence that focuses on
+        algorithms that can learn from data. It has applications in various fields
+        including healthcare, finance, and technology. The field is rapidly evolving
         with new techniques and applications being developed constantly.
         """
 

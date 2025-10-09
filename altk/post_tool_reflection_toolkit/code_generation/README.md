@@ -1,5 +1,5 @@
-# Code Generation for Tool Response (JSON) Processing  
-If the agent calls tools which generate complex JSON objects as responses, this component will use LLM-based Python code generation to process those responses and extract relevant information from them. See up to 20% improvement in accuracy on some queries even when using frontier models like GPT-4o.  
+# Code Generation for Tool Response (JSON) Processing
+If the agent calls tools which generate complex JSON objects as responses, this component will use LLM-based Python code generation to process those responses and extract relevant information from them. See up to 20% improvement in accuracy on some queries even when using frontier models like GPT-4o.
 
 ## Table of Contents
 - [When it is recommended to Use This Component](#when-it-is-recommended-to-use-this-component)
@@ -51,7 +51,7 @@ from altk.post_tool_reflection_toolkit.code_generation.code_generation import Co
 
 component = CodeGenerationComponent(
     model_id="meta-llama/llama-3-405b-instruct",
-    provider="watsonx", # can be one of: watsonx, huggingface, openai 
+    provider="watsonx", # can be one of: watsonx, huggingface, openai
     model_kwargs={
         "temperature": 0.5,
         "max_tokens": 1000,

@@ -8,9 +8,9 @@ on:
 
 jobs:
   check-lockfile:
-    strategy: 
+    strategy:
       fail-fast: false
-      matrix: 
+      matrix:
         python-version: ['3.11']
     runs-on: ubuntu-latest
     steps:
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      
+
       - uses: ./.github/actions/setup-python-uv
 
       - name: Install Python Dependencies
@@ -69,4 +69,4 @@ jobs:
 
       - name: Run tests
         run: |
-          uv run pytest -v 
+          uv run pytest -v

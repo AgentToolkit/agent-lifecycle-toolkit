@@ -5,7 +5,7 @@ You were unsuccessful in answering the question either because you guessed the w
 You will refer to the document {rag_man_result} for the failing command to find the solution for the issue.
 You will refer to the document {rag_result} to find the solution for the issue.
 The original Question presented by the user was {query}.
-If you think you can solve the issue, first give me a command to run that helps me resolve this issue. Preface that command with "Command: " 
+If you think you can solve the issue, first give me a command to run that helps me resolve this issue. Preface that command with "Command: "
 On the next line, clearly and concisely explain your reasoning in bulleted form. Use complete sentences.
 You also need to consider that a failure can be due to typos in the Question presented by the user. In those cases, suggest possible corrections to the user based on the previous context and observation. Add it in your response. You may leverage kubeclt commands that allow you to list all namespaces first.
 You previously used the following failing command: {cmd}

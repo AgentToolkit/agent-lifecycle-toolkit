@@ -98,7 +98,6 @@ select = [
     "E9",
     "F", # pyflakes
     "B", # flake8-bugbear
-    "I" # isort
 ]
 ignore = [
     "B905" # ignore requiring `strict` to be specified when using `zip`

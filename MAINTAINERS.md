@@ -8,5 +8,3 @@ Maintainers are listed in alphabetical order by last name.
 
 | Name | GitHub Username |
 | ---- | ---- |
-
-

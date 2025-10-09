@@ -29,7 +29,7 @@ from altk.post_tool_reflection_toolkit.rag_repair.rag_repair import RAGRepairCom
 from altk.post_tool_reflection_toolkit.rag_repair.rag_repair_config import RAGRepairComponentConfig
 from altk.post_tool_reflection_toolkit.core.toolkit import RAGRepairRunInput, RAGRepairBuildInput
 
-# First, the RAG is set up in the BUILD phase 
+# First, the RAG is set up in the BUILD phase
 local_docs_path = "/path/to/docs"
 repairer = RAGRepairComponent(docs_path=local_docs_path)
 repairer.process(RAGRepairBuildInput(), AgentPhase.BUILDTIME)
@@ -73,8 +73,8 @@ The output is a `RAGRepairRunOutput` object with the following three properties:
 
 1. `new_cmd`: str, the repaired tool call.
 
-2. `retrieved_docs`: str, a block of text aggregating all the retrieved documents used. 
-   
+2. `retrieved_docs`: str, a block of text aggregating all the retrieved documents used.
+
 3. `result`: str, the result of re-calling the original tool with the new command. Will only be filled if `original_function` is given.
 
 ## Configuration
@@ -111,7 +111,7 @@ Please see `RAGRepairComponentConfig` for the full list of configuration options
 
 ## Performance Considerations
 
-This component will need to ingest documents and has not been tested on very large documents. Doing so may incur performance costs during the vector store build process. 
+This component will need to ingest documents and has not been tested on very large documents. Doing so may incur performance costs during the vector store build process.
 
 This component has mostly been tested on Kubernetes commands/documents. Testing for other domains such as general web APIs or software engineering is future work.
 

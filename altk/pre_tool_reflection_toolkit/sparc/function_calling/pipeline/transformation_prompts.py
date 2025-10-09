@@ -237,7 +237,7 @@ Examples (multi-parameter):
           "user_value":"December 1st, 2024",
           "spec_units_or_format":"yyyy-mm-dd",
           "transformation_summary":"Convert 'month day, year' format to 'yyyy-mm-dd' - e.g., 'December 1st, 2024' converted to 'yyyy-mm-dd' format."
-          
+
         }},
         "limit": {{
           "user_units_or_format":"megabyte",
@@ -266,19 +266,19 @@ Please return exactly one JSON object matching the schema defined in the system 
 GENERATE_CODE_SYSTEM: str = """\
 You are an expert Python engineer. Generate a self-contained Python module that converts between arbitrary units or formats. Your code must define exactly two functions:
 
-1. transformation_code(input_value: str) -> <transformed_type>  
-   - **Purpose**: Convert a string in OLD_UNITS into its equivalent in TRANSFORMED_UNITS.  
-   - **Behavior**:  
-     - Parse the numeric or textual content from `input_value` (e.g. “10 ms”, “December 1st, 2011”).  
-     - Attach the OLD_UNITS and perform a conversion to TRANSFORMED_UNITS using standard Python libraries (e.g. `pint`, `datetime`/`dateutil`, or built-ins).  
-     - Return the result as the specified `<transformed_type>` (e.g. `int`, `float`, `str`, `list[float]`, etc.).  
+1. transformation_code(input_value: str) -> <transformed_type>
+   - **Purpose**: Convert a string in OLD_UNITS into its equivalent in TRANSFORMED_UNITS.
+   - **Behavior**:
+     - Parse the numeric or textual content from `input_value` (e.g. “10 ms”, “December 1st, 2011”).
+     - Attach the OLD_UNITS and perform a conversion to TRANSFORMED_UNITS using standard Python libraries (e.g. `pint`, `datetime`/`dateutil`, or built-ins).
+     - Return the result as the specified `<transformed_type>` (e.g. `int`, `float`, `str`, `list[float]`, etc.).
    - **Error Handling**: If parsing or conversion is unsupported, raise a `ValueError` with a clear message.
 
-2. convert_example_str_transformed_to_transformed_type(transformed_value: str) -> <transformed_type>  
-   - **Purpose**: Parse a raw string in the example transformed format into the same `<transformed_type>`.  
-   - **Behavior**:  
-     - Strip any non-numeric or formatting characters as needed.  
-     - Return the parsed value.  
+2. convert_example_str_transformed_to_transformed_type(transformed_value: str) -> <transformed_type>
+   - **Purpose**: Parse a raw string in the example transformed format into the same `<transformed_type>`.
+   - **Behavior**:
+     - Strip any non-numeric or formatting characters as needed.
+     - Return the parsed value.
    - **Error Handling**: If parsing fails, raise a `ValueError`.
 
 You will be provided with the following information:
@@ -454,7 +454,7 @@ RESPONSE:
 transformation_eval_example4 = """
 ### Unsupported Transformation Example:
 
-TRANSFORMATION SUMMARY: 
+TRANSFORMATION SUMMARY:
 OLD UNITS: unit1
 EXAMPLE FORMAT OF OLD VALUE: ABC
 TRANSFORMED UNITS: unit2

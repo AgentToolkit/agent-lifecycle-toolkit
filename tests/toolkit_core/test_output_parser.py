@@ -307,11 +307,11 @@ class TestValidatingLLMClient:
         client = MockValidatingLLMClient()
 
         raw = """
-        
+
         ```json
         {"name": "John"}
         ```
-        
+
         """
 
         result = client._clean_raw(raw)

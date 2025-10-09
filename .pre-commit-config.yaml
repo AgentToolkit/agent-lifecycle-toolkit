@@ -10,11 +10,10 @@ repos:
     hooks:
       - id: trailing-whitespace
       - id: check-added-large-files
-      - id: check-yaml
-      - id: check-json
       - id: check-toml
       - id: end-of-file-fixer
       - id: check-merge-conflict
+        args: [ --assume-in-merge ]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.

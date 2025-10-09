@@ -38,7 +38,7 @@ print(response)
 
 ### 2. Using environment variables and the `auto_from_env` provider
 Set the following environment variables:
-- `LLM_PROVIDER=openai.sync` 
+- `LLM_PROVIDER=openai.sync`
 - `MODEL_NAME=o4-mini`
 - `OPENAI_API_KEY=*** openai api key ***`
 
@@ -141,7 +141,7 @@ gen_args = GenerationArgs(
 
 # Use with any provider
 response = client.generate(
-    "Explain quantum computing", 
+    "Explain quantum computing",
     generation_args=gen_args
 )
 ```
@@ -192,7 +192,7 @@ watsonx_client = get_llm("watsonx")(
     project_id="..."
 )
 watsonx_response = watsonx_client.generate(
-    "What is AI?", 
+    "What is AI?",
     generation_args=gen_args
 )
 
@@ -201,14 +201,14 @@ litellm_client = get_llm("litellm")(
     model_name="meta-llama/llama-3-3-70b-instruct"
 )
 litellm_response = litellm_client.generate(
-    "What is AI?", 
+    "What is AI?",
     generation_args=gen_args
 )
 ```
 
 ---
 
-## Structured output validation 
+## Structured output validation
 
 ```python
 # Use structured output
@@ -237,24 +237,24 @@ print(f"Name: {person.name}, Age: {person.age}")
 
 ### `base.py`
 
-- **`LLMClient`**  
-  The abstract foundation for any provider.  
-  - Manages a registry of implementations (`register_llm`, `get_llm`).  
-  - Handles initialization of the underlying SDK client.  
-  - Exposes four main methods:  
-    - `generate` (sync single)  
-    - `generate_async` (async single)  
-  - Emits observability hooks around every call (`before_generate`, `after_generate`, `error`).  
+- **`LLMClient`**
+  The abstract foundation for any provider.
+  - Manages a registry of implementations (`register_llm`, `get_llm`).
+  - Handles initialization of the underlying SDK client.
+  - Exposes four main methods:
+    - `generate` (sync single)
+    - `generate_async` (async single)
+  - Emits observability hooks around every call (`before_generate`, `after_generate`, `error`).
   - Requires subclasses to register their own `MethodConfig` entries (mapping "chat", "text", etc., to real SDK methods) and to implement a `_parse_llm_response(raw)` method to extract plain-text from the provider's raw response.
 
 ### `output_parser.py`
 
-- **`ValidatingLLMClient`**  
-  An extension of `LLMClient` that adds:  
-  1. **Output enforcement** against a schema (JSON Schema dict, Pydantic model, or basic Python type).  
-  2. Automatic **prompt injection** of system-level instructions ("Only output JSON matching this schema").  
-  3. **Cleaning** of raw responses (stripping Markdown, extracting fenced JSON).  
-  4. **Retries** for malformed outputs—only the bad items are retried.  
+- **`ValidatingLLMClient`**
+  An extension of `LLMClient` that adds:
+  1. **Output enforcement** against a schema (JSON Schema dict, Pydantic model, or basic Python type).
+  2. Automatic **prompt injection** of system-level instructions ("Only output JSON matching this schema").
+  3. **Cleaning** of raw responses (stripping Markdown, extracting fenced JSON).
+  4. **Retries** for malformed outputs—only the bad items are retried.
   5. Methods mirror `LLMClient` but return fully-parsed Python objects (or Pydantic instances) instead of raw text.
 
 ---
@@ -263,22 +263,22 @@ print(f"Name: {person.name}, Age: {person.age}")
 
 All provider adapters live under `providers/`. They subclass either `LLMClient` (plain) or `ValidatingLLMClient` (with output validation), and register themselves with a name you can pass to `get_llm(...)`.
 
-### OpenAI Adapter  
-**Path:** `providers/openai/openai.py`  
-**Registered names:**  
+### OpenAI Adapter
+**Path:** `providers/openai/openai.py`
+**Registered names:**
 - `openai.sync` -> synchronous client
 - `openai.async` -> asynchronous client
 - `openai.sync.output_val` -> synchronous client with output validation
 - `openai.async.output_val` -> asynchronous client with output validation
 
-**Features:**  
-- Wraps `openai.OpenAI` SDK.  
-- Supports text & chat, sync & async.  
+**Features:**
+- Wraps `openai.OpenAI` SDK.
+- Supports text & chat, sync & async.
 - Tool calling support with structured responses.
 - Streaming support.
 - **Parameter mapping**: Direct 1:1 mapping for most parameters, with `decoding_method` mapped to temperature control
 
-**Environment:**  
+**Environment:**
 Set `OPENAI_API_KEY` in your environment, or pass it to the constructor.
 
 **Example:**
@@ -313,17 +313,17 @@ person = client.generate(
 )
 ```
 
-### Azure OpenAI Adapter  
-**Path:** `providers/openai/openai.py`  
-**Registered names:**  
+### Azure OpenAI Adapter
+**Path:** `providers/openai/openai.py`
+**Registered names:**
 - `azure_openai.sync` -> synchronous client
 - `azure_openai.async` -> asynchronous client
 - `azure_openai.sync.output_val` -> synchronous client with output validation
 - `azure_openai.async.output_val` -> asynchronous client with output validation
 
-**Features:**  
-- Wraps `openai.AzureOpenAI` SDK.  
-- Supports Azure-specific configurations (endpoint, API version, deployment).  
+**Features:**
+- Wraps `openai.AzureOpenAI` SDK.
+- Supports Azure-specific configurations (endpoint, API version, deployment).
 - Tool calling support with structured responses.
 - Streaming support.
 - **Parameter mapping**: Same as OpenAI with direct 1:1 mapping and `decoding_method` support
@@ -348,44 +348,44 @@ gen_args = GenerationArgs(
 response = client.generate("Hello, world!", generation_args=gen_args, model="gpt-4o-2024-08-06")
 ```
 
-### LiteLLM Adapter  
-**Path:** `providers/litellm/litellm.py`  
-**Registered names:**  
-- `litellm` -> plain text adapter  
+### LiteLLM Adapter
+**Path:** `providers/litellm/litellm.py`
+**Registered names:**
+- `litellm` -> plain text adapter
 - `litellm.output_val` -> validating adapter
 
-**Features:**  
-- Wraps any model served by the `litellm` SDK.  
-- Supports chat, text APIs, both sync & async.  
-- The **plain** adapter returns raw strings; the **output-val** adapter enforces JSON schemas, Pydantic models, or basic types with retries.  
+**Features:**
+- Wraps any model served by the `litellm` SDK.
+- Supports chat, text APIs, both sync & async.
+- The **plain** adapter returns raw strings; the **output-val** adapter enforces JSON schemas, Pydantic models, or basic types with retries.
 - Streaming support.
 
-**Parameter Mapping:**  
+**Parameter Mapping:**
 LiteLLM uses custom parameter transforms for some GenerationArgs parameters:
 - `top_k` is mapped to LiteLLM using a custom transform function
 - `repetition_penalty` is mapped directly
 - `decoding_method` is transformed to `temperature` (sample=0.7, greedy=0.0)
 - All other standard parameters (max_tokens, temperature, etc.) are mapped directly
 
-**Features:**  
-- Subclasses the **validating** LiteLLM adapter.  
-- Automatically sets:  
-  - `model_name="hosted_vllm/{model_name}"`  
-  - `api_base="{RITS_API_URL}/{model_url}/v1"`  
-  - `headers` with your `RITS_API_KEY`  
-  - `guided_decoding_backend=XGRAMMAR`  
+**Features:**
+- Subclasses the **validating** LiteLLM adapter.
+- Automatically sets:
+  - `model_name="hosted_vllm/{model_name}"`
+  - `api_base="{RITS_API_URL}/{model_url}/v1"`
+  - `headers` with your `RITS_API_KEY`
+  - `guided_decoding_backend=XGRAMMAR`
 
-### Watsonx-Hosted LiteLLM Adapter  
-**Path:** `providers/litellm/watsonx.py`  
-**Registered names:**  
-- `litellm.watsonx` -> plain text adapter  
+### Watsonx-Hosted LiteLLM Adapter
+**Path:** `providers/litellm/watsonx.py`
+**Registered names:**
+- `litellm.watsonx` -> plain text adapter
 - `litellm.watsonx.output_val` -> validating adapter
 
-**Features:**  
-- Automatically prefixes `model_name="watsonx/{model_name}"`.  
+**Features:**
+- Automatically prefixes `model_name="watsonx/{model_name}"`.
 - Inherits all the validation and retry logic from the validating LiteLLM base class.
 
-**Parameter Mapping:**  
+**Parameter Mapping:**
 Watsonx inherits the same parameter mapping as the base LiteLLM adapter.
 
 **Usage with GenerationArgs:**
@@ -403,12 +403,12 @@ client = get_llm("litellm.watsonx")
 response = client.generate("Explain artificial intelligence", generation_args=generation_args, model_name="granite-3.1-8b-instruct")
 ```
 
-**Environment variables:**  
-- `WX_API_KEY`  
+**Environment variables:**
+- `WX_API_KEY`
 - `WX_PROJECT_ID` or `WX_SPACE_ID`
 - `WX_URL`
 
-**Example:**  
+**Example:**
 ```python
 from altk.toolkit_core.llm import get_llm
 
@@ -429,17 +429,17 @@ weather = client.generate(
 )
 ```
 
-### IBM WatsonX AI Adapter  
-**Path:** `providers/ibm_watsonx_ai/ibm_watsonx_ai.py`  
-**Registered names:**  
-- `watsonx` -> plain text adapter  
+### IBM WatsonX AI Adapter
+**Path:** `providers/ibm_watsonx_ai/ibm_watsonx_ai.py`
+**Registered names:**
+- `watsonx` -> plain text adapter
 - `watsonx.output_val` -> validating adapter
 
-**Features:**  
-- Wraps the native IBM WatsonX AI SDK. 
+**Features:**
+- Wraps the native IBM WatsonX AI SDK.
 - Advanced generation parameters (temperature, etc.).
 
-**Parameter Mapping:**  
+**Parameter Mapping:**
 IBM WatsonX AI uses its own parameter mapping for GenerationArgs:
 - Most parameters (max_tokens, temperature, top_p, etc.) are mapped directly
 - `decoding_method` is mapped to WatsonX's native decoding method parameter
@@ -474,20 +474,20 @@ response = client.generate("Explain quantum computing")
 
 ## Adding Your Own Provider
 
-1. **Subclass** either `LLMClient` (for plain text) or `ValidatingLLMClient` (if you need schema enforcement).  
-2. **Implement**  
-   - `@classmethod provider_class() -> your SDK client class`  
+1. **Subclass** either `LLMClient` (for plain text) or `ValidatingLLMClient` (if you need schema enforcement).
+2. **Implement**
+   - `@classmethod provider_class() -> your SDK client class`
    - `_register_methods()` to map `"chat"`, `"chat_async"`, (if available `"text"`, `"text_async"`).
    - `_parse_llm_response(raw)` to pull a single string out of the provider's raw response.
 
-3. **Register** your class:  
+3. **Register** your class:
    ```python
    @register_llm("myprovider")
    class MyClient(LLMClient):
        ...
    ```
 
-4. **Use** it via the registry:  
+4. **Use** it via the registry:
    ```python
    from altk.toolkit_core.llm import get_llm
 
@@ -500,7 +500,7 @@ response = client.generate("Explain quantum computing")
 
 ## Tips & Best Practices
 
-- **Hooks** let you tap into every call for logging, tracing, or metrics:  
+- **Hooks** let you tap into every call for logging, tracing, or metrics:
   ```python
   client = MyClient(..., hooks=[lambda ev, data: print(ev, data)])
   ```

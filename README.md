@@ -5,7 +5,7 @@
 <h4 align="center">Delivering plug-and-play, framework-agnostic technology to boost agents' performance</h4>
 
 ## What is ALTK?
-The Agent Lifecycle Toolkit helps agent builders create better performing agents by easily integrating our components into agent pipelines. The components help improve the performance of agents by addressing key gaps in various stages of the agent lifecycle, such as in reasoning, or tool calling errors, or output guardrails. 
+The Agent Lifecycle Toolkit helps agent builders create better performing agents by easily integrating our components into agent pipelines. The components help improve the performance of agents by addressing key gaps in various stages of the agent lifecycle, such as in reasoning, or tool calling errors, or output guardrails.
 
 <!-- [TODO: improve figure, positioning, etc.]-->
 ![lifecycle.png](docs/assets/lifecycle.png)
@@ -62,15 +62,15 @@ def get_weather(city: str, state: Annotated[dict, InjectedState]) -> str:
         return result
 
 agent = create_react_agent(
-    model="openai:o4-mini",  
+    model="openai:o4-mini",
     tools=[get_weather],
-    prompt="You are a helpful assistant"  
+    prompt="You are a helpful assistant"
 )
 
 # Runs the agent
 result = agent.invoke(
     {"messages": [{"role": "user", "content": "what is the weather in sf"}]}
-) 
+)
 # Show the final result which should not be that the service is in maintenance.
 print(result["messages"][-1].content)
 ```
@@ -79,7 +79,7 @@ print(result["messages"][-1].content)
 <!-- [TODO: add link] -->
 
 ## Features
-<!--[TODO: reread the descriptions and make sure they are easy to understand, clear and consistent in the information and style of writing] 
+<!--[TODO: reread the descriptions and make sure they are easy to understand, clear and consistent in the information and style of writing]
 [TODO: move up in the order of sections?] -->
 
 | Lifecycle Step | Component                        | Description                                                                                                                                                                                                                                          |
@@ -112,7 +112,7 @@ To further accelerate your AI application development, check out ALTK's native
 <!-- [TODO: add link] -->
 
 ## Get Help and Support
-Please feel free to connect with us using the [discussion section](https://github.com/AgentToolkit/agent-lifecycle-toolkit). 
+Please feel free to connect with us using the [discussion section](https://github.com/AgentToolkit/agent-lifecycle-toolkit).
 
 ## Contributing Guidelines
 ALTK is open-source and we ❤️ contributions.<br>
@@ -130,8 +130,8 @@ This project and everyone participating in it are governed by the [Code of Condu
 All content in these repositories including code has been provided by IBM under the associated open source software license and IBM is under no obligation to provide enhancements, updates, or support. IBM developers produced this code as an open source project (not as an IBM product), and IBM makes no assertions as to the level of quality nor security, and will not be maintaining this code going forward.
 
 ## License
-The ALTK codebase is under Apache 2.0 license. 
-For individual model usage, please refer to the model licenses in the original packages. 
+The ALTK codebase is under Apache 2.0 license.
+For individual model usage, please refer to the model licenses in the original packages.
 
 ## Contributors
-Thanks to all of our contributors who make this project possible. Special thanks to the Global Agentic Middleware team in IBM Research for all of the contributions from the many different teams and people. 
+Thanks to all of our contributors who make this project possible. Special thanks to the Global Agentic Middleware team in IBM Research for all of the contributions from the many different teams and people.

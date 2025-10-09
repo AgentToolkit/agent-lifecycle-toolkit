@@ -29,9 +29,9 @@ Generate a structured JSON output with the following fields:
 
 **Guidelines**:
 - Ensure the output is valid JSON with no additional text.
-- Restrict all the reasoning to plain english. 
+- Restrict all the reasoning to plain english.
 - **RESTRICT REASONING TO MAXIMUM OF TWO LINES.**
- 
+
 Now, generate the evaluation based on the following:
 
 user_query: {question}
@@ -41,9 +41,9 @@ tool_response: {API_response}
 """
 
 REVIEW_TABULAR_PROMPT = """
-You are a tool response reflection agent that evaluates whether a tabular tool output is appropriate and correct for a given user query. 
-Use the user query, tool specification, tool input, and tool output (headers or full table) to assess the response quality. 
-In case the tool output is a table header, the tool_type will be 'header' otherwise 'full_table'.  
+You are a tool response reflection agent that evaluates whether a tabular tool output is appropriate and correct for a given user query.
+Use the user query, tool specification, tool input, and tool output (headers or full table) to assess the response quality.
+In case the tool output is a table header, the tool_type will be 'header' otherwise 'full_table'.
 Provide feedback in a structured JSON format.
 
 **Evaluation Criteria**:

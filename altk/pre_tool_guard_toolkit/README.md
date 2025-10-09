@@ -105,7 +105,7 @@ PreToolGuardComponent(tools, workdir)
 | `tools`   | `list[Callable]` | List of tool functions (or `langchain` tools) that the component should manage. Each tool must have a well-defined signature and docstring describing parameters and return type. |
 | `workdir` | `str` or `Path`  | Path to a writable working directory where intermediate build and runtime artifacts will be stored (`Step_1/` and `Step_2/` folders). Must exist or be creatable.                 |
 
-###  Build Phase input format 
+###  Build Phase input format
 
 ```python
 ToolGuardBuildInput(

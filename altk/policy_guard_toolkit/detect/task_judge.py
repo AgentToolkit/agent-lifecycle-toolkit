@@ -31,7 +31,7 @@ class TaskJudge:
         self.task_completion_prompt = Template("""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
         You are a grader whose job is to determine if a response is a valid response to a query. Your score should be "Yes" or "No". If a response is ambiguous your score should be "Yes". The score should only be "No" if the response is definitely not a valid response.<|eot_id|>
         <|start_header_id|>user<|end_header_id|>
-    
+
         --- Here is the query:
         ${question}
         ---
@@ -39,11 +39,11 @@ class TaskJudge:
         --- Here is the response to check:
         ${response}
         ---
-        
-        Output a JSON object like this: 
+
+        Output a JSON object like this:
         {
             "explanation": "a brief explanation for the score",
-            "score": "Yes/No" 
+            "score": "Yes/No"
         }
 
         Return ONLY one JSON object, nothing else. Do not include any additional text or explanations outside the JSON object.<|eot_id|>

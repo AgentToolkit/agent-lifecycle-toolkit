@@ -50,7 +50,7 @@ IMPORTANT INSTRUCTIONS:
 4. Preserve the original tone, style, and intent of the text.
 5. Do NOT rewrite the entire text - make surgical, targeted changes only.
 6. If a policy has no relevant text snippets, make minimal changes to address the policy concern.
-7. Address policies in the order in which they are presented. 
+7. Address policies in the order in which they are presented.
 8. CRITICAL: When making changes, ensure you don't break compliance with the already conforming policies.
     The text already follows these policies correctly, so maintain their compliance while fixing violations.
 
@@ -129,9 +129,9 @@ llama_simple_repair_single_template = Template(
 )
 
 query_repair_single_template = Template(
-    """You are an editor and your task is to rewrite response to ensure compliance with guidelines. 
+    """You are an editor and your task is to rewrite response to ensure compliance with guidelines.
    The following text shows a query and a response. The response violates a guideline it should have followed.
-    
+
     # Query
     ${query}
 
@@ -145,16 +145,16 @@ query_repair_single_template = Template(
     ${policy}
 
     # Instructions
-    Rewrite the response so that it follows the violated guideline while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the listed followed guidelines that were already followed in the response. 
-    You may rewrite the text exactly once, and don't output anything other than the re-written response. 
+    Rewrite the response so that it follows the violated guideline while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the listed followed guidelines that were already followed in the response.
+    You may rewrite the text exactly once, and don't output anything other than the re-written response.
     You must enclose the re-written response in <START_OF_REWRITE> <END_OF_REWRITE> tags.
 """
 )
 
 allinone_repair_single_template = Template(
-    """You are an editor and your task is to rewrite response to ensure compliance with guidelines. 
+    """You are an editor and your task is to rewrite response to ensure compliance with guidelines.
    The following text shows a query, a response and a set of guidelines. The response may violate one or more of the guidelines it should have followed.
-    
+
     # Query
     ${query}
 
@@ -168,8 +168,8 @@ allinone_repair_single_template = Template(
     ${policy}
 
     # Instructions
-    Rewrite the response to make sure it follows the focus guideline while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the other listed guidelines that were already followed in the response. 
-    You may rewrite the text exactly once, and don't output anything other than the re-written response.  
+    Rewrite the response to make sure it follows the focus guideline while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the other listed guidelines that were already followed in the response.
+    You may rewrite the text exactly once, and don't output anything other than the re-written response.
     You must enclose the re-written response in <START_OF_REWRITE> <END_OF_REWRITE> tags.
 """
 )
@@ -179,7 +179,7 @@ llama_query_repair_single_template = Template(
     """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
     You are an editor and your task is to rewrite a response to ensure compliance with guidelines.<|eot_id|>
     <|start_header_id|>user<|end_header_id|>The following text shows a query and a response. The response violates a guideline it should have followed.
-    
+
     <START_OF_QUERY>
     ${query}
     <END_OF_QUERY>
@@ -192,12 +192,12 @@ llama_query_repair_single_template = Template(
     ${instr}
     <END_OF_FOLLOWED_GUIDELINES>
 
-    <START_OF_VIOLATED_GUIDELINE> 
+    <START_OF_VIOLATED_GUIDELINE>
     ${policy}
     <END_OF_VIOLATED_GUIDELINE>
 
-    Rewrite the response so that it follows the violated guideline while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the listed followed guidelines that were already followed in the response. 
-    You may rewrite the text exactly once, and don't output anything other than the re-written response. 
+    Rewrite the response so that it follows the violated guideline while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the listed followed guidelines that were already followed in the response.
+    You may rewrite the text exactly once, and don't output anything other than the re-written response.
     You must enclose the re-written response in <START_OF_REWRITE> <END_OF_REWRITE> tags.<|eot_id|>
     <|start_header_id|>assistant<|end_header_id|>
 """
@@ -207,7 +207,7 @@ llama_allinone_repair_single_template = Template(
     """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
     You are an editor and your task is to rewrite a response to ensure compliance with guidelines.<|eot_id|>
     <|start_header_id|>user<|end_header_id|>The following text shows a query, a response and a set of guidelines. The response may violate one or more of the guidelines it should have followed.
-    
+
     <START_OF_QUERY>
     ${query}
     <END_OF_QUERY>
@@ -220,12 +220,12 @@ llama_allinone_repair_single_template = Template(
     ${instr}
     <END_OF_GUIDELINES>
 
-    <START_OF_FOCUS_GUIDELINE> 
+    <START_OF_FOCUS_GUIDELINE>
     ${policy}
     <END_OF_FOCUS_GUIDELINE>
 
-    Rewrite the response to make sure it follows the FOCUS GUIDELINE while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the other listed guidelines that were already followed in the response. 
-    You may rewrite the text exactly once, and don't output anything other than the re-written response. 
+    Rewrite the response to make sure it follows the FOCUS GUIDELINE while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the other listed guidelines that were already followed in the response.
+    You may rewrite the text exactly once, and don't output anything other than the re-written response.
     You must enclose the re-written response in <START_OF_REWRITE> <END_OF_REWRITE> tags.<|eot_id|>
     <|start_header_id|>assistant<|end_header_id|>
 """
@@ -234,7 +234,7 @@ llama_allinone_repair_single_template = Template(
 query_repair_template = Template(
     """You are an editor and your task is to rewrite a response to ensure compliance with guidelines.
     The following text shows a query with a set of guidelines and a response. The response violates one or more guidelines that it should have followed
-    
+
     # Query
     ${query}
     The response must follow these guidelines:
@@ -247,22 +247,22 @@ query_repair_template = Template(
     ${policies}
 
     # Instructions
-    Rewrite the response so that it follows all violated guidelines while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the guidelines that were already followed in the response. 
-    You may rewrite the text exactly once, and don't output anything other than the re-written response. 
+    Rewrite the response so that it follows all violated guidelines while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the guidelines that were already followed in the response.
+    You may rewrite the text exactly once, and don't output anything other than the re-written response.
     You must enclose the re-written response in <START_OF_REWRITE> <END_OF_REWRITE> tags.
 """
 )
 query_gen_template = Template(
     """You are a helpful assistant and your task is to respond to queries. Your response must follow a set of guidelines.
     Here is a query with a set of guidelines that must be followed.
-    
+
     # Query
     ${query}
-    Your response must follow these guidelines: 
+    Your response must follow these guidelines:
     ${instr}
-   
+
     # Instructions
-    Write a response that follows all guidelines and don't output anything other than the response. 
+    Write a response that follows all guidelines and don't output anything other than the response.
     You must enclose the response in <START_OF_RESPONSE> <END_OF_RESPONSE> tags.
 """
 )
@@ -271,14 +271,14 @@ llama_query_gen_template = Template(
     """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
     You are a helpful assistant and your task is to respond to queries. Your response must follow a set of guidelines.<|eot_id|>
     <|start_header_id|>user<|end_header_id|>Here is a query with a set of guidelines that must be followed.
-    
+
     <START_OF_QUERY>
     ${query}
-    Your response must follow these guidelines: 
+    Your response must follow these guidelines:
     ${instr}
     <END_OF_QUERY>
 
-    Write a response that follows all guidelines and don't output anything other than the response. 
+    Write a response that follows all guidelines and don't output anything other than the response.
     You must enclose the response in <START_OF_RESPONSE> <END_OF_RESPONSE> tags.<|eot_id|>
     <|start_header_id|>assistant<|end_header_id|>
 """
@@ -288,10 +288,10 @@ llama_query_repair_template = Template(
     """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
     You are an editor and your task is to rewrite response.<|eot_id|>
     <|start_header_id|>user<|end_header_id|>The following text shows a query and a response. The response violates one or more guidelines from the query that it should have followed.
-    
+
     <START_OF_QUERY>
     ${query}
-    Your response must follow these guidelines: 
+    Your response must follow these guidelines:
     ${instr}
     <END_OF_QUERY>
 
@@ -299,12 +299,12 @@ llama_query_repair_template = Template(
     ${text}
     <END_OF_RESPONSE>
 
-    <START_OF_VIOLATED_GUIDELINES> 
+    <START_OF_VIOLATED_GUIDELINES>
     ${policies}
     <END_OF_VIOLATED_GUIDELINES>
 
-    Rewrite the response so that it follows all guidelines while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the guidelines that were already followed in the response. 
-    You may rewrite the text exactly once, and don't output anything other than the re-written response. 
+    Rewrite the response so that it follows all guidelines while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the guidelines that were already followed in the response.
+    You may rewrite the text exactly once, and don't output anything other than the re-written response.
     You must enclose the re-written response in <START_OF_REWRITE> <END_OF_REWRITE> tags.<|eot_id|>
     <|start_header_id|>assistant<|end_header_id|>
 """
@@ -313,7 +313,7 @@ llama_query_repair_template = Template(
 all_in_one_repair_template = Template(
     """You are an editor and your task is to rewrite a response to ensure compliance with guidelines.
     The following text shows a query and a response. The response may violate one or more guidelines that it should have followed
-    
+
     # Query
     ${query}
 
@@ -324,8 +324,8 @@ all_in_one_repair_template = Template(
     ${instr}
 
     # Instructions
-    Rewrite the response so that it follows all guidelines while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the guidelines that were already followed in the response. 
-    You may rewrite the text exactly once, and don't output anything other than the re-written response. 
+    Rewrite the response so that it follows all guidelines while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the guidelines that were already followed in the response.
+    You may rewrite the text exactly once, and don't output anything other than the re-written response.
     You must enclose the re-written response in <START_OF_REWRITE> <END_OF_REWRITE> tags.
 """
 )
@@ -334,7 +334,7 @@ llama_all_in_one_repair_template = Template(
     """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
     You are an editor and your task is to rewrite a response to ensure compliance with guidelines.<|eot_id|>
     <|start_header_id|>user<|end_header_id|>The following text shows a query, a response and a set of guidelines. The response may violate one or more guidelines that it should have followed.
-    
+
     <START_OF_QUERY>
     ${query}
     <END_OF_QUERY>
@@ -343,12 +343,12 @@ llama_all_in_one_repair_template = Template(
     ${text}
     <END_OF_RESPONSE>
 
-    <START_OF_GUIDELINES> 
+    <START_OF_GUIDELINES>
     ${instr}
     <END_OF_GUIDELINES>
 
-    Rewrite the response so that it follows all guidelines while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the guidelines that were already followed in the response. 
-    You may rewrite the text exactly once, and don't output anything other than the re-written response. 
+    Rewrite the response so that it follows all guidelines while making only necessary changes and keeping the rest of the text unchanged. The rewrite must not break any of the guidelines that were already followed in the response.
+    You may rewrite the text exactly once, and don't output anything other than the re-written response.
     You must enclose the re-written response in <START_OF_REWRITE> <END_OF_REWRITE> tags.<|eot_id|>
     <|start_header_id|>assistant<|end_header_id|>
 """
@@ -364,12 +364,12 @@ You are an editor and your task is to generate a response according to a user qu
 ${query}
 <END_OF_QUERY>
 ${per_guideline_responses}
-<START_OF_GUIDELINES> 
+<START_OF_GUIDELINES>
 ${instr}
 <END_OF_GUIDELINES>
 
 Generate a response so that it follows all the guidelines. Use the per-guideline responses to help generate the final response that complies with all the guidelines.
-Don't output anything other than the re-written response. 
+Don't output anything other than the re-written response.
 You must enclose the re-written response in <START_OF_REWRITE> <END_OF_REWRITE> tags.<|eot_id|>
 <|start_header_id|>assistant<|end_header_id|>
 """
