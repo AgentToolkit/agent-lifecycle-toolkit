@@ -53,6 +53,21 @@ jobs:
       - name: Check Formatting
         run: uvx ruff format --check
 
+  check-typing:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-python-uv
+
+      - name: Check typing
+        run: uvx mypy .
+
   run-tests:
     strategy:
       fail-fast: false
