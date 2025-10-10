@@ -89,4 +89,4 @@ jobs:
           WX_SPACE_ID: ${{ secrets. WX_SPACE_ID }}
           WX_URL: ${{ vars.WX_URL }}
         run: |
-          uv run pytest -v
+          uv run pytest -v --cov=. --cov-report=html
