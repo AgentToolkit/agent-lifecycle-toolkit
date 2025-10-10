@@ -8,3 +8,7 @@ Maintainers are listed in alphabetical order by last name.
 
 | Name | GitHub Username |
 | ---- | ---- |
+Jason Tsay | [jsntsay](github.com/jsntsay) |
+Zidane Wright | [zdmwi](github.com/zdmwi) |
+
+Maintainers can be contacted at: [altk.ibm.com](mailto:altk.ibm.com).
