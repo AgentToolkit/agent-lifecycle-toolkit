@@ -1,6 +1,6 @@
 [project]
 name = "agent-lifecycle-toolkit"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 version = "0.2.0"
 classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -25,7 +25,7 @@ dependencies = [
     "numpy>=2.1.2; sys_platform != 'darwin' or platform_machine != 'x86_64'",
     "openai>=1.0.0",
     "pydantic>=2.0.0",
-    "scipy>=1.16.1",
+    "scipy>=1.15.3",
     "sentence-transformers>=5.0.0",
     "smolagents>=1.21.3",
     "torch==2.2.2 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",

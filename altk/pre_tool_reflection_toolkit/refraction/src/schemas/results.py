@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pydantic import BaseModel, computed_field
 from typing import List, Optional, Dict, Any
-from enum import StrEnum, auto
+from enum import Enum, auto
 from nl2flow.debug.schemas import Report
 from nestful import SequencingData, SequenceStep, Catalog
 from nl2flow.debug.schemas import DiffAction
@@ -15,14 +15,14 @@ PRINTER = CustomPrint()
 DUMMY_VALUE = "INIT"
 
 
-class PromptType(StrEnum):
+class PromptType(str, Enum):
     NO_HELP = auto()
     WITH_FIX = auto()
     SANITY_CHECK = auto()
     WITH_SUGGESTIONS = auto()
 
 
-class OperationModes(StrEnum):
+class OperationModes(str, Enum):
     DEFAULT = auto()
     COMPRESS = auto()
     N0_MAPPINGS = auto()
