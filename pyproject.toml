@@ -123,3 +123,13 @@ markers = [
     "llm: marks tests as LLM provider tests (expensive, run only with -m llm)",
     "refract_extra: extra tests from refraction"
 ]
+
+[tool.mypy]
+exclude = [
+    "examples/",
+    "tests/"
+]
+
+[[tool.mypy.overrides]]
+module = ["altk.*"]
+ignore_errors = true
