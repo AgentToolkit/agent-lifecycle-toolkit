@@ -9,6 +9,7 @@ from typing import (
     Literal,
 )
 from types import NoneType
+from typing_extensions import Self
 
 from pydantic import BaseModel, Field, model_validator, ValidationError
 
@@ -408,19 +409,18 @@ class PipelineResult(BaseModel):
     )
 
     @model_validator(mode="after")
-    @classmethod
-    def compute_overall(cls, values: PipelineResult) -> PipelineResult:
+    def compute_overall(self) -> Self:
         """
         After validation, compute overall_valid as AND of:
           • all semantic is_correct flags
           • if transform exists: all execution_success flags
         """
-        static: StaticResult = values.static
+        static: StaticResult = self.static
         if static:
             # static checks
             ok = static.final_decision
 
-        sem: SemanticResult = values.semantic
+        sem: SemanticResult = self.semantic
         if sem:
             # semantic checks
             if sem.general and sem.general.metrics:
@@ -460,9 +460,9 @@ class PipelineResult(BaseModel):
             if param_avgs:
                 cat_avgs.append(sum(param_avgs) / len(param_avgs))
 
-        values.overall_avg_score = sum(cat_avgs) / len(cat_avgs) if cat_avgs else None
-        values.overall_valid = ok
-        return values
+        self.overall_avg_score = sum(cat_avgs) / len(cat_avgs) if cat_avgs else None
+        self.overall_valid = ok
+        return self
 
 
 # ----------------------------------------------------------------------
@@ -546,18 +546,17 @@ class ToolFunctionCall(BaseModel):
     )
 
     @model_validator(mode="after")
-    @classmethod
-    def _parse_arguments(cls, values: ToolFunctionCall) -> ToolFunctionCall:
+    def _parse_arguments(self) -> Self:
         """
         After model construction, parse the `arguments` JSON string
         into `parsed_arguments`, or raise a ValidationError.
         """
         try:
-            raw = values.arguments
-            values.parsed_arguments = json.loads(raw)
+            raw = self.arguments
+            self.parsed_arguments = json.loads(raw)
         except json.JSONDecodeError as e:
             raise ValidationError(f"Invalid JSON in arguments: {e}") from e
-        return values
+        return self
 
 
 class ToolCall(BaseModel):

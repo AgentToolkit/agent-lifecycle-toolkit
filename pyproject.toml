@@ -7,8 +7,11 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+readme = "README.md"
+license-files = ["LICENSE*"]
 
 dependencies = [
+    "genson>=1.3.0",
     "ibm-watsonx-ai>=1.0.0",
     "jinja2>=3.1.6",
     "jsonschema>=4.0.0",
@@ -16,13 +19,11 @@ dependencies = [
     "langchain-community>=0.3.21",
     "langchain-core>=0.3.72",
     "langchain-huggingface>=0.3.0",
-    "litellm>=1.0.0, <1.77.2",
+    "litellm[proxy]>=1.0.0, <1.77.2",
     "llm-sandbox[docker]>=0.2.5",
     "nestful-wrapper>=0.1.4",
     "nl2flow>=0.1.2",
     "nltk>=3.9.1",
-    "numpy<2 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
-    "numpy>=2.1.2; sys_platform != 'darwin' or platform_machine != 'x86_64'",
     "openai>=1.0.0",
     "pydantic>=2.0.0",
     "scipy>=1.15.3",
@@ -57,6 +58,20 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["altk"]
+exclude = [
+    "*.md",
+    "**/docs",
+    "**/tests/",
+    "**/*examples/",
+    ".pre-commit-config.yaml",
+    "MAINTAINERS",
+    "pytest.ini",
+    "**/site/",
+    "*.jsonl",
+    "*.png",
+    "*.jpg",
+    "*.jpeg"
+]
 
 [dependency-groups]
 dev = [
@@ -86,6 +101,38 @@ docs = [
     "mkdocs-enumerate-headings-plugin"
 ]
 
+policy_guard = [
+    "ibm_watsonx_ai>=1.3.28",
+    "pydantic>=2.0.0",
+]
+
+post_tool_reflection = [
+    "llm-sandbox[docker]>=0.2.5",
+    "smolagents>=1.21.3",
+    "genson>=1.3.0",
+    "pydantic>=2.0.0",
+    "langchain-chroma>=0.1.4",
+    "langchain-community>=0.3.21",
+    "langchain-core>=0.3.72",
+    "langchain-huggingface>=0.3.0",
+    "langchain-ibm>=0.3.15",
+    "langchain-openai>=0.3.28",
+]
+
+pre_tool_guard = [
+    "pydantic>=2.0.0",
+]
+
+pre_tool_reflection = [
+    "pydantic>=2.0.0",
+    "nestful-wrapper>=0.1.4",
+    "jinja2>=3.1.6",
+    "jsonschema>=4.0.0",
+    "nl2flow>=0.1.2",
+    "scipy>=1.15.3",
+    "sentence-transformers>=5.0.0",
+]
+
 [[tool.uv.index]]
 name = "pytorch-cu118"
 url = "https://download.pytorch.org/whl/cu118"
@@ -105,7 +152,6 @@ ignore = [
 unfixable = [
     "B" # don't attempt to fix bugbear issues
 ]
-
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = [
     "E402", # ignore import violations

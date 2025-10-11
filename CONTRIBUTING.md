@@ -53,8 +53,8 @@ The repository is divided into toolkits that consist of one or more components. 
 
 #### Adding components to a toolkit
 
-1. Be sure whatever dependencies are reflected in the group-level `pyproject.toml` not the top-level `pyproject.toml`.
-   1. Also, be careful about dependencies in other toolkits, uv may attempt to resolve to a higher version due to another toolkit, please attempt to resolve but feel free to contact a maintainer for assistance.
+1. Be sure to update the top-level `pyproject.toml` with any required dependencies for your component.
+   1. Also, be careful about dependency versions, in general aim for the widest range of applicable versions.
 2. Code should be placed in the module directory, with each component in its own directory.
 3. Each component should also have its own `README.md` to describe its usage
 4. The LLM provider is in `toolkit-core/llm`, please use LLMClient to call LLMs. Refer to its README for more information.

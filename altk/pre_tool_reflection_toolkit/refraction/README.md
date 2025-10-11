@@ -2,10 +2,12 @@
 Refraction is a low-cost (no LLMs!), low-latency, domain-agnostic, data-agnostic, model-agnostic approach towards validation and repair for a sequence of tool calls, based on classical AI planning techniques. We have seen as much as 48% error correction in certain scenarios.
 
 ## Table of Contents
-- [When it is recommended to use this component](#when-it-is-recommended-to-use-this-component)
-- [Quick Start](#quick-start)
-- [License](#license)
-- [Under the Hood](#under-the-hood)
+- [Refraction - Syntactic Validation of Tool Calls](#refraction---syntactic-validation-of-tool-calls)
+  - [Table of Contents](#table-of-contents)
+  - [When it is recommended to use this component](#when-it-is-recommended-to-use-this-component)
+  - [Quick Start](#quick-start)
+  - [License](#license)
+  - [Under the Hood](#under-the-hood)
 
 ## When it is recommended to use this component
 

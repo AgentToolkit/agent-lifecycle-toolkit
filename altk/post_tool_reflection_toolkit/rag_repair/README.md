@@ -2,15 +2,18 @@
 Given a failing tool call, this component attempts to repair the call using an LLM to while making use of domain documents such as documentation or troubleshooting examples via RAG. This component will require a set of related documents to ingest. Expect to see around 8% improvement on models like GPT-4o (under certain circumstances).
 
 ## Table of Contents
-- [When it is recommended to Use This Component](#when-it-is-recommended-to-use-this-component)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Input Format](#input-format)
-- [Output Format](#output-format)
-- [Testing](#testing)
-  - [Running Tests](#running-tests)
-- [License](#license)
-- [Under the Hood](#under-the-hood)
+- [RAG Repair for Tool Calling Errors](#rag-repair-for-tool-calling-errors)
+  - [Table of Contents](#table-of-contents)
+  - [When it is recommended to use this component:](#when-it-is-recommended-to-use-this-component)
+  - [Quick Start](#quick-start)
+  - [Input Format](#input-format)
+  - [Output Format](#output-format)
+  - [Configuration](#configuration)
+  - [Performance Considerations](#performance-considerations)
+  - [Testing](#testing)
+    - [Running Tests](#running-tests)
+  - [License](#license)
+  - [Under the Hood](#under-the-hood)
 
 ## When it is recommended to use this component:
 

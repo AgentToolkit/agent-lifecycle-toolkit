@@ -371,8 +371,6 @@ LiteLLM uses custom parameter transforms for some GenerationArgs parameters:
 - Subclasses the **validating** LiteLLM adapter.
 - Automatically sets:
   - `model_name="hosted_vllm/{model_name}"`
-  - `api_base="{RITS_API_URL}/{model_url}/v1"`
-  - `headers` with your `RITS_API_KEY`
   - `guided_decoding_backend=XGRAMMAR`
 
 ### Watsonx-Hosted LiteLLM Adapter

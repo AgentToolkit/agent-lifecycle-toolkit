@@ -2,11 +2,13 @@
 A prompt-based approach to **identify** silent errors in tool calls (errors that do not produce any visible or explicit error message); determines whether the tool response is relevant, accurate and complete based on the user's query.
 
 ## Table of Contents
-- [When it is recommended to Use This Component](#when-it-is-recommended-to-use-this-component)
-- [Quick Start](#quick-start)
-- [Interface](#interface)
-- [License](#license)
-- [Under the Hood](#under-the-hood)
+- [Silent Error Review](#silent-error-review)
+  - [Table of Contents](#table-of-contents)
+  - [When it is recommended to Use This Component:](#when-it-is-recommended-to-use-this-component)
+  - [Quick Start](#quick-start)
+  - [Interface](#interface)
+  - [License](#license)
+  - [Under the Hood](#under-the-hood)
 
 
 ## When it is recommended to Use This Component:

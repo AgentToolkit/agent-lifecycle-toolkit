@@ -38,7 +38,6 @@ extra:
 markdown_extensions:
   - toc:
       permalink: true
-
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
@@ -54,7 +53,6 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
-
 
 
 docs: .

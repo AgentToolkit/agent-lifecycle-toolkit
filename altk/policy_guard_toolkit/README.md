@@ -2,10 +2,12 @@
 Agent lifecycle components to guard and enforce policies (or instructions) in LLM responses. See as much as 10 point improvement in accuracy (under certain circumstances).
 
 ## Table of Contents
-- [When to Use This Component](#when-to-use-this-component)
-- [Quick Start](#quick-start)
-- [License](#license)
-- [Under the Hood](#under-the-hood)
+- [Policy Guard - Add policy guardrails to your agent's response](#policy-guard---add-policy-guardrails-to-your-agents-response)
+  - [Table of Contents](#table-of-contents)
+  - [When to Use This Component](#when-to-use-this-component)
+  - [Quick Start](#quick-start)
+  - [License](#license)
+  - [Under the Hood](#under-the-hood)
 
 ## When to Use This Component
 There are two primary use cases for policy guards:

@@ -3,6 +3,7 @@
 .env
 agent_lifecycle_toolkit.egg-info/
 build
+dist
 .DS_Store
 *.whl
 *.whl
