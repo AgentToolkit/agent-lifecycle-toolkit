@@ -2,14 +2,19 @@
 An agent lifecycle solution for enforcement of business policies adherence in agentic workflows. See up to 20 points gain in accuracy in end to end agent performance when enabling this component.
 
 ## Table of Contents
-- [When to Use This Component](#when-it-is-recommended-to-use-this-component)
-- [Quick Start](#quick-start)
-- [Parameters](#parameters)
-  - [Constructor Parameters](#constructor-parameters)
-  - [Run Phase Input Format](#run-phase-input-format)
-  - [Run Phase Output Format](#run-phase-output-format)
-- [License](#license)
-- [Under the Hood](#under-the-hood)
+- [ToolGuards for Enforcing Agentic Policy Adherence](#toolguards-for-enforcing-agentic-policy-adherence)
+  - [Table of Contents](#table-of-contents)
+  - [When it is Recommended to Use This Component:](#when-it-is-recommended-to-use-this-component)
+  - [Quick Start](#quick-start)
+    - [Configuration](#configuration)
+    - [Example](#example)
+  - [Parameters](#parameters)
+    - [Constructor Parameters](#constructor-parameters)
+    - [Build Phase input format](#build-phase-input-format)
+    - [Run phase Input Format](#run-phase-input-format)
+    - [Run phase Output Format](#run-phase-output-format)
+  - [License](#license)
+  - [Under the Hood](#under-the-hood)
 
 ## When it is Recommended to Use This Component:
 

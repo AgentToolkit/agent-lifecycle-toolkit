@@ -10,6 +10,8 @@ SpotLight enables users to emphasize important spans within their prompt and ste
 
 
 ## Table of Contents
+- [SpotLight - Improve LLM's Instruction Following](#spotlight---improve-llms-instruction-following)
+- [Table of Contents](#table-of-contents)
 - [When to Use This Component](#when-to-use-this-component)
 - [Quick Start](#quick-start)
 - [License](#license)

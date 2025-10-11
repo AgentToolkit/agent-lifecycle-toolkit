@@ -16,7 +16,7 @@ class OllamaLiteLLMClient(LiteLLMClient):
     Automatically injects:
       - model_path = "hosted_vllm/{model_name}"
       - api_base URL = "{api_url}/{model_url}/v1"
-      - authentication headers with RITS_API_KEY
+      - authentication headers
       - guided_decoding_backend
     """
 

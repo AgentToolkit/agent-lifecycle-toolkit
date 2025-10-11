@@ -9,14 +9,20 @@ from altk.pre_tool_reflection_toolkit.refraction.src.prompt_template import (
     PromptType,
 )
 
-
-from mellea import start_session
-from mellea.stdlib.requirement import ValidationResult
-from mellea.stdlib.sampling import RejectionSamplingStrategy
-from mellea.stdlib.base import Context
-from altk.pre_tool_reflection_toolkit.refraction.src.integration.mellea_requirement import (
-    RefractionRequirement,
-)
+try:
+    from mellea import start_session
+    from mellea.stdlib.requirement import ValidationResult
+    from mellea.stdlib.sampling import RejectionSamplingStrategy
+    from mellea.stdlib.base import Context
+    from altk.pre_tool_reflection_toolkit.refraction.src.integration.mellea_requirement import (
+        RefractionRequirement,
+    )
+except ImportError:
+    pytest.mark.skip(reason="mellea not available")
+    ValidationResult = None
+    RejectionSamplingStrategy = None
+    Context = None
+    RefractionRequirement = None  # type: ignore
 
 # TODO: No need for a mellea integration to be a test. Remove this and move it to examples maybe
 # For now, set as extra test
@@ -133,7 +139,7 @@ def make_corrupted_call() -> List[Dict[str, Any]]:
         if og_call.get("name") == "concur":
             # NOTE: Remove one of the parameters to test tool calling error
             if "employee_info" in og_call["arguments"]:
-                del og_call["arguments"]["employee_info"]
+                del og_call["arguments"]["employee_info"]  # type: ignore
 
         corrupted_tool_calls.append(og_call)
 
