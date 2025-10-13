@@ -185,6 +185,7 @@ ignore_errors = true
 
 [tool.semantic_release]
 allow_zero_version = true
+major_on_zero = false
 version_toml = ["pyproject.toml:project.version"]
 commit_parser = "conventional"
 build_command = """
@@ -193,6 +194,8 @@ build_command = """
     git add uv.lock
     uv build
 """
+tag_format = "v{version}"
+commit_message = "chore: bump version to {version} [skip ci]"
 
 [tool.semantic_release.commit_parser_options]
 minor_tags = ["feat"]
