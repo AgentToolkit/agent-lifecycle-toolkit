@@ -69,4 +69,6 @@ jobs:
         python-version: ['3.10', '3.11', '3.12', '3.13']
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
       - uses: ./.github/actions/run-tests
