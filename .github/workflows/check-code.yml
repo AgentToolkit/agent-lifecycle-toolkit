@@ -1,10 +1,5 @@
 on:
   workflow_call:
-env:
-  WX_API_KEY: ${{ secrets.WX_API_KEY }}
-  WX_PROJECT_ID: ${{ secrets.WX_PROJECT_ID }}
-  WX_SPACE_ID: ${{ secrets. WX_SPACE_ID }}
-  WX_URL: ${{ vars.WX_URL }}
 
 jobs:
   check-lockfile:
@@ -74,13 +69,4 @@ jobs:
         python-version: ['3.10', '3.11', '3.12', '3.13']
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-
-      - uses: ./.github/actions/setup-python-uv
-
-      - name: Install Python Dependencies
-        run: uv sync --frozen --all-extras
-
-      - name: Run tests
-        run: |
-          uv run --no-sync pytest -v --cov=. --cov-report=html
+      - uses: ./.github/actions/run-tests

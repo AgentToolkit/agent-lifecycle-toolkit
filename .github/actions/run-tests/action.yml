@@ -1,0 +1,22 @@
+name: Run tests
+description: "Run the tests"
+runs:
+  using: 'composite'
+  steps:
+    - uses: ./.github/actions/setup-python-uv
+
+    - name: Install Python Dependencies
+      shell: bash
+      run: uv sync --frozen --all-extras
+
+    - name: Run tests
+      env:
+        WX_API_KEY: ${{ secrets.WX_API_KEY }}
+        WX_PROJECT_ID: ${{ secrets.WX_PROJECT_ID }}
+        WX_SPACE_ID: ${{ secrets. WX_SPACE_ID }}
+        WX_URL: ${{ vars.WX_URL }}
+      shell: bash
+      run: |
+        uv run --no-sync pytest -v --cov=. --cov-report=html
+      with:
+        python-version: ${{ matrix.python-version }}
