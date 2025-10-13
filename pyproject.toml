@@ -182,6 +182,7 @@ module = ["altk.*"]
 ignore_errors = true
 
 [tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
 commit_parser = "conventional"
 
 [tool.semantic_release.commit_parser_options]
