@@ -12,6 +12,17 @@ on:
 jobs:
   check-code:
     uses: ./.github/workflows/check-code.yml
+  run-tests:
+    runs-on: ubuntu-latest
+    env:
+      WX_API_KEY: ${{ secrets.WX_API_KEY }}
+      WX_PROJECT_ID: ${{ secrets.WX_PROJECT_ID }}
+      WX_SPACE_ID: ${{ secrets. WX_SPACE_ID }}
+      WX_URL: ${{ vars.WX_URL }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+      - uses: ./.github/actions/run-tests
   release:
     runs-on: ubuntu-latest
     permissions:
