@@ -30,6 +30,8 @@ jobs:
       - uses: ./.github/actions/run-tests
   release:
     runs-on: ubuntu-latest
+    needs:
+      run-tests
     permissions:
       contents: write
     steps:
