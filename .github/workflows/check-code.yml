@@ -1,0 +1,90 @@
+on:
+  workflow_call:
+
+env:
+  UV_FROZEN: "1"
+
+jobs:
+  check-lockfile:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-python-uv
+
+      - name: Check uv Lockfile
+        run: uv lock --check
+
+  check-linting:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11']
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-python-uv
+
+      - name: Check Linting
+        run: uvx ruff check
+
+  check-formatting:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-python-uv
+
+      - name: Check Formatting
+        run: uvx ruff format --check
+
+  check-typing:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-python-uv
+
+      - name: Check typing
+        run: uvx mypy .
+
+  run-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-python-uv
+
+      - name: Install Python Dependencies
+        run: uv sync --frozen --all-extras
+
+      - name: Run tests
+        env:
+          WX_API_KEY: ${{ secrets.WX_API_KEY }}
+          WX_PROJECT_ID: ${{ secrets.WX_PROJECT_ID }}
+          WX_SPACE_ID: ${{ secrets. WX_SPACE_ID }}
+          WX_URL: ${{ vars.WX_URL }}
+        run: |
+          uv run --no-sync pytest -v --cov=. --cov-report=html
