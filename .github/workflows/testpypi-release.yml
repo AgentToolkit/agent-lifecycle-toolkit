@@ -2,6 +2,10 @@ name: Release to PyPI
 
 env:
   UV_FROZEN: "1"
+  WX_API_KEY: ${{ secrets.WX_API_KEY }}
+  WX_PROJECT_ID: ${{ secrets.WX_PROJECT_ID }}
+  WX_SPACE_ID: ${{ secrets. WX_SPACE_ID }}
+  WX_URL: ${{ vars.WX_URL }}
 
 on:
   workflow_dispatch:

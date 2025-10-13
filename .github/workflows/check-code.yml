@@ -1,6 +1,5 @@
 on:
   workflow_call:
-
 env:
   WX_API_KEY: ${{ secrets.WX_API_KEY }}
   WX_PROJECT_ID: ${{ secrets.WX_PROJECT_ID }}
