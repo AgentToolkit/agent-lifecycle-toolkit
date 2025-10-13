@@ -1,4 +1,4 @@
-name: Release to test PyPI
+name: Publish to Test PyPI
 
 env:
   UV_FROZEN: "1"
@@ -35,7 +35,7 @@ jobs:
     steps:
     - uses: ./.github/actions/setup-python-uv
 
-  release-package-to-testpypi:
+  publish-package-to-testpypi:
     if: startsWith(github.ref, 'refs/tags')
     needs:
       - build
