@@ -3,16 +3,11 @@ description: "Run the tests"
 runs:
   using: 'composite'
   steps:
-    - uses: ./.github/actions/setup-python-uv
-
     - name: Install Python Dependencies
       shell: bash
       run: uv sync --frozen --all-extras
 
     - name: Run tests
-
       shell: bash
       run: |
         uv run --no-sync pytest -v --cov=. --cov-report=html
-      with:
-        python-version: ${{ matrix.python-version }}
