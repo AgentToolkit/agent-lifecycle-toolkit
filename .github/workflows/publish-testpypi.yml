@@ -25,22 +25,9 @@ jobs:
         uses: actions/checkout@v5
       - uses: ./.github/actions/setup-python-uv
       - uses: ./.github/actions/run-tests
-  build:
-    # FIXME: this should be done in the CD pipeline. We'll upload the files to the
-    # github artifacts for releases.
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-verson: ['3.10']
-    steps:
-    - uses: ./.github/actions/setup-python-uv
-
   publish-package-to-testpypi:
     if: startsWith(github.ref, 'refs/tags')
-    needs:
-      - build
     runs-on: ubuntu-latest
-
     environment:
       name: testpypi
       url: https://test.pypi.org/project/agent-lifecycle-toolkit/
