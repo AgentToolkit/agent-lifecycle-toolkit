@@ -11,10 +11,7 @@ from typing import (
     Union,
 )
 
-try:
-    import jsonschema
-except ImportError:
-    jsonschema = None
+import jsonschema
 
 from pydantic import (
     BaseModel,
@@ -23,7 +20,7 @@ from pydantic import (
     ValidationError as PydanticValidationError,
 )
 
-from .base import LLMClient
+from .base import BaseLLMClient
 
 T = TypeVar("T")
 
@@ -50,29 +47,29 @@ def json_schema_to_pydantic_model(
             if type(None) in python_types:
                 python_types.remove(type(None))
                 if len(python_types) == 1:
-                    return Optional[python_types[0]]
+                    return Optional[python_types[0]]  # type: ignore
                 else:
-                    return Optional[Union[tuple(python_types)]]
+                    return Optional[Union[tuple(python_types)]]  # type: ignore
             else:
-                return Union[tuple(python_types)]
+                return Union[tuple(python_types)]  # type: ignore
         else:
             return type_mapping.get(type_def, Any)
 
     for prop_name, prop_schema in schema.get("properties", {}).items():
-        field_type = parse_type(prop_schema.get("type"))
+        field_type: Any = parse_type(prop_schema.get("type"))
         default = ... if prop_name in required_fields else None
         description = prop_schema.get("description", None)
         field_args = {"description": description} if description else {}
         fields[prop_name] = (field_type, Field(default, **field_args))
 
-    return create_model(model_name, **fields)
+    return create_model(model_name, **fields)  # type: ignore
 
 
 class OutputValidationError(Exception):
     """Raised when LLM output cannot be validated against the provided schema."""
 
 
-class ValidatingLLMClient(LLMClient, ABC):
+class ValidatingLLMClient(BaseLLMClient, ABC):
     """
     An LLMClient wrapper enforcing output structure via:
       - JSON Schema (dict),
@@ -89,7 +86,7 @@ class ValidatingLLMClient(LLMClient, ABC):
 
     @classmethod
     @abstractmethod
-    def provider_class(cls) -> Type:
+    def provider_class(cls) -> Type[Any]:
         """Return the underlying SDK client class, e.g. openai.OpenAI."""
 
     @abstractmethod
@@ -103,7 +100,7 @@ class ValidatingLLMClient(LLMClient, ABC):
         """
 
     def _make_instruction(
-        self, schema: Union[Dict[str, Any], Type[BaseModel], Type]
+        self, schema: Union[Dict[str, Any], Type[BaseModel], Type[Any]]
     ) -> str:
         """Produce a clear instruction describing exactly the required output format."""
         if isinstance(schema, dict):
@@ -145,7 +142,7 @@ class ValidatingLLMClient(LLMClient, ABC):
         return cleaned.strip()
 
     def _validate(
-        self, raw: str, schema: Union[Dict[str, Any], Type[BaseModel], Type]
+        self, raw: str, schema: Union[Dict[str, Any], Type[BaseModel], Type[Any]]
     ) -> Any:
         """
         Clean, parse, and validate raw text against the schema/type.
@@ -219,9 +216,9 @@ class ValidatingLLMClient(LLMClient, ABC):
         self,
         prompt: Union[str, List[Dict[str, Any]]],
         *,
-        schema: Union[Dict[str, Any], Type[BaseModel], Type],
+        schema: Union[Dict[str, Any], Type[BaseModel], Type[Any]],
         schema_field: Optional[str] = None,
-        retries: Optional[int] = 3,
+        retries: int = 3,
         include_schema_in_system_prompt: bool = False,
         **kwargs: Any,
     ) -> Any:
@@ -253,7 +250,7 @@ class ValidatingLLMClient(LLMClient, ABC):
                     "include_schema_in_system_prompt",
                 ]
             }
-            raw = super().generate(**{"prompt": current, **filtered_kwargs})
+            raw = super()._generate(**{"prompt": current, **filtered_kwargs})
             try:
                 if isinstance(raw, str):
                     return self._validate(raw, schema)
@@ -283,9 +280,9 @@ class ValidatingLLMClient(LLMClient, ABC):
         self,
         prompt: Union[str, List[Dict[str, Any]]],
         *,
-        schema: Union[Dict[str, Any], Type[BaseModel], Type],
+        schema: Union[Dict[str, Any], Type[BaseModel], Type[Any]],
         schema_field: Optional[str] = None,
-        retries: Optional[int] = 3,
+        retries: int = 3,
         include_schema_in_system_prompt: bool = False,
         **kwargs: Any,
     ) -> Any:
@@ -317,7 +314,9 @@ class ValidatingLLMClient(LLMClient, ABC):
                     "include_schema_in_system_prompt",
                 ]
             }
-            raw = await super().generate_async(**{"prompt": current, **filtered_kwargs})
+            raw = await super()._generate_async(
+                **{"prompt": current, **filtered_kwargs}
+            )
             try:
                 if isinstance(raw, str):
                     return self._validate(raw, schema)

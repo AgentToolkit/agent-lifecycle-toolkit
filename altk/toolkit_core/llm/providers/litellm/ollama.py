@@ -1,5 +1,7 @@
 import os
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
+
+from altk.toolkit_core.llm.types import LLMResponse
 from .litellm import (
     LiteLLMClient,
     LiteLLMClientOutputVal,
@@ -146,10 +148,10 @@ class OllamaLiteLLMClientOutputVal(LiteLLMClientOutputVal):
             **lite_kwargs,
         )
 
-    def generate(
+    def generate(  # type: ignore
         self,
         **kwargs: Any,
-    ) -> Any:
+    ) -> Union[str, LLMResponse]:
         """
         Synchronous chat generation with validation + retries.
         This method is a wrapper around the generate method of the parent class,
@@ -170,10 +172,10 @@ class OllamaLiteLLMClientOutputVal(LiteLLMClientOutputVal):
             }
         )
 
-    async def generate_async(
+    async def generate_async(  # type: ignore
         self,
         **kwargs: Any,
-    ) -> Any:
+    ) -> Union[str, LLMResponse]:
         """
         Asynchronous chat generation with validation + retries.
         This method is a wrapper around the generate_async method of the parent class,

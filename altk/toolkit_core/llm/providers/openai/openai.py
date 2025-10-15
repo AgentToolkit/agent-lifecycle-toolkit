@@ -6,7 +6,7 @@ except ImportError as e:
     ) from e
 
 from typing import Any, Optional, Dict, List, Union
-from altk.toolkit_core.llm.base import LLMClient, register_llm
+from altk.toolkit_core.llm.base import BaseLLMClient, LLMClient, register_llm
 from altk.toolkit_core.llm.output_parser import ValidatingLLMClient
 from altk.toolkit_core.llm.types import LLMResponse, GenerationMode, ParameterMapper
 
@@ -148,7 +148,7 @@ class BaseValidatingOpenAIClient(ValidatingLLMClient):
 
 
 @register_llm("openai.sync")
-class SyncOpenAIClient(BaseOpenAIClient, LLMClient):
+class SyncOpenAIClient(BaseOpenAIClient, BaseLLMClient):
     """
     Adapter for openai.OpenAI.
 
@@ -182,12 +182,12 @@ class SyncOpenAIClient(BaseOpenAIClient, LLMClient):
         """Parse response, handling both content and tool calls"""
         return _parse_llm_response(raw)
 
-    def generate(
+    def generate(  # type: ignore
         self,
         prompt: Union[str, List[Dict[str, Any]]],
         mode: Union[str, GenerationMode] = GenerationMode.CHAT,
         **kwargs: Any,
-    ) -> str:
+    ) -> Union[str, LLMResponse]:
         """
         Generate with proper prompt format validation based on mode.
 
@@ -251,7 +251,7 @@ class AsyncOpenAIClient(BaseOpenAIClient, LLMClient):
         prompt: Union[str, List[Dict[str, Any]]],
         mode: Union[str, GenerationMode] = GenerationMode.CHAT_ASYNC,
         **kwargs: Any,
-    ) -> str:
+    ) -> Union[str, LLMResponse]:
         """
         Generate async with proper prompt format validation based on mode.
 
@@ -303,14 +303,14 @@ class SyncOpenAIClientOutputVal(BaseOpenAIClient, ValidatingLLMClient):
             GenerationMode.CHAT.value, "chat.completions.parse", "messages"
         )
 
-    def generate(
+    def generate(  # type: ignore
         self,
         prompt: Union[str, List[Dict[str, str]]],
         schema: Optional[Any] = None,
         schema_field: Optional[str] = "response_format",
         retries: int = 3,
         **kwargs: Any,
-    ) -> Any:
+    ) -> Union[str, LLMResponse]:
         """Generate with OpenAI structured output support"""
         # Convert string prompts to message format for chat
         if isinstance(prompt, str):
@@ -514,7 +514,7 @@ class SyncAzureOpenAIClientOutputVal(BaseValidatingOpenAIClient):
             # Fall back to our validation logic
             return super().generate(
                 prompt=prompt,
-                schema=schema,
+                schema=schema,  # type: ignore
                 schema_field=None,  # Don't use Azure OpenAI's structured output
                 retries=retries,
                 **kwargs,
@@ -574,7 +574,7 @@ class AsyncAzureOpenAIClientOutputVal(BaseValidatingOpenAIClient):
             # Fall back to our validation logic
             return await super().generate_async(
                 prompt=prompt,
-                schema=schema,
+                schema=schema,  # type: ignore
                 schema_field=None,  # Don't use Azure OpenAI's structured output
                 retries=retries,
                 **kwargs,

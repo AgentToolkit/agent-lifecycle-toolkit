@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional, Set, Dict, Any
 from enum import Enum, auto
-from langchain_core.messages import BaseMessage
 from altk.toolkit_core.llm import get_llm
 
 
@@ -29,6 +28,23 @@ class ComponentConfig(BaseModel):
             self.llm_client = litellm_provider(self.llm_client)
 
 
+class ComponentInput(BaseModel):
+    """
+    Shared base input for component at runtime.
+    """
+
+    messages: Optional[List[Dict[str, str]]] = None
+    metadata: Optional[Dict[str, Any] | BaseModel] = None
+
+
+class ComponentOutput(BaseModel):
+    """
+    Shared base output for component at runtime.
+    """
+
+    output: Optional[Dict[str, Any] | BaseModel] = None
+
+
 class ComponentBase(ABC, BaseModel):
     config: Optional[ComponentConfig] = Field(default_factory=ComponentConfig)
 
@@ -44,15 +60,15 @@ class ComponentBase(ABC, BaseModel):
         """
         pass
 
-    def process(self, data: BaseModel, phase: AgentPhase) -> BaseModel:
+    def process(self, data: ComponentInput, phase: AgentPhase) -> ComponentOutput:
         """
         Process the input data based on the specified phase.
         Args:
-            data (BaseModel): Input data for the component.
+            data (ComponentInput): Input data for the component.
             phase (AgentPhase): The phase in which the component is being executed.
 
         Returns:
-            BaseModel: Processed output data.
+            ComponentOutput: Processed output data.
         Raises:
             ValueError: If the phase is not supported by the component.
             NotImplementedError: If the phase is not handled in the component.
@@ -69,15 +85,17 @@ class ComponentBase(ABC, BaseModel):
 
         raise NotImplementedError(f"Unhandled phase: {phase}")
 
-    async def aprocess(self, data: BaseModel, phase: AgentPhase) -> BaseModel:
+    async def aprocess(
+        self, data: ComponentInput, phase: AgentPhase
+    ) -> ComponentOutput:
         """
         Async Process the input data based on the specified phase.
         Args:
-            data (BaseModel): Input data for the component.
+            data (ComponentInput): Input data for the component.
             phase (AgentPhase): The phase in which the component is being executed.
 
         Returns:
-            BaseModel: Processed output data.
+            ComponentOutput: Processed output data.
         Raises:
             ValueError: If the phase is not supported by the component.
             NotImplementedError: If the phase is not handled in the component.
@@ -94,55 +112,38 @@ class ComponentBase(ABC, BaseModel):
 
         raise NotImplementedError(f"Unhandled phase: {phase}")
 
-    def _build(self, data: BaseModel) -> BaseModel:
+    def _build(self, data: ComponentInput) -> ComponentOutput:
         """
         Default build method that can be overridden by subclasses.
         This method is called during the BUILDTIME phase.
         Args:
-            data (BaseModel): Input data for the build phase.
+            data (ComponentInput): Input data for the build phase.
         """
-        return data
+        raise NotImplementedError
 
-    def _run(self, data: BaseModel) -> BaseModel:
+    def _run(self, data: ComponentInput) -> ComponentOutput:
         """
         Default run method that can be overridden by subclasses.
         This method is called during the RUNTIME phase.
         Args:
-            data (BaseModel): Input data for the run phase.
+            data (ComponentInput): Input data for the run phase.
         """
-        return data
+        raise NotImplementedError
 
-    async def _abuild(self, data: BaseModel) -> BaseModel:
+    async def _abuild(self, data: ComponentInput) -> ComponentOutput:
         """
         Async build method that can be overridden by subclasses.
         This method is called during the BUILDTIME phase.
         Args:
-            data (BaseModel): Input data for the build phase.
+            data (ComponentInput): Input data for the build phase.
         """
-        return data
+        raise NotImplementedError
 
-    async def _arun(self, data: BaseModel) -> BaseModel:
+    async def _arun(self, data: ComponentInput) -> ComponentOutput:
         """
         Async run method that can be overridden by subclasses.
         This method is called during the RUNTIME phase.
         Args:
-            data (BaseModel): Input data for the run phase.
+            data (ComponentInput): Input data for the run phase.
         """
-        return data
-
-
-class ComponentInput(BaseModel):
-    """
-    Shared base input for component at runtime.
-    """
-
-    messages: Optional[List[BaseMessage]] = None
-    metadata: Optional[Dict | BaseModel] = None
-
-
-class ComponentOutput(BaseModel):
-    """
-    Shared base output for component at runtime.
-    """
-
-    output: Optional[Dict | BaseModel] = None
+        raise NotImplementedError

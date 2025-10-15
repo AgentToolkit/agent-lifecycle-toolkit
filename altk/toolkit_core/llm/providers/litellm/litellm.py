@@ -125,7 +125,7 @@ class LiteLLMClient(LLMClient):
         first = choices[0]
 
         content = ""
-        tool_calls = []
+        tool_calls: list[Any] = []
 
         # Extract content
         delta = getattr(first, "delta", None)
@@ -166,7 +166,7 @@ class LiteLLMClient(LLMClient):
             return LLMResponse(content=content, tool_calls=tool_calls)
         return content
 
-    def generate(
+    def generate(  # type: ignore
         self, prompt: Union[str, List[Dict[str, Any]]], **kwargs: Any
     ) -> Union[str, LLMResponse]:
         """
@@ -388,7 +388,7 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
         first = choices[0]
 
         content = ""
-        tool_calls = []
+        tool_calls: list[Any] = []
 
         # Extract content
         delta = getattr(first, "delta", None)

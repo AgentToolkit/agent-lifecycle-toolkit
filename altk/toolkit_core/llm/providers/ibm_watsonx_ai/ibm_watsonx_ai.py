@@ -194,7 +194,7 @@ class WatsonxLLMClient(LLMClient):
         - For chat:           raw['choices'][0]['message']['content']
         """
         content = ""
-        tool_calls = []
+        tool_calls: list[Any] = []
 
         # Text‐generation style
         if isinstance(raw, dict) and "results" in raw:
@@ -243,7 +243,7 @@ class WatsonxLLMClient(LLMClient):
         mode: Union[str, GenerationMode] = GenerationMode.CHAT,
         generation_args: Optional[Any] = None,
         **kwargs: Any,
-    ) -> str:
+    ) -> Union[str, LLMResponse]:
         """
         Synchronous generation override for WatsonX.
 
@@ -308,7 +308,7 @@ class WatsonxLLMClient(LLMClient):
         mode: Union[str, GenerationMode] = GenerationMode.CHAT_ASYNC,
         generation_args: Optional[Any] = None,
         **kwargs: Any,
-    ) -> str:
+    ) -> Union[str, LLMResponse]:
         """
         Asynchronous generation override for WatsonX.
 

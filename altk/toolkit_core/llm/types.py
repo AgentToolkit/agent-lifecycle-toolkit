@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable
 from dataclasses import dataclass
 
 
@@ -80,10 +80,10 @@ class ParameterMapper:
     Abstract base class for mapping generic generation arguments to provider-specific parameters.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._text_mappings: Dict[str, str] = {}
         self._chat_mappings: Dict[str, str] = {}
-        self._custom_transforms: Dict[str, callable] = {}
+        self._custom_transforms: Dict[str, Callable[[Any, str], Any]] = {}
 
     def set_text_mapping(self, generic_param: str, provider_param: str) -> None:
         """Set parameter mapping for text generation mode."""
@@ -94,7 +94,7 @@ class ParameterMapper:
         self._chat_mappings[generic_param] = provider_param
 
     def set_custom_transform(
-        self, generic_param: str, transform_func: callable
+        self, generic_param: str, transform_func: Callable[[Any, str], Any]
     ) -> None:
         """Set a custom transformation function for a parameter."""
         self._custom_transforms[generic_param] = transform_func
@@ -120,7 +120,8 @@ class ParameterMapper:
         for generic_param, value in args_dict.items():
             # Check for custom transform first
             if generic_param in self._custom_transforms:
-                transformed = self._custom_transforms[generic_param](value, mode)
+                transform_func = self._custom_transforms[generic_param]
+                transformed = transform_func(value, mode)
                 if isinstance(transformed, dict):
                     provider_args.update(transformed)
                 else:

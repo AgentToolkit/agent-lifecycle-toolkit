@@ -5,9 +5,9 @@ from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 
 # Import from parent module to ensure singleton registry
 from altk.toolkit_core.llm import _REGISTRY
-from .types import GenerationMode, GenerationArgs, ParameterMapper
+from .types import GenerationMode, GenerationArgs, LLMResponse, ParameterMapper
 
-T = TypeVar("T", bound="LLMClient")
+T = TypeVar("T", bound="BaseLLMClient")
 Hook = Callable[[str, Dict[str, Any]], None]
 
 
@@ -22,14 +22,14 @@ def register_llm(name: str) -> Callable[[Type[T]], Type[T]]:
         Decorator function that registers the class
     """
 
-    def deco(cls: Type["LLMClient"]) -> Type["LLMClient"]:
+    def deco(cls: Type["BaseLLMClient"]) -> Type["BaseLLMClient"]:
         _REGISTRY[name] = cls
         return cls
 
-    return deco
+    return deco  # type: ignore
 
 
-def get_llm(name: str) -> Type["LLMClient"]:
+def get_llm(name: str) -> Type["BaseLLMClient"]:
     """
     Retrieve an LLM client class from the global registry.
 
@@ -103,20 +103,11 @@ class MethodConfig:
                 )
         if not callable(obj):
             raise TypeError(f"Resolved '{self.path}' is not callable on {client}")
-        return obj
+        return obj  # type: ignore
 
 
-class LLMClient(ABC):
-    """
-    Abstract base wrapper for any LLM provider.
-
-    Responsibilities:
-      - Accept an existing SDK client or construct one from kwargs.
-      - Register provider methods via MethodConfig.
-      - Provide sync/async/batch generate calls.
-      - Emit observability hooks.
-      - Parse raw responses into plain text.
-    """
+class BaseLLMClient(ABC):
+    """Abstract base class for any LLM client."""
 
     def __init__(
         self,
@@ -179,7 +170,7 @@ class LLMClient(ABC):
 
     @classmethod
     @abstractmethod
-    def provider_class(cls) -> Type:
+    def provider_class(cls) -> Type[Any]:
         """
         Underlying SDK client class, e.g. openai.OpenAI or litellm.LiteLLM.
         """
@@ -256,7 +247,7 @@ class LLMClient(ABC):
             "key",
         }
 
-        filtered_args = {}
+        filtered_args: dict[str, Any] = {}
         for key, value in args.items():
             if key.lower() in sensitive_keys or any(
                 sensitive in key.lower()
@@ -281,7 +272,7 @@ class LLMClient(ABC):
         return filtered_args
 
     @abstractmethod
-    def _parse_llm_response(self, raw: Any) -> str:
+    def _parse_llm_response(self, raw: Any) -> Union[str, LLMResponse]:
         """
         Extract the generated text from a single raw response.
 
@@ -289,13 +280,13 @@ class LLMClient(ABC):
             ValueError: if extraction fails.
         """
 
-    def generate(
+    def _generate(
         self,
         prompt: Union[str, List[Dict[str, Any]]],
         mode: Union[str, GenerationMode] = GenerationMode.CHAT,
         generation_args: Optional[GenerationArgs] = None,
         **kwargs: Any,
-    ) -> str:
+    ) -> Union[str, LLMResponse]:
         """
         Synchronous generation.
 
@@ -350,13 +341,14 @@ class LLMClient(ABC):
         self._emit("after_generate", {"mode": mode_str, "response": text})
         return text
 
-    async def generate_async(
+    async def _generate_async(
         self,
         prompt: Union[str, List[Dict[str, Any]]],
+        *,
         mode: Union[str, GenerationMode] = GenerationMode.CHAT_ASYNC,
         generation_args: Optional[GenerationArgs] = None,
         **kwargs: Any,
-    ) -> str:
+    ) -> Union[str, LLMResponse]:
         """
         Asynchronous generation.
 
@@ -419,4 +411,71 @@ class LLMClient(ABC):
         kwargs["generation_args"] = generation_args
 
         # fallback to sync generate in thread
-        return await asyncio.to_thread(self.generate, prompt, **kwargs)
+        return await asyncio.to_thread(self._generate, prompt, **kwargs)
+
+
+class LLMClient(BaseLLMClient):
+    """
+    Abstract base wrapper for any LLM provider.
+
+    Responsibilities:
+      - Accept an existing SDK client or construct one from kwargs.
+      - Register provider methods via MethodConfig.
+      - Provide sync/async/batch generate calls.
+      - Emit observability hooks.
+      - Parse raw responses into plain text.
+    """
+
+    def generate(
+        self,
+        prompt: Union[str, List[Dict[str, Any]]],
+        mode: Union[str, GenerationMode] = GenerationMode.CHAT,
+        generation_args: Optional[GenerationArgs] = None,
+        **kwargs: Any,
+    ) -> Union[str, LLMResponse]:
+        """
+        Synchronous generation.
+
+        Args:
+            prompt: Either a plain string or a list of chat messages dicts.
+            mode: Generation mode (text, chat, text_async, chat_async).
+            generation_args: Provider-agnostic generation arguments.
+            **kwargs: Additional provider-specific parameters.
+
+        Returns:
+            The generated text.
+
+        Raises:
+            KeyError: if no MethodConfig for `mode`.
+            Exception: if the underlying call or parsing fails.
+        """
+        return self._generate(prompt, mode, generation_args, **kwargs)
+
+    async def generate_async(
+        self,
+        prompt: Union[str, List[Dict[str, Any]]],
+        *,
+        mode: Union[str, GenerationMode] = GenerationMode.CHAT_ASYNC,
+        generation_args: Optional[GenerationArgs] = None,
+        **kwargs: Any,
+    ) -> Union[str, LLMResponse]:
+        """
+        Asynchronous generation.
+
+        Uses provider async method if registered, otherwise falls back to thread.
+
+        Args:
+            prompt: string or messages list.
+            mode: Generation mode (text_async, chat_async).
+            generation_args: Provider-agnostic generation arguments.
+            **kwargs: Additional provider-specific parameters.
+
+        Returns:
+            The generated text.
+
+        Raises:
+            Exception: if generation or parsing fails.
+        """
+        return await self._generate_async(
+            prompt, mode=mode, generation_args=generation_args, **kwargs
+        )

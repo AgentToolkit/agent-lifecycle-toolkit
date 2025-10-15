@@ -16,10 +16,11 @@ Key Features:
 from typing import Dict, Type
 
 # Global registry for LLM clients - initialize once
-_REGISTRY: Dict[str, Type["LLMClient"]] = {}
+_REGISTRY: Dict[str, Type["BaseLLMClient"]] = {}
 
 # Core imports
 from .base import (
+    BaseLLMClient,
     LLMClient,
     get_llm,
     register_llm,
@@ -46,7 +47,7 @@ __all__ = [
 
 
 # Conditional imports for providers
-def _import_providers():
+def _import_providers() -> None:
     """Import providers with optional dependencies"""
 
     from .providers.auto_from_env.auto_from_env import AutoFromEnvLLMClient
@@ -112,7 +113,7 @@ def _import_providers():
 
     # IBM Watson providers
     try:
-        import ibm_watsonx_ai
+        import ibm_watsonx_ai  # type: ignore
         from .providers.ibm_watsonx_ai.ibm_watsonx_ai import (
             WatsonxLLMClient,
             WatsonxLLMClientOutputVal,

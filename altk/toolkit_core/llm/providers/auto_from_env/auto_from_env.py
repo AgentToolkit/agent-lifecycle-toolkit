@@ -37,19 +37,24 @@ class AutoFromEnvLLMClient(LLMClient):
                     raise EnvironmentError(
                         "Missing model name which is required for this provider; please set the 'ALTK_MODEL_NAME' environment variable or instantiate an appropriate LLMClient."
                     )
-                self._chosen_provider = provider_type(model_name=self.model_name)
+                self._chosen_provider = self.provider_type(model_name=self.model_name)
             else:
-                self._chosen_provider = provider_type()
+                self._chosen_provider = self.provider_type()
                 self.model_name_in_generate = True
 
     @classmethod
-    def provider_class(cls) -> Type:
-        return None
+    def provider_class(cls) -> Type[Any]:
+        raise NotImplementedError
 
     def _register_methods(self) -> None:
-        self._chosen_provider._register_methods()
+        if self._chosen_provider:
+            self._chosen_provider._register_methods()
 
     def _parse_llm_response(self, raw: Any) -> Union[str, LLMResponse]:
+        if not self._chosen_provider:
+            raise Exception(
+                "Missing provider name; please set the 'LLM_PROVIDER' environment variable or instantiate an appropriate LLMClient."
+            )
         return self._chosen_provider._parse_llm_response(raw)
 
     def _setup_parameter_mapper(self) -> None:
@@ -64,25 +69,36 @@ class AutoFromEnvLLMClient(LLMClient):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
+        if not self._chosen_provider:
+            raise Exception(
+                "Missing provider name; please set the 'LLM_PROVIDER' environment variable or instantiate an appropriate LLMClient."
+            )
+
         if self.model_name_in_generate:
             # this is needed for providers like openai
             model_name = kwargs.get("model")
             if not model_name:
                 model_name = self.model_name
-                return self._chosen_provider.generate(*args, model=model_name, **kwargs)
-        return self._chosen_provider.generate(*args, **kwargs)
+                return self._chosen_provider._generate(
+                    *args, model=model_name, **kwargs
+                )
+        return self._chosen_provider._generate(*args, **kwargs)
 
     async def generate_async(
         self,
         *args: Any,
         **kwargs: Any,
     ) -> Any:
+        if not self._chosen_provider:
+            raise Exception(
+                "Missing provider name; please set the 'LLM_PROVIDER' environment variable or instantiate an appropriate LLMClient."
+            )
         if self.model_name_in_generate:
             # this is needed for providers like openai
             model_name = kwargs.get("model")
             if not model_name:
                 model_name = self.model_name
-                return await self._chosen_provider.generate_async(
+                return await self._chosen_provider._generate_async(
                     *args, model=model_name, **kwargs
                 )
-        return await self._chosen_provider.generate_async(*args, **kwargs)
+        return await self._chosen_provider._generate_async(*args, **kwargs)
