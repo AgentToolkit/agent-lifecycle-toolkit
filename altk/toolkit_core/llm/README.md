@@ -14,61 +14,86 @@ This directory contains a flexible, extensible framework for working with any la
 
 ## Quick Start
 
-There are two options for getting LLM providers:
+There are three options for getting LLM providers:
 1. Instantiating specific LLM providers via `get_llm`
-2. Through environment variables and the `auto_from_env` provider.
+2. Through environment variables and the `auto_from_env` provider
+3. Directly passing into `ComponentConfig`
 
-Both examples will use OpenAI as an LLM provider using the o4-mini model.
+Both examples will use Anthropic as an LLM provider using the claude-sonnet-4 model.
 
 ### 1. Using `get_llm` to instantiate an LLM provider
 ```python
 from altk.toolkit_core.llm import get_llm
+from altk.toolkit_core.core.toolkit import ComponentConfig
 
 # Get an LLM provider
-OpenAIClient = get_llm("openai.sync")
+LiteLLMClient = get_llm("litellm")
 
-client = OpenAIClient(
-    api_key="*** openai api key ***"
+client = LiteLLMClient(
+    model_name="anthropic/claude-sonnet-4-20250514",
+    api_key="*** anthropic api key ***" # or define the env var ANTHROPIC_API_KEY
 )
-
-# Generate text
-response = client.generate("Explain quantum computing", model="o4-mini")
-print(response)
-```
-
-### 2. Using environment variables and the `auto_from_env` provider
-Set the following environment variables:
-- `LLM_PROVIDER=openai.sync`
-- `MODEL_NAME=o4-mini`
-- `OPENAI_API_KEY=*** openai api key ***`
-
-```python
-from altk.toolkit_core.llm import get_llm
-
-# Get an LLM provider
-client = get_llm("auto_from_env")
 
 # Generate text
 response = client.generate("Explain quantum computing")
 print(response)
+
+# Provide LLMClient to ComponentConfig for usage by component
+config = ComponentConfig(llm_client=client)
 ```
 
+### 2. Using environment variables and the `auto_from_env` provider
+By default, ComponentConfig will use this option. Set the following environment variables:
+- `ALTK_MODEL_NAME=anthropic/claude-sonnet-4-20250514`
+- `ANTHROPIC_API_KEY=*** anthropic api key ***`
+
+```python
+from altk.toolkit_core.llm import get_llm
+from altk.toolkit_core.core.toolkit import ComponentConfig
+
+# Get an LLM provider
+client = get_llm("auto_from_env")()
+
+# Generate text
+response = client.generate("Explain quantum computing")
+print(response)
+
+# ComponentConfig by default uses this option
+config = ComponentConfig()
+print(config.llm_client.generate("Explain quantum computing"))
+```
+
+By default, the LiteLLM provider is used. Optionally, `ALTK_LLM_PROVIDER` can be set to instantiate a specific provider.
 Environment variables needed will differ depending on the desired provider, some examples:
 
 _Ollama_:
 ```bash
-LLM_PROVIDER=gpt-oss
-MODEL_NAME=granite3.3
+ALTK_LLM_PROVIDER=litellm.ollama
+ALTK_MODEL_NAME=granite3.3
 ```
 
 _WatsonX_:
 ```bash
-LLM_PROVIDER=watsonx
-MODEL_NAME=ibm/granite-3.3-8b-instruct
+ALTK_LLM_PROVIDER=watsonx
+ALTK_MODEL_NAME=ibm/granite-3.3-8b-instruct
 WX_API_KEY=(watsonx api key)
 WX_PROJECT_ID=(watsonx project id)
 WX_URL=https://us-south.ml.cloud.ibm.com
 ```
+
+### 3. Directly passing into `ComponentConfig`
+`ComponentConfig` also supports directly passing in a LiteLLM-style model name into the `llm_client` parameter. This automatically creates a LiteLLM provider with the corresponding model name. Set the following environment variables:
+- `ANTHROPIC_API_KEY=*** anthropic api key ***`
+
+```python
+from altk.toolkit_core.core.toolkit import ComponentConfig
+
+# Directly pass the LiteLLM-style model name into ComponentConfig
+config = ComponentConfig(llm_client="anthropic/claude-sonnet-4-5-20250929")
+response = config.llm_client.generate("Explain quantum computing")
+print(response)
+```
+
 
 ---
 

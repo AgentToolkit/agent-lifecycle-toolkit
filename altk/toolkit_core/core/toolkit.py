@@ -22,6 +22,12 @@ class ComponentConfig(BaseModel):
     )  # More flexible to accept different LLM client types
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+    def model_post_init(self, ctx) -> None:
+        if isinstance(self.llm_client, str):
+            # In this scenario, we assume that user supplied a litellm-style model name
+            litellm_provider = get_llm("litellm")
+            self.llm_client = litellm_provider(self.llm_client)
+
 
 class ComponentBase(ABC, BaseModel):
     config: Optional[ComponentConfig] = Field(default_factory=ComponentConfig)

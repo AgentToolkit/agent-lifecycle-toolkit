@@ -1,8 +1,6 @@
 """Example of using ALTK with generic agent to check for pre-tool execution errors.
 This example uses the .env file in the root directory.
 Copy the .env.example to .env and fill out the following variables:
-LLM_PROVIDER = openai.sync
-MODEL_NAME = o4-mini
 OPENAI_API_KEY = *** openai api key ***
 
 Note that this example will require installing langgraph, langchain-openai, and streamlit

@@ -1,9 +1,10 @@
 """Example of using ALTK with generic agent to check for silent errors.
 This example uses the .env file in the root directory.
 Copy the .env.example to .env and fill out the following variables:
-LLM_PROVIDER = openai.sync
-MODEL_NAME = o4-mini
-OPENAI_API_KEY = *** openai api key ***
+ALTK_MODEL_NAME = anthropic/claude-sonnet-4-20250514
+ANTHROPIC_API_KEY = *** anthropic api key ***
+
+Note that this example will require installing langgraph, and langchain-anthropic.
 """
 
 import random
@@ -42,7 +43,7 @@ def get_weather(city: str, state: Annotated[dict, InjectedState]) -> dict[str, s
     reviewer = SilentReviewForJSONDataComponent()
     review_result = reviewer.process(data=review_input, phase=AgentPhase.RUNTIME)
 
-    if review_result.outcome != Outcome.ACCOMPLISHED:
+    if review_result.outcome == Outcome.NOT_ACCOMPLISHED:
         # Agent should retry tool call if silent error was detected
         print("(ALTK: Silent error detected, retry the get_weather tool!)")
         retries += 1
@@ -52,7 +53,9 @@ def get_weather(city: str, state: Annotated[dict, InjectedState]) -> dict[str, s
 
 
 agent = create_react_agent(
-    model="openai:o4-mini", tools=[get_weather], prompt="You are a helpful assistant"
+    model="anthropic:claude-sonnet-4-20250514",
+    tools=[get_weather],
+    prompt="You are a helpful assistant",
 )
 
 # Runs the agent

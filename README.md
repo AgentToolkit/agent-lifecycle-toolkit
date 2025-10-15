@@ -22,7 +22,7 @@ More [detailed installation instructions]() are available in the docs.
 <!-- [TODO: add link] -->
 
 ## Getting Started
-Below is an end-to-end example that you can quickly get your hands dirty with. The example has a langgraph agent, a weather tool, and a component that checks for silent errors. Refer to the [examples](examples) folder for this example and others. The below example will additionally require the `langgraph` and `langchain-openai` packages along with setting three environment variables.
+Below is an end-to-end example that you can quickly get your hands dirty with. The example has a langgraph agent, a weather tool, and a component that checks for silent errors. Refer to the [examples](examples) folder for this example and others. The below example will additionally require the `langgraph` and `langchain-anthropic` packages along with setting two environment variables.
 
 ```python
 import random
@@ -37,9 +37,8 @@ from altk.post_tool_reflection_toolkit.core.toolkit import SilentReviewRunInput,
 from altk.toolkit_core.core.toolkit import AgentPhase
 
 # Ensure that the following environment variables are set:
-# OPENAI_API_KEY = *** openai api key ***
-# LLM_PROVIDER = openai.sync
-# MODEL_NAME = o4-mini
+# ANTHROPIC_API_KEY = *** anthropic api key ***
+# ALTK_MODEL_NAME = anthropic/claude-sonnet-4-20250514
 
 @tool
 def get_weather(city: str, state: Annotated[dict, InjectedState]) -> str:
@@ -55,14 +54,14 @@ def get_weather(city: str, state: Annotated[dict, InjectedState]) -> str:
     reviewer = SilentReviewForJSONDataComponent()
     review_result = reviewer.process(data=review_input, phase=AgentPhase.RUNTIME)
 
-    if review_result.outcome != Outcome.ACCOMPLISHED:
+    if review_result.outcome == Outcome.NOT_ACCOMPLISHED:
         # Agent should retry tool call if silent error was detected
         return "Silent error detected, retry the get_weather tool!"
     else:
         return result
 
 agent = create_react_agent(
-    model="openai:o4-mini",
+    model="anthropic:claude-sonnet-4-20250514",
     tools=[get_weather],
     prompt="You are a helpful assistant"
 )
