@@ -51,7 +51,7 @@ class BaseOpenAIClient(LLMClient):
         self._parameter_mapper.set_chat_mapping("timeout", "timeout")
 
         # Custom transform for decoding_method
-        def transform_decoding_method(value, mode):
+        def transform_decoding_method(value: Any, mode: Any) -> dict[str, Any]:
             # OpenAI doesn't have direct decoding_method, map to temperature for approximation
             if value == "greedy":
                 return {"temperature": 0.0}
@@ -61,7 +61,7 @@ class BaseOpenAIClient(LLMClient):
                 return {}  # Unknown method, no transformation
 
         # Custom transform for min_tokens (not supported by OpenAI)
-        def transform_min_tokens(value, mode):
+        def transform_min_tokens(value: Any, mode: Any) -> dict[str, Any]:
             # OpenAI doesn't support min_tokens, so we ignore it and emit a warning
             import warnings
 
@@ -120,7 +120,7 @@ class BaseValidatingOpenAIClient(ValidatingLLMClient):
         self._parameter_mapper.set_chat_mapping("timeout", "timeout")
 
         # Custom transform for decoding_method
-        def transform_decoding_method(value, mode):
+        def transform_decoding_method(value: Any, mode: Any) -> dict[str, Any]:
             # OpenAI doesn't have direct decoding_method, map to temperature for approximation
             if value == "greedy":
                 return {"temperature": 0.0}
@@ -130,7 +130,7 @@ class BaseValidatingOpenAIClient(ValidatingLLMClient):
                 return {}  # Unknown method, no transformation
 
         # Custom transform for min_tokens (not supported by OpenAI)
-        def transform_min_tokens(value, mode):
+        def transform_min_tokens(value: Any, mode: Any) -> dict[str, Any]:
             # OpenAI doesn't support min_tokens, so we ignore it and emit a warning
             import warnings
 

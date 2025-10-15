@@ -176,7 +176,7 @@ markers = [
 [tool.mypy]
 files = [
     "altk/toolkit_core/core",
-    "altk/toolkit_core/llm"
+    "altk/toolkit_core/llm",
 ]
 
 [tool.semantic_release]

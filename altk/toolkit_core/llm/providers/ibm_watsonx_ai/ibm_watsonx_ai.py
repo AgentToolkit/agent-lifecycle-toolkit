@@ -2,8 +2,8 @@ from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 import os
 
 try:
-    from ibm_watsonx_ai import Credentials
-    from ibm_watsonx_ai.foundation_models import ModelInference
+    from ibm_watsonx_ai import Credentials  # type: ignore
+    from ibm_watsonx_ai.foundation_models import ModelInference  # type: ignore
 except ImportError as e:
     raise ImportError(
         "Please install the ibm-watsonx-ai package: pip install 'toolkit-core[watsonx]'"
@@ -17,7 +17,7 @@ from pydantic import BaseModel
 from ..consts import WX_URL, WX_API_KEY, WX_PROJECT_ID, WX_SPACE_ID
 
 T = TypeVar("T", bound="WatsonxLLMClient")
-SchemaType = Union[Dict[str, Any], Type["BaseModel"], Type]
+SchemaType = Union[Dict[str, Any], Type["BaseModel"], Type[Any]]
 
 # -------------------------------------------------------------------
 # 1. Non-validating Watsonx wrapper
@@ -121,11 +121,11 @@ class WatsonxLLMClient(LLMClient):
         )
 
     @classmethod
-    def provider_class(cls) -> Type:
+    def provider_class(cls) -> Type[Any]:
         """
         Underlying SDK client class for watsonx.ai: ModelInference.
         """
-        return ModelInference
+        return ModelInference  # type: ignore
 
     def _register_methods(self) -> None:
         """
@@ -174,7 +174,7 @@ class WatsonxLLMClient(LLMClient):
         self._parameter_mapper.set_chat_mapping("top_logprobs", "top_logprobs")
 
         # Custom transforms for complex parameters
-        def transform_echo_text_mode(value, mode):
+        def transform_echo_text_mode(value: Any, mode: Any) -> dict[str, Any]:
             if mode in ["text", "text_async"]:
                 # Text mode can include input text in response
                 return (
@@ -465,11 +465,11 @@ class WatsonxLLMClientOutputVal(ValidatingLLMClient):
         )
 
     @classmethod
-    def provider_class(cls) -> Type:
+    def provider_class(cls) -> Type[Any]:
         """
         Underlying SDK client class: ModelInference.
         """
-        return ModelInference
+        return ModelInference  # type: ignore
 
     def _register_methods(self) -> None:
         """
@@ -516,7 +516,7 @@ class WatsonxLLMClientOutputVal(ValidatingLLMClient):
         self._parameter_mapper.set_chat_mapping("logprobs", "logprobs")
         self._parameter_mapper.set_chat_mapping("top_logprobs", "top_logprobs")
 
-        def transform_echo_text_mode(value, mode):
+        def transform_echo_text_mode(value: Any, mode: Any) -> dict[str, Any]:
             if mode in ["text", "text_async"]:
                 return (
                     {"include_stop_sequence": value}
@@ -537,16 +537,16 @@ class WatsonxLLMClientOutputVal(ValidatingLLMClient):
             results = raw["results"]
             if isinstance(results, list) and results:
                 first = results[0]
-                return first.get("generated_text", "")
+                return str(first.get("generated_text", ""))
         if isinstance(raw, dict) and "choices" in raw:
             choices = raw["choices"]
             if isinstance(choices, list) and choices:
                 first = choices[0]
                 msg = first.get("message")
                 if isinstance(msg, dict) and "content" in msg:
-                    return msg["content"]
+                    return str(msg["content"])
                 if "text" in first:
-                    return first["text"]
+                    return str(first["text"])
         raise ValueError(f"Unexpected watsonx response format: {raw!r}")
 
     def generate(

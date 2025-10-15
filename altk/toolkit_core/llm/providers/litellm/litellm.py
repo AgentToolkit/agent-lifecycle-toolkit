@@ -34,7 +34,7 @@ class LiteLLMClient(LLMClient):
 
     @classmethod
     def provider_class(cls) -> type:
-        return litellm
+        return litellm  # type: ignore
 
     def _register_methods(self) -> None:
         """Register LiteLLM methods - only chat and chat_async are supported"""
@@ -72,15 +72,15 @@ class LiteLLMClient(LLMClient):
         self._parameter_mapper.set_chat_mapping("top_logprobs", "top_logprobs")
 
         # Custom transforms for complex parameters
-        def transform_top_k(value, mode):
+        def transform_top_k(value: Any, mode: Any) -> dict[str, Any]:
             # LiteLLM doesn't have top_k directly, but some models support it via model_kwargs
             return {"top_k": value}
 
-        def transform_repetition_penalty(value, mode):
+        def transform_repetition_penalty(value: Any, mode: Any) -> dict[str, Any]:
             # Map to frequency_penalty if not already set
             return {"repetition_penalty": value}
 
-        def transform_decoding_method(value, mode):
+        def transform_decoding_method(value: Any, mode: Any) -> dict[str, Any]:
             # LiteLLM doesn't have direct decoding_method, map to temperature for approximation
             if value == "greedy":
                 return {"temperature": 0.0}
@@ -98,7 +98,7 @@ class LiteLLMClient(LLMClient):
         )
 
         # Custom transform for min_tokens (not supported by LiteLLM)
-        def transform_min_tokens(value, mode):
+        def transform_min_tokens(value: Any, mode: Any) -> dict[str, Any]:
             # LiteLLM doesn't support min_tokens, so we ignore it and emit a warning
             import warnings
 
@@ -295,13 +295,13 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
         super().__init__(client=None, hooks=hooks, **lite_kwargs)
 
     @classmethod
-    def provider_class(cls) -> Type:
+    def provider_class(cls) -> Type[Any]:
         """
         Underlying SDK client for litellm.
 
         Must be callable with no arguments (per LLMClient __init__ logic).
         """
-        return litellm
+        return litellm  # type: ignore
 
     def _register_methods(self) -> None:
         """
@@ -337,13 +337,13 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
         self._parameter_mapper.set_chat_mapping("stop_sequences", "stop")
         self._parameter_mapper.set_chat_mapping("top_logprobs", "top_logprobs")
 
-        def transform_top_k(value, mode):
+        def transform_top_k(value: Any, mode: Any) -> dict[str, Any]:
             return {"top_k": value}
 
-        def transform_repetition_penalty(value, mode):
+        def transform_repetition_penalty(value: Any, mode: Any) -> dict[str, Any]:
             return {"repetition_penalty": value}
 
-        def transform_decoding_method(value, mode):
+        def transform_decoding_method(value: Any, mode: Any) -> dict[str, Any]:
             # LiteLLM doesn't have direct decoding_method, map to temperature for approximation
             if value == "greedy":
                 return {"temperature": 0.0}
@@ -361,7 +361,7 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
         )
 
         # Custom transform for min_tokens (not supported by LiteLLM)
-        def transform_min_tokens(value, mode):
+        def transform_min_tokens(value: Any, mode: Any) -> dict[str, Any]:
             # LiteLLM doesn't support min_tokens, so we ignore it and emit a warning
             import warnings
 
@@ -433,11 +433,11 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
         self,
         prompt: Union[str, List[Dict[str, Any]]],
         *,
-        schema: Union[Dict[str, Any], Type[BaseModel], Type],
+        schema: Union[Dict[str, Any], Type[BaseModel], Type[Any]],
         schema_field: Optional[str] = "response_format",
         retries: int = 3,
         **kwargs: Any,
-    ) -> Any:
+    ) -> Union[str, LLMResponse]:
         """
         Synchronous chat generation with validation + retries.
 
@@ -479,11 +479,11 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
         self,
         prompt: Union[str, List[Dict[str, Any]]],
         *,
-        schema: Union[Dict[str, Any], Type[BaseModel], Type],
+        schema: Union[Dict[str, Any], Type[BaseModel], Type[Any]],
         schema_field: Optional[str] = "response_format",
         retries: int = 3,
         **kwargs: Any,
-    ) -> Any:
+    ) -> Union[str, LLMResponse]:
         """
         Asynchronous chat generation with validation + retries.
         """

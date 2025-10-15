@@ -221,7 +221,7 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
         retries: int = 3,
         include_schema_in_system_prompt: bool = False,
         **kwargs: Any,
-    ) -> Any:
+    ) -> Union[str, Any]:
         """
         Synchronous single-item generation with validation + retries.
         """
@@ -285,7 +285,7 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
         retries: int = 3,
         include_schema_in_system_prompt: bool = False,
         **kwargs: Any,
-    ) -> Any:
+    ) -> Union[str, Any]:
         """
         Asynchronous single-item generation with validation + retries.
         """
