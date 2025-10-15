@@ -26,7 +26,7 @@ jobs:
       WX_SPACE_ID: ${{ secrets. WX_SPACE_ID }}
       WX_URL: ${{ vars.WX_URL }}
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v5
       - uses: ./.github/actions/setup-python-uv
       - uses: ./.github/actions/run-tests
