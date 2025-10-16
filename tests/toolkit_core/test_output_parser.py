@@ -9,7 +9,7 @@ from altk.toolkit_core.llm.output_parser import (
     OutputValidationError,
     ValidatingLLMClient,
 )
-from altk.toolkit_core.llm.base import LLMClient
+from altk.toolkit_core.llm.base import BaseLLMClient, LLMClient
 
 
 class ValidationTestModel(BaseModel):
@@ -20,7 +20,7 @@ class ValidationTestModel(BaseModel):
     email: Optional[str] = None
 
 
-class MockLLMClient(LLMClient):
+class MockLLMClient(BaseLLMClient):
     """Mock LLM client for testing."""
 
     def __init__(self, **kwargs):
