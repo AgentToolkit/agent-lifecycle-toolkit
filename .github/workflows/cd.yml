@@ -8,6 +8,17 @@ permissions:
 
 on:
   workflow_dispatch:
+    inputs:
+      bump-version:
+        description: 'What bump level?'
+        type: choice
+        options: ['major', 'minor', 'patch', 'prerelease']
+        required: true
+      as-prerelease:
+        description: 'As pre-release?'
+        type: boolean
+        required: true
+        default: false
 
 jobs:
   check-code:
@@ -98,6 +109,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           git_committer_name: "github-actions"
           git_committer_email: "actions@users.noreply.github.com"
+          force: ${{ github.event.inputs.bump-version }}
+          prerelease: ${{ github.event.inputs.as-prerelease }}
 
       - name: Upload to GitHub release assets
         uses: python-semantic-release/publish-action@v10.4.1
