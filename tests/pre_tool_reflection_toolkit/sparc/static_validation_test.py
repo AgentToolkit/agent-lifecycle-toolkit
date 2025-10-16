@@ -1,7 +1,6 @@
 import json
 import os
 import pytest
-from langchain_core.messages import HumanMessage, AIMessage
 
 from altk.pre_tool_reflection_toolkit.core import (
     SPARCReflectionRunInput,
@@ -140,8 +139,8 @@ class TestStaticValidation:
     def basic_conversation(self):
         """Basic conversation context for testing."""
         return [
-            HumanMessage(content="Send an email to john@example.com"),
-            AIMessage(content="I'll send an email to john@example.com"),
+            {"role": "user", "content": "Send an email to john@example.com"},
+            {"role": "assistant", "content": "I'll send an email to john@example.com"},
         ]
 
     def test_missing_required_parameters(
@@ -204,10 +203,14 @@ class TestStaticValidation:
         )
 
         conversation = [
-            HumanMessage(
-                content="Schedule a 2-hour meeting with the team tomorrow at 2 PM"
-            ),
-            AIMessage(content="I'll schedule a 2-hour meeting with the team"),
+            {
+                "role": "user",
+                "content": "Schedule a 2-hour meeting with the team tomorrow at 2 PM",
+            },
+            {
+                "role": "assistant",
+                "content": "I'll schedule a 2-hour meeting with the team",
+            },
         ]
 
         # Invalid types: participants should be array, duration_minutes should be integer
@@ -257,8 +260,8 @@ class TestStaticValidation:
         )
 
         conversation = [
-            HumanMessage(content="Send a high priority email to invalid-email"),
-            AIMessage(content="I'll send a high priority email"),
+            {"role": "user", "content": "Send a high priority email to invalid-email"},
+            {"role": "assistant", "content": "I'll send a high priority email"},
         ]
 
         # Schema violations: invalid email format, invalid priority enum, empty subject
@@ -308,10 +311,14 @@ class TestStaticValidation:
         )
 
         conversation = [
-            HumanMessage(
-                content="Send an email to team@example.com with subject 'Weekly Update'"
-            ),
-            AIMessage(content="I'll send the weekly update email to the team"),
+            {
+                "role": "user",
+                "content": "Send an email to team@example.com with subject 'Weekly Update'",
+            },
+            {
+                "role": "assistant",
+                "content": "I'll send the weekly update email to the team",
+            },
         ]
 
         # Valid tool call

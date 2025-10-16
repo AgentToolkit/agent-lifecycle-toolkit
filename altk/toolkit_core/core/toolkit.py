@@ -33,7 +33,7 @@ class ComponentInput(BaseModel):
     Shared base input for component at runtime.
     """
 
-    messages: Optional[List[Dict[str, str]]] = None
+    messages: Optional[List[Dict[str, Any]]] = None
     metadata: Optional[Dict[str, Any] | BaseModel] = None
 
 

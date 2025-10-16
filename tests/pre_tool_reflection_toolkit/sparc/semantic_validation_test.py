@@ -139,8 +139,11 @@ class TestSemanticValidation:
         )
 
         conversation_context = [
-            HumanMessage(content="What's the weather like in New York today?"),
-            AIMessage(content="I'll check the weather for you in New York."),
+            {"role": "user", "content": "What's the weather like in New York today?"},
+            {
+                "role": "assistant",
+                "content": "I'll check the weather for you in New York.",
+            },
         ]
 
         # Wrong function selected - booking flight instead of getting weather
@@ -200,10 +203,14 @@ class TestSemanticValidation:
         )
 
         conversation_context = [
-            HumanMessage(
-                content="Send an SMS to my mom at +1234567890 saying 'Happy Birthday'"
-            ),
-            AIMessage(content="I'll send the birthday message to your mom."),
+            {
+                "role": "user",
+                "content": "Send an SMS to my mom at +1234567890 saying 'Happy Birthday'",
+            },
+            {
+                "role": "assistant",
+                "content": "I'll send the birthday message to your mom.",
+            },
         ]
 
         # Parameter values don't match what user said
@@ -246,12 +253,14 @@ class TestSemanticValidation:
         )
 
         conversation_context = [
-            HumanMessage(
-                content="What's the weather like in Boston today? I prefer Fahrenheit."
-            ),
-            AIMessage(
-                content="I'll check the current weather in Boston with Fahrenheit temperature."
-            ),
+            {
+                "role": "user",
+                "content": "What's the weather like in Boston today? I prefer Fahrenheit.",
+            },
+            {
+                "role": "assistant",
+                "content": "I'll check the current weather in Boston with Fahrenheit temperature.",
+            },
         ]
 
         # Well-aligned function call that matches user intent and preferences
@@ -292,16 +301,19 @@ class TestSemanticValidation:
 
         # Complex conversation with multiple topics and clarifications
         complex_conversation = [
-            HumanMessage(content="I need to plan a trip to New York"),
-            AIMessage(
-                content="I'd be happy to help you plan your trip to New York. What would you like to do first?"
-            ),
-            HumanMessage(
-                content="First, can you check the weather forecast for this weekend?"
-            ),
-            AIMessage(
-                content="I'll check the weather forecast for New York this weekend."
-            ),
+            {"role": "user", "content": "I need to plan a trip to New York"},
+            {
+                "role": "assistant",
+                "content": "I'd be happy to help you plan your trip to New York. What would you like to do first?",
+            },
+            {
+                "role": "user",
+                "content": "First, can you check the weather forecast for this weekend?",
+            },
+            {
+                "role": "assistant",
+                "content": "I'll check the weather forecast for New York this weekend.",
+            },
         ]
 
         weather_call = {
@@ -337,9 +349,7 @@ class TestSemanticValidation:
         )
 
         # Minimal conversation
-        minimal_conversation = [
-            HumanMessage(content="Weather?"),
-        ]
+        minimal_conversation = [{"role": "user", "content": "Weather?"}]
 
         tool_call = {
             "id": "7",

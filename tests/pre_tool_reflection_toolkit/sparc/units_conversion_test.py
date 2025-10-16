@@ -146,10 +146,14 @@ class TestUnitsConversion:
         )
 
         conversation_context = [
-            HumanMessage(content="Set the thermostat to 75 Fahrenheit in the bedroom"),
-            AIMessage(
-                content="I'll set the thermostat to 24 degrees Celsius (75°F) in the bedroom."
-            ),
+            {
+                "role": "user",
+                "content": "Set the thermostat to 75 Fahrenheit in the bedroom",
+            },
+            {
+                "role": "assistant",
+                "content": "I'll set the thermostat to 24 degrees Celsius (75°F) in the bedroom.",
+            },
         ]
 
         # Correct tool call - properly converted F to C
@@ -196,10 +200,11 @@ class TestUnitsConversion:
         )
 
         conversation_context = [
-            HumanMessage(
-                content="Set the thermostat to 22 degrees Celsius in the office"
-            ),
-            AIMessage(content="I'll set the office thermostat to 22°C."),
+            {
+                "role": "user",
+                "content": "Set the thermostat to 22 degrees Celsius in the office",
+            },
+            {"role": "assistant", "content": "I'll set the office thermostat to 22°C."},
         ]
 
         # Tool call already in correct units
@@ -253,8 +258,14 @@ class TestUnitsConversion:
         )
 
         conversation_context = [
-            HumanMessage(content=f"Set thermostat to {temperature_f} Fahrenheit"),
-            AIMessage(content=f"Setting thermostat to {temperature_f}°F"),
+            {
+                "role": "user",
+                "content": f"Set thermostat to {temperature_f} Fahrenheit",
+            },
+            {
+                "role": "assistant",
+                "content": f"Setting thermostat to {temperature_f}°F",
+            },
         ]
 
         # Incorrect conversion (using F value directly)
@@ -306,8 +317,8 @@ class TestUnitsConversion:
         )
 
         conversation_context = [
-            HumanMessage(content="Set thermostat to 75 Fahrenheit"),
-            AIMessage(content="Setting thermostat"),
+            {"role": "user", "content": "Set thermostat to 75 Fahrenheit"},
+            {"role": "assistant", "content": "Setting thermostat"},
         ]
 
         tool_call = {
@@ -379,10 +390,14 @@ class TestUnitsConversion:
         ]
 
         conversation_context = [
-            HumanMessage(
-                content="Calculate energy for heating 500 sq ft to 72°F for 3 hours"
-            ),
-            AIMessage(content="I'll calculate the energy usage for heating."),
+            {
+                "role": "user",
+                "content": "Calculate energy for heating 500 sq ft to 72°F for 3 hours",
+            },
+            {
+                "role": "assistant",
+                "content": "I'll calculate the energy usage for heating.",
+            },
         ]
 
         # Mixed units - some correct, some incorrect

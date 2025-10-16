@@ -19,10 +19,14 @@ def open_mean(
         else list_of_number_like_items
     )
 
-    filtered_items = [float(item) for item in filtered_items if item is not None]
+    filtered_float_items = [float(item) for item in filtered_items if item is not None]
 
-    filtered_items = [item for item in filtered_items if item < float("inf")]
+    filtered_float_items = [
+        item for item in filtered_float_items if item < float("inf")
+    ]
 
-    mean = float(reduce(lambda x, y: x + y, filtered_items)) / len(filtered_items)
+    mean = float(reduce(lambda x, y: x + y, filtered_float_items)) / len(
+        filtered_float_items
+    )
 
     return round(mean, 2)

@@ -223,14 +223,10 @@ class SPARCReflectionComponent(ComponentBase):
             # Run reflection pipeline
             if self._config.execution_mode == SPARCExecutionMode.ASYNC:
                 pipeline_result = asyncio.run(
-                    self._run_async_pipeline(
-                        msgs_to_openai_dicts(data.messages), tool_call
-                    )
+                    self._run_async_pipeline(data.messages, tool_call)
                 )
             else:
-                pipeline_result = self._run_sync_pipeline(
-                    msgs_to_openai_dicts(data.messages), tool_call
-                )
+                pipeline_result = self._run_sync_pipeline(data.messages, tool_call)
 
             # Process pipeline result
             reflection_result = self._process_pipeline_result(pipeline_result)
