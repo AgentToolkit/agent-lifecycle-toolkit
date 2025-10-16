@@ -478,7 +478,7 @@ class TestValidatingLLMClient:
         client = MockValidatingLLMClient()
 
         with patch.object(
-            LLMClient, "generate", return_value='{"name": "John", "age": 30}'
+            BaseLLMClient, "_generate", return_value='{"name": "John", "age": 30}'
         ):
             result = client.generate("Generate person", schema=ValidationTestModel)
 
@@ -490,7 +490,7 @@ class TestValidatingLLMClient:
         """Test generate with retries."""
         client = MockValidatingLLMClient()
 
-        with patch.object(LLMClient, "generate") as mock_generate:
+        with patch.object(BaseLLMClient, "_generate") as mock_generate:
             mock_generate.side_effect = ["Invalid JSON", '{"name": "John", "age": 30}']
 
             result = client.generate(
@@ -506,7 +506,7 @@ class TestValidatingLLMClient:
         """Test generate with max retries exceeded."""
         client = MockValidatingLLMClient()
 
-        with patch.object(LLMClient, "generate", return_value="Invalid JSON"):
+        with patch.object(BaseLLMClient, "_generate", return_value="Invalid JSON"):
             with pytest.raises(OutputValidationError, match="Failed after 2 attempts"):
                 client.generate(
                     "Generate person", schema=ValidationTestModel, retries=2
@@ -517,7 +517,7 @@ class TestValidatingLLMClient:
         client = MockValidatingLLMClient()
 
         with patch.object(
-            LLMClient, "generate", return_value='{"name": "John", "age": 30}'
+            BaseLLMClient, "_generate", return_value='{"name": "John", "age": 30}'
         ):
             result = client.generate(
                 "Generate person",
@@ -532,7 +532,7 @@ class TestValidatingLLMClient:
         client = MockValidatingLLMClient()
 
         with patch.object(
-            LLMClient, "generate", return_value='{"name": "John", "age": 30}'
+            BaseLLMClient, "_generate", return_value='{"name": "John", "age": 30}'
         ):
             result = client.generate(
                 "Generate person",
@@ -548,7 +548,7 @@ class TestValidatingLLMClient:
 
         mock_response = ValidationTestModel(name="John", age=30)
 
-        with patch.object(LLMClient, "generate", return_value=mock_response):
+        with patch.object(BaseLLMClient, "_generate", return_value=mock_response):
             result = client.generate("Generate person", schema=ValidationTestModel)
 
             assert result == mock_response
@@ -559,7 +559,7 @@ class TestValidatingLLMClient:
         client = MockValidatingLLMClient()
 
         with patch.object(
-            LLMClient, "generate_async", return_value='{"name": "John", "age": 30}'
+            BaseLLMClient, "_generate_async", return_value='{"name": "John", "age": 30}'
         ):
             result = await client.generate_async(
                 "Generate person", schema=ValidationTestModel
@@ -574,7 +574,7 @@ class TestValidatingLLMClient:
         """Test generate_async with retries."""
         client = MockValidatingLLMClient()
 
-        with patch.object(LLMClient, "generate_async") as mock_generate:
+        with patch.object(BaseLLMClient, "_generate_async") as mock_generate:
             mock_generate.side_effect = ["Invalid JSON", '{"name": "John", "age": 30}']
 
             result = await client.generate_async(
@@ -591,7 +591,9 @@ class TestValidatingLLMClient:
         """Test generate_async with max retries exceeded."""
         client = MockValidatingLLMClient()
 
-        with patch.object(LLMClient, "generate_async", return_value="Invalid JSON"):
+        with patch.object(
+            BaseLLMClient, "_generate_async", return_value="Invalid JSON"
+        ):
             with pytest.raises(OutputValidationError, match="Failed after 2 attempts"):
                 await client.generate_async(
                     "Generate person", schema=ValidationTestModel, retries=2
@@ -604,7 +606,7 @@ class TestValidatingLLMClient:
         client = MockValidatingLLMClient()
 
         # Mock the parent generate method to return a non-string response
-        with patch.object(LLMClient, "generate_async") as mock_generate:
+        with patch.object(BaseLLMClient, "_generate_async") as mock_generate:
             mock_generate.return_value = {"response": "test"}
 
             result = await client.generate_async(
@@ -683,7 +685,7 @@ class TestEdgeCases:
         """Test generate with schema_field containing dict that gets converted."""
         client = MockValidatingLLMClient()
 
-        with patch.object(LLMClient, "generate") as mock_generate:
+        with patch.object(BaseLLMClient, "_generate") as mock_generate:
             mock_generate.return_value = '{"name": "test"}'
 
             result = client.generate(
@@ -700,7 +702,7 @@ class TestEdgeCases:
         """Test async generate with schema_field containing dict that gets converted."""
         client = MockValidatingLLMClient()
 
-        with patch.object(LLMClient, "generate_async") as mock_generate:
+        with patch.object(BaseLLMClient, "_generate_async") as mock_generate:
             mock_generate.return_value = '{"name": "test"}'
 
             result = await client.generate_async(
@@ -725,7 +727,9 @@ class TestEdgeCases:
                 return "invalid json"
             return '{"name": "test"}'
 
-        with patch.object(LLMClient, "generate", side_effect=mock_generate_side_effect):
+        with patch.object(
+            BaseLLMClient, "_generate", side_effect=mock_generate_side_effect
+        ):
             result = client.generate(
                 "test prompt",
                 schema={"type": "object", "properties": {"name": {"type": "string"}}},
@@ -749,7 +753,9 @@ class TestEdgeCases:
                 return "invalid json"
             return '{"name": "test"}'
 
-        with patch.object(LLMClient, "generate", side_effect=mock_generate_side_effect):
+        with patch.object(
+            BaseLLMClient, "_generate", side_effect=mock_generate_side_effect
+        ):
             result = client.generate(
                 "test prompt",
                 schema={"type": "object", "properties": {"name": {"type": "string"}}},
@@ -773,7 +779,9 @@ class TestEdgeCases:
                 return "invalid json"
             return '{"name": "test"}'
 
-        with patch.object(LLMClient, "generate", side_effect=mock_generate_side_effect):
+        with patch.object(
+            BaseLLMClient, "_generate", side_effect=mock_generate_side_effect
+        ):
             result = client.generate(
                 [{"role": "user", "content": "test prompt"}],
                 schema={"type": "object", "properties": {"name": {"type": "string"}}},
@@ -798,7 +806,7 @@ class TestEdgeCases:
             return '{"name": "test"}'
 
         with patch.object(
-            LLMClient, "generate_async", side_effect=mock_generate_side_effect
+            BaseLLMClient, "_generate_async", side_effect=mock_generate_side_effect
         ):
             result = await client.generate_async(
                 "test prompt",
@@ -825,7 +833,7 @@ class TestEdgeCases:
             return '{"name": "test"}'
 
         with patch.object(
-            LLMClient, "generate_async", side_effect=mock_generate_side_effect
+            BaseLLMClient, "_generate_async", side_effect=mock_generate_side_effect
         ):
             result = await client.generate_async(
                 "test prompt",
@@ -852,7 +860,7 @@ class TestEdgeCases:
             return '{"name": "test"}'
 
         with patch.object(
-            LLMClient, "generate_async", side_effect=mock_generate_side_effect
+            BaseLLMClient, "_generate_async", side_effect=mock_generate_side_effect
         ):
             result = await client.generate_async(
                 [{"role": "user", "content": "test prompt"}],

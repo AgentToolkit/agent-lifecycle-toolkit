@@ -16,10 +16,13 @@ class BaseSilentReviewComponent(PostToolReflectionComponent):
     reviewer_cls: ClassVar[Type]
 
     def _get_review_args(self, data: SilentReviewRunInput) -> tuple:
-        return (data.messages[0].content, data.tool_spec, data.tool_response)
+        assert isinstance(data.messages, list) and len(data.messages) == 1
+        return (data.messages[0]["content"], data.tool_spec, data.tool_response)
 
     def _run(self, data: SilentReviewRunInput) -> SilentReviewRunOutput:  # type: ignore
         reviewer = self.reviewer_cls()
+
+        assert self.config is not None
         llm = self.config.llm_client
         review = reviewer.process(llm, *self._get_review_args(data))
         return SilentReviewRunOutput(
@@ -28,6 +31,8 @@ class BaseSilentReviewComponent(PostToolReflectionComponent):
 
     async def _arun(self, data: SilentReviewRunInput) -> SilentReviewRunOutput:  # type: ignore
         reviewer = self.reviewer_cls()
+
+        assert self.config is not None
         llm = self.config.llm_client
         review = await reviewer.aprocess(llm, *self._get_review_args(data))
         return SilentReviewRunOutput(
@@ -47,8 +52,9 @@ class SilentReviewForTabularDataComponent(BaseSilentReviewComponent):
     reviewer_cls: ClassVar[Type] = ReviewTabularToolOutputUtil
 
     def _get_review_args(self, data: SilentReviewRunInput) -> tuple:
+        assert isinstance(data.messages, list) and len(data.messages) == 1
         return (
-            data.messages[0].content,
+            data.messages[0]["content"],
             data.tool_spec,
             None,
             None,

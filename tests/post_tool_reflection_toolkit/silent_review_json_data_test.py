@@ -12,10 +12,10 @@ import pytest
 def build_test_input() -> SilentReviewRunInput:
     return SilentReviewRunInput(
         messages=[
-            HumanMessage(content="Tell me the weather"),
-            AIMessage(content="Calling the weather tool now"),
+            {"role": "user", "content": "Tell me the weather"},
+            {"role": "assistant", "content": "Calling the weather tool now"},
         ],
-        toolspec={
+        tool_spec={
             "name": "get_weather",
             "description": "Gets weather for a city",
             "parameters": {
@@ -49,7 +49,10 @@ def test_silent_review_json():
     middleware = SilentReviewForJSONDataComponent(config=config)
 
     result = middleware.process(data=data, phase=AgentPhase.RUNTIME)
-    assert result.outcome.value == 1.0
+
+    # the user query is suppposed to mention a city and it doesn't. The fact that we get a response back
+    # could indicate the presence of a silent error which is why the outcome is 0
+    assert result.outcome.value == 0.0
 
 
 @pytest.mark.asyncio
@@ -59,4 +62,6 @@ async def test_silent_review_json_async():
     middleware = SilentReviewForJSONDataComponent(config=config)
 
     result = await middleware.aprocess(data=data, phase=AgentPhase.RUNTIME)
-    assert result.outcome.value == 1.0
+    # the user query is suppposed to mention a city and it doesn't. The fact that we get a response back
+    # could indicate the presence of a silent error which is why the outcome is 0
+    assert result.outcome.value == 0.0

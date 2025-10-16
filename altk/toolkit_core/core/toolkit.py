@@ -25,7 +25,7 @@ class ComponentConfig(BaseModel):
         if isinstance(self.llm_client, str):
             # In this scenario, we assume that user supplied a litellm-style model name
             litellm_provider = get_llm("litellm")
-            self.llm_client = litellm_provider(client=self.llm_client)
+            self.llm_client = litellm_provider(model_name=self.llm_client)
 
 
 class ComponentInput(BaseModel):
