@@ -37,9 +37,9 @@ class AutoFromEnvLLMClient(LLMClient):
                     raise EnvironmentError(
                         "Missing model name which is required for this provider; please set the 'ALTK_MODEL_NAME' environment variable or instantiate an appropriate LLMClient."
                     )
-                self._chosen_provider = self.provider_type(model_name=self.model_name)
+                self._chosen_provider = provider_type(model_name=self.model_name)
             else:
-                self._chosen_provider = self.provider_type()
+                self._chosen_provider = provider_type()
                 self.model_name_in_generate = True
 
     @classmethod
