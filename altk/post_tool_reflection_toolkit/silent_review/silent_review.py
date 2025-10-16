@@ -16,7 +16,7 @@ class BaseSilentReviewComponent(PostToolReflectionComponent):
     reviewer_cls: ClassVar[Type]
 
     def _get_review_args(self, data: SilentReviewRunInput) -> tuple:
-        assert isinstance(data.messages, list) and len(data.messages) == 1
+        assert isinstance(data.messages, list) and len(data.messages) > 0
         return (data.messages[0]["content"], data.tool_spec, data.tool_response)
 
     def _run(self, data: SilentReviewRunInput) -> SilentReviewRunOutput:  # type: ignore
@@ -52,7 +52,7 @@ class SilentReviewForTabularDataComponent(BaseSilentReviewComponent):
     reviewer_cls: ClassVar[Type] = ReviewTabularToolOutputUtil
 
     def _get_review_args(self, data: SilentReviewRunInput) -> tuple:
-        assert isinstance(data.messages, list) and len(data.messages) == 1
+        assert isinstance(data.messages, list) and len(data.messages) > 0
         return (
             data.messages[0]["content"],
             data.tool_spec,
