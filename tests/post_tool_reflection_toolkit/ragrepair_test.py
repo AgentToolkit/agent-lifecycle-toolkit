@@ -1,8 +1,8 @@
+from typing import cast
 from dotenv import load_dotenv
 import os
 
 import pytest
-from langchain_core.messages import HumanMessage, AIMessage
 from altk.toolkit_core.llm.base import get_llm
 from altk.toolkit_core.core.toolkit import AgentPhase
 from altk.post_tool_reflection_toolkit.rag_repair.rag_repair import RAGRepairComponent
@@ -11,6 +11,7 @@ from altk.post_tool_reflection_toolkit.rag_repair.rag_repair_config import (
 )
 from altk.post_tool_reflection_toolkit.core.toolkit import (
     RAGRepairRunInput,
+    RAGRepairRunOutput,
     RAGRepairBuildInput,
 )
 
@@ -43,8 +44,10 @@ class TestRAGRepair:
         cmd = "kubectl get alerts -n otel-demo"
         response = 'error: the server doesn\'t have a resource type "alerts"'
         input_data = RAGRepairRunInput(nl_query=query, tool_call=cmd, error=response)
-        result = repairer.process(input_data, AgentPhase.RUNTIME)
-        assert result.retrieved_docs is None
+        result = cast(
+            RAGRepairRunOutput, repairer.process(input_data, AgentPhase.RUNTIME)
+        )
+        assert result.retrieved_docs == ""
 
     def test_docs(self, tmp_path, llm_client):
         config = RAGRepairComponentConfig(

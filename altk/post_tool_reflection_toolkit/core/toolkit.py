@@ -89,4 +89,4 @@ class RAGRepairRunInput(PostToolReflectionRunInput):
 class RAGRepairRunOutput(PostToolReflectionRunOutput):
     result: Optional[Any] = None
     new_tool_call: str
-    retrieved_docs: Optional[str] = None
+    retrieved_docs: str = ""
