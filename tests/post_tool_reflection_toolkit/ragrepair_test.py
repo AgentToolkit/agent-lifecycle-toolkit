@@ -80,8 +80,11 @@ class TestRAGRepair:
         repairer.process(RAGRepairBuildInput(), AgentPhase.BUILDTIME)
 
         messages = [
-            HumanMessage(content="Check on otel-demo"),
-            AIMessage(content="Get all alerts in the otel-demo namespace"),
+            {"role": "user", "content": "Check on otel-demo"},
+            {
+                "role": "assistant",
+                "content": "Get all alerts in the otel-demo namespace",
+            },
         ]
         cmd = "kubectl get alerts -n otel-demo"
         response = 'error: the server doesn\'t have a resource type "alerts"'

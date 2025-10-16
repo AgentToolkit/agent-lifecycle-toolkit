@@ -4,6 +4,7 @@ otherwise will just use the "doc" collection.
 """
 
 import logging
+import json
 from typing import Set, Any, Literal
 import os
 from glob import glob
@@ -21,8 +22,6 @@ from altk.post_tool_reflection_toolkit.core.toolkit import (
 )
 from .retrievers import BM25RetrieverTool, ChromaDBRetrieverTool
 from .rag_repair_config import RAGRepairComponentConfig
-
-from langchain.load.dump import dumps
 
 logger = logging.getLogger(__name__)
 # if modifying this, be sure to also modify load_documents() in retrievers.py
@@ -111,19 +110,15 @@ class RAGRepairComponent(PostToolReflectionComponent):
         if self.config.docs_filter != "doc":
             rag_man_result = self.run_rag(data.tool_call, "man")
         if self.config.docs_filter != "man":
-            rag_result = self.run_rag(
-                "fix the error: " + data.tool_call + " " + data.error
-            )
+            rag_result = self.run_rag(f"fix the error: {data.tool_call} {data.error}")
         agent_scratchpad = ""
         error = ""
         if data.error:
             error = data.error
         retrieved_docs = rag_man_result + "\n" + rag_result
         retrieved_docs = retrieved_docs.strip()
-        if len(retrieved_docs) == 0:
-            retrieved_docs = None
 
-        prompt_query = dumps(data.messages)
+        prompt_query = json.dumps(data.messages)
         if data.nl_query != "":
             prompt_query = data.nl_query
 
