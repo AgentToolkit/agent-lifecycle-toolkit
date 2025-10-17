@@ -89,7 +89,7 @@ print(result["messages"][-1].content)
 | Post-tool      | [Code Generation for JSON Processing](altk/post_tool_reflection_toolkit/code_generation) | If the agent calls tools which generate complex JSON objects as responses, this component will use LLM based Python code generation to process those responses and extract relevant information from them.                                           |
 | Post-tool      | [Silent Error Review](altk/post_tool_reflection_toolkit/silent_review)     | A prompt-based approach to identify silent errors in tool calls (errors that do not produce any visible or explicit error message); Determines whether the tool response is relevant, accurate and complete based on the user's query                |
 | Post-tool      | [RAG Repair](altk/post_tool_reflection_toolkit/rag_repair)  | Given a failing tool call, this component attempts to use an LLM to repair the call while making use of domain documents such as documentation or troubleshooting examples via RAG. This component will require a set of related documents to ingest |
-| Output Check   | [Policy Guard](altk/policy_guard_toolkit)     | Checks to see if the output from the agent adheres to the policy statement & repair the output if it doesn’t |
+| Output Check   | [Policy Guard](altk/pre_response/policy_guard)     | Checks to see if the output from the agent adheres to the policy statement & repair the output if it doesn’t |
 
 
 

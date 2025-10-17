@@ -1,6 +1,6 @@
 from altk.toolkit_core.core.toolkit import ComponentConfig
-from altk.policy_guard_toolkit.detect.detector import Detector
-from altk.policy_guard_toolkit.repair.repairer import (
+from altk.pre_response.policy_guard.detect.detector import Detector
+from altk.pre_response.policy_guard.repair.repairer import (
     Repairer,
     IterativeRepairer,
     BatchPolicyRepairer,

@@ -4,15 +4,15 @@ import os
 import pytest
 from altk.toolkit_core.llm.base import get_llm
 from altk.toolkit_core.core.toolkit import AgentPhase, ComponentConfig
-from altk.policy_guard_toolkit.core.toolkit import (
+from altk.pre_response.policy_guard.core.toolkit import (
     PolicyDetectorInput,
     PolicyRepairerInput,
 )
-from altk.policy_guard_toolkit.detect.detector import (
+from altk.pre_response.policy_guard.detect.detector import (
     SinglePolicyLLMDetector,
     BatchPolicyLLMDetector,
 )
-from altk.policy_guard_toolkit.repair.repairer import (
+from altk.pre_response.policy_guard.repair.repairer import (
     BatchPolicyRepairer,
     BestofNRepairer,
     BestofNGenerator,

@@ -6,13 +6,13 @@ from dotenv import load_dotenv
 
 from altk.toolkit_core.llm.base import get_llm
 from altk.toolkit_core.core.toolkit import ComponentConfig
-from altk.policy_guard_toolkit.detect import detector_factory
-from altk.policy_guard_toolkit.repair import repairer_factory
-from altk.policy_guard_toolkit.detect.task_judge import (
+from altk.pre_response.policy_guard.detect import detector_factory
+from altk.pre_response.policy_guard.repair import repairer_factory
+from altk.pre_response.policy_guard.detect.task_judge import (
     TaskJudge,
     create_adherence_check_report,
 )
-from altk.policy_guard_toolkit.core.toolkit import (
+from altk.pre_response.policy_guard.core.toolkit import (
     PolicyDetectorInput,
     PolicyDetectorOutput,
     PolicyDetectorSingleOutput,

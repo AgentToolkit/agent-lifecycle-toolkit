@@ -3,9 +3,9 @@ import copy
 from typing import Set
 
 from altk.toolkit_core.core.toolkit import ComponentBase, ComponentConfig, AgentPhase
-from altk.policy_guard_toolkit.core.utils import generate_params
-from altk.policy_guard_toolkit.detect.detector import Detector
-from altk.policy_guard_toolkit.repair.repair_prompts import (
+from altk.pre_response.policy_guard.core.utils import generate_params
+from altk.pre_response.policy_guard.detect.detector import Detector
+from altk.pre_response.policy_guard.repair.repair_prompts import (
     priority_repair_prompt,
     ordered_repair_prompt,
     explanation_repair_prompt,
@@ -16,7 +16,7 @@ from altk.policy_guard_toolkit.repair.repair_prompts import (
     allinone_single_repair_prompt,
     mapreduce_repair_prompt,
 )
-from altk.policy_guard_toolkit.core.toolkit import (
+from altk.pre_response.policy_guard.core.toolkit import (
     PolicyRepairerInput,
     PolicyRepairerOutput,
     PolicyDetectorInput,

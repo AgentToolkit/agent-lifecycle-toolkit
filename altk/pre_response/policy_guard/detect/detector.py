@@ -6,9 +6,9 @@ from typing import Set
 from pydantic import Field
 
 from altk.toolkit_core.core.toolkit import ComponentBase, ComponentConfig, AgentPhase
-from altk.policy_guard_toolkit.core.utils import get_model_name
-from altk.policy_guard_toolkit.detect.detect_prompts import batch_detect_prompt
-from altk.policy_guard_toolkit.core.toolkit import (
+from altk.pre_response.policy_guard.core.utils import get_model_name
+from altk.pre_response.policy_guard.detect.detect_prompts import batch_detect_prompt
+from altk.pre_response.policy_guard.core.toolkit import (
     PolicyDetectorInput,
     PolicyDetectorSingleOutput,
     PolicyDetectorOutput,

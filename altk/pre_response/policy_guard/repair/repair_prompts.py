@@ -1,5 +1,5 @@
 from string import Template
-from altk.policy_guard_toolkit.core.utils import get_model_name
+from altk.pre_response.policy_guard.core.utils import get_model_name
 
 priority_repair_template = Template(
     """You are an editor who ensures that texts adhere to specific policies.

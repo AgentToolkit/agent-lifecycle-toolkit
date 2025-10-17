@@ -1,4 +1,4 @@
-from altk.policy_guard_toolkit.detect.detector import (
+from altk.pre_response.policy_guard.detect.detector import (
     Detector,
     SinglePolicyLLMDetector,
     BatchPolicyLLMDetector,
