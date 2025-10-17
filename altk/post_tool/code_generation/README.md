@@ -25,7 +25,7 @@ Here is how you can call the code generation based tool response processing:
 
 ```Python
 
-from altk.toolkit_core.toolkit import AgentPhase
+from altk.core.toolkit import AgentPhase
 from altk.post_tool.code_generation.code_generation import CodeGenerationComponent
 from altk.post_tool.core.toolkit import CodeGenerationRunInput, CodeGenerationRunOutput
 
@@ -66,7 +66,7 @@ component = CodeGenerationComponent(
 ## Examples
 
 ```python
-from altk.toolkit_core.toolkit import AgentPhase
+from altk.core.toolkit import AgentPhase
 from altk.post_tool.code_generation.code_generation import CodeGenerationComponent
 from altk.post_tool.core.toolkit import CodeGenerationRunInput, CodeGenerationRunOutput
 

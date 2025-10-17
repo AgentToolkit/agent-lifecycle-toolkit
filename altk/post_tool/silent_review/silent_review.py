@@ -1,5 +1,5 @@
 from typing import Set, Type, ClassVar
-from altk.toolkit_core.toolkit import AgentPhase
+from altk.core.toolkit import AgentPhase
 from altk.post_tool.core.toolkit import (
     PostToolReflectionComponent,
     SilentReviewRunInput,

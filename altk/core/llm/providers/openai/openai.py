@@ -6,9 +6,9 @@ except ImportError as e:
     ) from e
 
 from typing import Any, Optional, Dict, List, Union
-from altk.toolkit_core.llm.base import BaseLLMClient, LLMClient, register_llm
-from altk.toolkit_core.llm.output_parser import ValidatingLLMClient
-from altk.toolkit_core.llm.types import LLMResponse, GenerationMode, ParameterMapper
+from altk.core.llm.base import LLMClient, register_llm
+from altk.core.llm.output_parser import ValidatingLLMClient
+from altk.core.llm.types import LLMResponse, GenerationMode, ParameterMapper
 
 
 class BaseOpenAIClient(LLMClient):

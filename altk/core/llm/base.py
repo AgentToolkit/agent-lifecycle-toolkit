@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 
 # Import from parent module to ensure singleton registry
-from altk.toolkit_core.llm import _REGISTRY
-from .types import GenerationMode, GenerationArgs, LLMResponse, ParameterMapper
+from altk.core.llm import _REGISTRY
+from .types import GenerationMode, GenerationArgs, ParameterMapper
 
 T = TypeVar("T", bound="BaseLLMClient")
 Hook = Callable[[str, Dict[str, Any]], None]
@@ -44,7 +44,7 @@ def get_llm(name: str) -> Type["BaseLLMClient"]:
     """
     if not _REGISTRY:
         # Import providers to populate registry
-        from altk.toolkit_core.llm import _import_providers
+        from altk.core.llm import _import_providers
 
         _import_providers()
 
@@ -66,7 +66,7 @@ def list_available_llms() -> List[str]:
     """
     if not _REGISTRY:
         # Import providers to populate registry
-        from altk.toolkit_core.llm import _import_providers
+        from altk.core.llm import _import_providers
 
         _import_providers()
 

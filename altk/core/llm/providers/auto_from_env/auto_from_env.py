@@ -2,8 +2,8 @@ import os
 import inspect
 from typing import Type, Any, Union
 
-from altk.toolkit_core.llm.base import LLMClient, register_llm, get_llm
-from altk.toolkit_core.llm.types import LLMResponse
+from altk.core.llm.base import LLMClient, register_llm, get_llm
+from altk.core.llm.types import LLMResponse
 
 
 @register_llm("auto_from_env")

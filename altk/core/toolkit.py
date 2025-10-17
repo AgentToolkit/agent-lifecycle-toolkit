@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional, Set, Dict, Any
 from enum import Enum, auto
-from altk.toolkit_core.llm import get_llm
+from altk.core.llm import get_llm
 
 
 ######### Toolkit Component Interfaces ##############

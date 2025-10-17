@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 import markdown
-from altk.toolkit_core.llm import get_llm
+from altk.core.llm import get_llm
 
 from examples.calculator_example.example_tools import (
     add_tool,

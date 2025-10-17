@@ -1,7 +1,7 @@
 import json
 from string import Template
 
-from altk.toolkit_core.toolkit import ComponentConfig
+from altk.core.toolkit import ComponentConfig
 
 
 def create_adherence_check_report(results: list[dict]) -> dict:

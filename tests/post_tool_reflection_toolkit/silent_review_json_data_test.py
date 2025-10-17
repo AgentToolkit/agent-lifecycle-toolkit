@@ -1,7 +1,7 @@
 import os
 from langchain_core.messages import HumanMessage, AIMessage
-from altk.toolkit_core.toolkit import AgentPhase, ComponentConfig
-from altk.toolkit_core.llm.base import get_llm
+from altk.core.toolkit import AgentPhase, ComponentConfig
+from altk.core.llm.base import get_llm
 from altk.post_tool.core.toolkit import SilentReviewRunInput
 from altk.post_tool.silent_review.silent_review import (
     SilentReviewForJSONDataComponent,

@@ -4,12 +4,16 @@ from unittest.mock import Mock, patch
 from typing import Optional
 from pydantic import BaseModel
 
-from altk.toolkit_core.llm.output_parser import (
+from altk.core.llm.output_parser import (
     json_schema_to_pydantic_model,
     OutputValidationError,
     ValidatingLLMClient,
 )
+<<<<<<< HEAD
 from altk.toolkit_core.llm.base import BaseLLMClient, LLMClient
+=======
+from altk.core.llm.base import LLMClient
+>>>>>>> 3e200ff (Rename toolkit core to just core)
 
 
 class ValidationTestModel(BaseModel):
@@ -322,7 +326,7 @@ class TestValidatingLLMClient:
         client = MockValidatingLLMClient()
         schema = {"type": "object", "properties": {"name": {"type": "string"}}}
 
-        with patch("altk.toolkit_core.llm.output_parser.jsonschema") as mock_jsonschema:
+        with patch("altk.core.llm.output_parser.jsonschema") as mock_jsonschema:
             mock_jsonschema.validate.return_value = None
 
             result = client._validate('{"name": "John"}', schema)
@@ -335,7 +339,7 @@ class TestValidatingLLMClient:
         client = MockValidatingLLMClient()
         schema = {"type": "object"}
 
-        with patch("altk.toolkit_core.llm.output_parser.jsonschema", None):
+        with patch("altk.core.llm.output_parser.jsonschema", None):
             with pytest.raises(ImportError, match="jsonschema is required"):
                 client._validate('{"name": "John"}', schema)
 
@@ -344,7 +348,7 @@ class TestValidatingLLMClient:
         client = MockValidatingLLMClient()
         schema = {"type": "object", "properties": {"name": {"type": "string"}}}
 
-        with patch("altk.toolkit_core.llm.output_parser.jsonschema") as mock_jsonschema:
+        with patch("altk.core.llm.output_parser.jsonschema") as mock_jsonschema:
             # Create a proper ValidationError mock
             class MockValidationError(Exception):
                 def __init__(self, message):
@@ -624,7 +628,7 @@ class TestEdgeCases:
     def test_jsonschema_import_error(self):
         """Test handling when jsonschema is not available."""
         # Mock jsonschema as None to simulate import error
-        with patch("altk.toolkit_core.llm.output_parser.jsonschema", None):
+        with patch("altk.core.llm.output_parser.jsonschema", None):
             client = MockValidatingLLMClient()
             schema = {"type": "object", "properties": {"name": {"type": "string"}}}
 

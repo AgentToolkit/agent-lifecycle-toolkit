@@ -34,7 +34,7 @@ from langgraph.prebuilt import InjectedState
 
 from altk.post_tool.silent_review.silent_review import SilentReviewForJSONDataComponent
 from altk.post_tool.core.toolkit import SilentReviewRunInput, Outcome
-from altk.toolkit_core.toolkit import AgentPhase
+from altk.core.toolkit import AgentPhase
 
 
 # Ensure that the following environment variables are set:
@@ -101,7 +101,7 @@ Check out ALTK's [documentation](), for details on
 installation, usage, concepts, and more (Coming Soon).
 <!-- [TODO: add link] -->
 
-The ALTK supports multiple LLM providers and two methods of configuring the providers. For more information, see the [LLMClient documentation](https://github.ibm.com/AI4BA/agent-lifecycle-toolkit/blob/oss/altk/toolkit_core/llm/README.md).
+The ALTK supports multiple LLM providers and two methods of configuring the providers. For more information, see the [LLMClient documentation](https://github.ibm.com/AI4BA/agent-lifecycle-toolkit/blob/oss/altk/core/llm/README.md).
 
 ## Examples
 Go hands-on with our [examples](examples).

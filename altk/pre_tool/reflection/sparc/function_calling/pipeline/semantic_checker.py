@@ -11,7 +11,7 @@ from typing import (
     Union,
 )
 
-from altk.toolkit_core.llm import ValidatingLLMClient
+from altk.core.llm import ValidatingLLMClient
 from altk.pre_tool.reflection.sparc.metrics import MetricRunner, MetricRunResult
 from altk.pre_tool.reflection.sparc.function_calling import (
     load_prompts_from_list,

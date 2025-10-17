@@ -133,7 +133,7 @@ pytest tests/llm/ -v
 
 ### Run with Coverage
 ```bash
-pytest tests/llm/ --cov=toolkit_core.llm
+pytest tests/llm/ --cov=core.llm
 ```
 
 ## Test Skipping

@@ -3,11 +3,11 @@ import pytest
 from unittest.mock import Mock, patch
 from typing import Any, Type
 
-from altk.toolkit_core.llm.base import (
+from altk.core.llm.base import (
     LLMClient,
     MethodConfig,
 )
-from altk.toolkit_core.llm.types import GenerationMode
+from altk.core.llm.types import GenerationMode
 
 
 class MockLLMClient(LLMClient):

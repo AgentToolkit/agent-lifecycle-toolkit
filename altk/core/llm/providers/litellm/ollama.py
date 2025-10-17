@@ -6,7 +6,7 @@ from .litellm import (
     LiteLLMClient,
     LiteLLMClientOutputVal,
 )
-from altk.toolkit_core.llm.base import Hook, register_llm
+from altk.core.llm.base import Hook, register_llm
 from ..consts import OLLAMA_API_KEY, OLLAMA_BASE_URL, XGRAMMAR
 
 

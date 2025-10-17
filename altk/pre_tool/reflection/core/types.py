@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 from enum import Enum
-from altk.toolkit_core.toolkit import ComponentInput, ComponentOutput
+from altk.core.toolkit import ComponentInput, ComponentOutput
 from altk.pre_tool.reflection.refraction.src.schemas.results import (
     DebuggingResult,
 )

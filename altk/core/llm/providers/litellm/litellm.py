@@ -6,10 +6,10 @@ except ImportError as e:
     ) from e
 
 from typing import Any, Dict, List, Optional, Union, Type
-from altk.toolkit_core.llm.base import LLMClient, register_llm, Hook
-from altk.toolkit_core.llm.types import GenerationMode, LLMResponse, ParameterMapper
+from altk.core.llm.base import LLMClient, register_llm, Hook
+from altk.core.llm.types import GenerationMode, LLMResponse, ParameterMapper
 from pydantic import BaseModel
-from altk.toolkit_core.llm.output_parser import ValidatingLLMClient
+from altk.core.llm.output_parser import ValidatingLLMClient
 
 
 @register_llm("litellm")

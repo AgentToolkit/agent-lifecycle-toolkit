@@ -24,7 +24,7 @@ Note that this component does not identify errors, it is expected that the agent
 Here is how you can call the code generation based tool response processing:
 
 ```Python
-from altk.toolkit_core.toolkit import AgentPhase
+from altk.core.toolkit import AgentPhase
 from altk.post_tool.rag_repair.rag_repair import RAGRepairComponent
 from altk.post_tool.rag_repair.rag_repair_config import RAGRepairComponentConfig
 from altk.post_tool.core.toolkit import RAGRepairRunInput, RAGRepairBuildInput
@@ -83,7 +83,7 @@ When creating `RAGRepairComponent` the only required parameter is `docs_path` wh
 For example:
 
 ```python
-from altk.toolkit_core.llm import get_llm
+from altk.core.llm import get_llm
 from altk.post_tool.rag_repair.rag_repair import RAGRepairComponent
 from altk.post_tool.rag_repair.rag_repair_config import RAGRepairComponentConfig
 

@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Optional, Set
 from nestful.schemas.sequences import SequenceStep, SequencingData
-from altk.toolkit_core.toolkit import AgentPhase, ComponentBase
+from altk.core.toolkit import AgentPhase, ComponentBase
 from altk.pre_tool.reflection.core.config import (
     RefractionConfig,
     RefractionMode,

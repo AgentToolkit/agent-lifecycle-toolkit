@@ -1,4 +1,4 @@
-from altk.toolkit_core.llm.types import GenerationMode, LLMResponse
+from altk.core.llm.types import GenerationMode, LLMResponse
 
 
 class TestGenerationMode:

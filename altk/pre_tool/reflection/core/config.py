@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from enum import Enum
-from altk.toolkit_core.toolkit import ComponentConfig
+from altk.core.toolkit import ComponentConfig
 from altk.pre_tool.reflection.core.consts import (
     METRIC_GENERAL_HALLUCINATION_CHECK,
     METRIC_GENERAL_VALUE_FORMAT_ALIGNMENT,

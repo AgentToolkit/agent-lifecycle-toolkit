@@ -64,9 +64,9 @@ from altk.pre_tool.reflection.core import (
     SPARCExecutionMode,
 )
 from altk.pre_tool.reflection import SPARCReflectionComponent
-from altk.toolkit_core.toolkit import AgentPhase, ComponentConfig
+from altk.core.toolkit import AgentPhase, ComponentConfig
 from langchain_core.messages import HumanMessage, AIMessage
-from altk.toolkit_core.llm import get_llm
+from altk.core.llm import get_llm
 
 
 # Build ComponentConfig with ValidatingLLMClient (REQUIRED)
@@ -216,7 +216,7 @@ tool_call = {
 ### Supported ValidatingLLMClient Types
 
 ```python
-from altk.toolkit_core.llm import get_llm
+from altk.core.llm import get_llm
 
 # OpenAI with output validation
 OPENAI_CLIENT = get_llm("openai.sync.output_val")

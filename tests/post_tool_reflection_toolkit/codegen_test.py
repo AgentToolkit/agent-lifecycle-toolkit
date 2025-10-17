@@ -1,7 +1,7 @@
 import random
 import string
 from typing import cast
-from altk.toolkit_core.toolkit import AgentPhase
+from altk.core.toolkit import AgentPhase
 from altk.post_tool.code_generation.code_generation import (
     CodeGenerationComponent,
     CodeGenerationComponentConfig,
@@ -10,7 +10,7 @@ from altk.post_tool.core.toolkit import (
     CodeGenerationRunInput,
     CodeGenerationRunOutput,
 )
-from altk.toolkit_core.llm.base import get_llm
+from altk.core.llm.base import get_llm
 from dotenv import load_dotenv
 import pytest
 import os

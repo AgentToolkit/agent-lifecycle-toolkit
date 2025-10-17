@@ -1,10 +1,10 @@
 from typing import Tuple
-from altk.toolkit_core.llm.types import GenerationMode
+from altk.core.llm.types import GenerationMode
 from altk.post_tool.silent_review.review_prompts import (
     REVIEW_JSON_PROMPT,
     REVIEW_TABULAR_PROMPT,
 )
-from altk.toolkit_core.utils import parse_result_for_json
+from altk.core.utils import parse_result_for_json
 import json
 from enum import Enum
 

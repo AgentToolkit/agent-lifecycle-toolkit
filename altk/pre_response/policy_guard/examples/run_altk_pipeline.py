@@ -4,8 +4,8 @@ import json
 import os
 from dotenv import load_dotenv
 
-from altk.toolkit_core.llm.base import get_llm
-from altk.toolkit_core.toolkit import ComponentConfig
+from altk.core.llm.base import get_llm
+from altk.core.toolkit import ComponentConfig
 from altk.pre_response.policy_guard.detect import detector_factory
 from altk.pre_response.policy_guard.repair import repairer_factory
 from altk.pre_response.policy_guard.detect.task_judge import (

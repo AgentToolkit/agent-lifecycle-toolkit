@@ -5,7 +5,7 @@ from typing import Set
 
 from pydantic import Field
 
-from altk.toolkit_core.toolkit import ComponentBase, ComponentConfig, AgentPhase
+from altk.core.toolkit import ComponentBase, ComponentConfig, AgentPhase
 from altk.pre_response.policy_guard.core.utils import get_model_name
 from altk.pre_response.policy_guard.detect.detect_prompts import batch_detect_prompt
 from altk.pre_response.policy_guard.core.toolkit import (

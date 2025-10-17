@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 import json
 
-from altk.toolkit_core.llm import ValidatingLLMClient
+from altk.core.llm import ValidatingLLMClient
 from altk.pre_tool.reflection.sparc.function_calling.pipeline.static_checker import (
     evaluate_static,
 )

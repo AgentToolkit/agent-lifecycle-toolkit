@@ -1,6 +1,6 @@
 import pytest
 
-from altk.toolkit_core.llm import get_llm
+from altk.core.llm import get_llm
 
 
 class TestAutoFromEnvLLMProvider:

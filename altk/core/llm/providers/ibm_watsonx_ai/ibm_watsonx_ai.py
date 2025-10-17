@@ -9,9 +9,9 @@ except ImportError as e:
         "Please install the ibm-watsonx-ai package: pip install 'toolkit-core[watsonx]'"
     ) from e
 
-from altk.toolkit_core.llm.base import LLMClient, register_llm, Hook
-from altk.toolkit_core.llm.output_parser import ValidatingLLMClient
-from altk.toolkit_core.llm.types import LLMResponse, GenerationMode, ParameterMapper
+from altk.core.llm.base import LLMClient, register_llm, Hook
+from altk.core.llm.output_parser import ValidatingLLMClient
+from altk.core.llm.types import LLMResponse, GenerationMode, ParameterMapper
 from pydantic import BaseModel
 
 from ..consts import WX_URL, WX_API_KEY, WX_PROJECT_ID, WX_SPACE_ID
@@ -286,7 +286,7 @@ class WatsonxLLMClient(LLMClient):
 
         # Map generation_args to WatsonX parameters if provided
         if generation_args and self._parameter_mapper:
-            from altk.toolkit_core.llm.types import GenerationArgs
+            from altk.core.llm.types import GenerationArgs
 
             if isinstance(generation_args, GenerationArgs):
                 mapped_args = self._parameter_mapper.map_args(generation_args, mode_str)
@@ -350,7 +350,7 @@ class WatsonxLLMClient(LLMClient):
 
         # Map generation_args to WatsonX parameters if provided
         if generation_args and self._parameter_mapper:
-            from altk.toolkit_core.llm.types import GenerationArgs
+            from altk.core.llm.types import GenerationArgs
 
             if isinstance(generation_args, GenerationArgs):
                 mapped_args = self._parameter_mapper.map_args(generation_args, mode_str)
@@ -582,7 +582,7 @@ class WatsonxLLMClientOutputVal(ValidatingLLMClient):
 
         # Map generation_args to WatsonX parameters if provided
         if generation_args and self._parameter_mapper:
-            from altk.toolkit_core.llm.types import GenerationArgs
+            from altk.core.llm.types import GenerationArgs
 
             if isinstance(generation_args, GenerationArgs):
                 mapped_args = self._parameter_mapper.map_args(generation_args, mode)
@@ -639,7 +639,7 @@ class WatsonxLLMClientOutputVal(ValidatingLLMClient):
 
         # Map generation_args to WatsonX parameters if provided
         if generation_args and self._parameter_mapper:
-            from altk.toolkit_core.llm.types import GenerationArgs
+            from altk.core.llm.types import GenerationArgs
 
             if isinstance(generation_args, GenerationArgs):
                 mapped_args = self._parameter_mapper.map_args(generation_args, mode)

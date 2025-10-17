@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import torch
 import torch.nn.functional as F
-from altk.toolkit_core.core.toolkit import AgentPhase, ComponentBase
+from altk.core.toolkit import AgentPhase, ComponentBase
 from pydantic import ConfigDict
 from transformers import (
     AutoModelForCausalLM,

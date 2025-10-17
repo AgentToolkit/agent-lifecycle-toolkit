@@ -22,7 +22,7 @@ import os
 from altk.pre_tool.reflection.refraction.refraction import RefractionComponent
 from altk.pre_tool.reflection.core import RefractionBuildInput, RefractionRunInput
 from altk.pre_tool.reflection.core import RefractionConfig, RefractionMode
-from altk.toolkit_core.toolkit import AgentPhase
+from altk.core.toolkit import AgentPhase
 
 config = RefractionConfig(
     mode=RefractionMode.STANDALONE

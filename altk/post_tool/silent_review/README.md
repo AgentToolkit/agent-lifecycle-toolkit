@@ -19,7 +19,7 @@ The below example should give you an idea of how to plug in this component into 
 ```python
 from altk.post_tool.silent_review.silent_review import SilentReviewForJSONDataComponent
 from altk.post_tool.core.toolkit import SilentReviewRunInput
-from altk.toolkit_core.toolkit import AgentPhase
+from altk.core.toolkit import AgentPhase
 
 input_data = SilentReviewRunInput(
     messages=[

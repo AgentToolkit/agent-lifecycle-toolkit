@@ -24,8 +24,8 @@ Both examples will use Anthropic as an LLM provider using the claude-sonnet-4 mo
 ### 1. Using `get_llm` to instantiate an LLM provider
 
 ```python
-from altk.toolkit_core.llm import get_llm
-from altk.toolkit_core.toolkit import ComponentConfig
+from altk.core.llm import get_llm
+from altk.core.toolkit import ComponentConfig
 
 # Get an LLM provider
 LiteLLMClient = get_llm("litellm")
@@ -49,8 +49,8 @@ By default, ComponentConfig will use this option. Set the following environment 
 - `ANTHROPIC_API_KEY=*** anthropic api key ***`
 
 ```python
-from altk.toolkit_core.llm import get_llm
-from altk.toolkit_core.toolkit import ComponentConfig
+from altk.core.llm import get_llm
+from altk.core.toolkit import ComponentConfig
 
 # Get an LLM provider
 client = get_llm("auto_from_env")()
@@ -87,7 +87,7 @@ WX_URL=https://us-south.ml.cloud.ibm.com
 - `ANTHROPIC_API_KEY=*** anthropic api key ***`
 
 ```python
-from altk.toolkit_core.toolkit import ComponentConfig
+from altk.core.toolkit import ComponentConfig
 
 # Directly pass the LiteLLM-style model name into ComponentConfig
 config = ComponentConfig(llm_client="anthropic/claude-sonnet-4-5-20250929")
@@ -101,7 +101,7 @@ print(response)
 You can list all available registered llm clients with:
 
 ```python
-from altk.toolkit_core.llm import list_available_llms
+from altk.core.llm import list_available_llms
 
 print(f"Available LiteLLM providers: {list_available_llms()}")
 ```
@@ -143,7 +143,7 @@ All providers support a unified `GenerationArgs` interface for consistent parame
 ### GenerationArgs
 
 ```python
-from altk.toolkit_core.llm.types import GenerationArgs
+from altk.core.llm.types import GenerationArgs
 
 # Create generation parameters
 gen_args = GenerationArgs(
@@ -199,8 +199,8 @@ Each provider automatically maps `GenerationArgs` to their native parameter form
 ### Usage Examples
 
 ```python
-from altk.toolkit_core.llm import get_llm
-from altk.toolkit_core.llm.types import GenerationArgs
+from altk.core.llm import get_llm
+from altk.core.llm.types import GenerationArgs
 
 # Same parameters work across all providers
 gen_args = GenerationArgs(
@@ -309,8 +309,8 @@ Set `OPENAI_API_KEY` in your environment, or pass it to the constructor.
 
 **Example:**
 ```python
-from altk.toolkit_core.llm import get_llm
-from altk.toolkit_core.llm.types import GenerationArgs
+from altk.core.llm import get_llm
+from altk.core.llm.types import GenerationArgs
 
 # Basic usage
 client = get_llm("openai.sync")(api_key="your-key")
@@ -356,8 +356,8 @@ person = client.generate(
 
 **Example:**
 ```python
-from altk.toolkit_core.llm import get_llm
-from altk.toolkit_core.llm.types import GenerationArgs
+from altk.core.llm import get_llm
+from altk.core.llm.types import GenerationArgs
 
 client = get_llm("azure_openai.sync")(
     api_key="your-key",
@@ -414,7 +414,7 @@ Watsonx inherits the same parameter mapping as the base LiteLLM adapter.
 
 **Usage with GenerationArgs:**
 ```python
-from altk.toolkit_core.llm import GenerationArgs, get_llm
+from altk.core.llm import GenerationArgs, get_llm
 
 generation_args = GenerationArgs(
     max_tokens=200,
@@ -434,7 +434,7 @@ response = client.generate("Explain artificial intelligence", generation_args=ge
 
 **Example:**
 ```python
-from altk.toolkit_core.llm import get_llm
+from altk.core.llm import get_llm
 
 client = get_llm("litellm.watsonx.output_val")(
     model_name="meta-llama/llama-3-3-70b-instruct"
@@ -471,7 +471,7 @@ IBM WatsonX AI uses its own parameter mapping for GenerationArgs:
 
 **Usage with GenerationArgs:**
 ```python
-from altk.toolkit_core.llm import GenerationArgs, get_llm
+from altk.core.llm import GenerationArgs, get_llm
 
 generation_args = GenerationArgs(
     max_tokens=150,
@@ -486,7 +486,7 @@ response = client.generate("What is AI?", generation_args=generation_args, model
 
 **Example:**
 ```python
-from altk.toolkit_core.llm import get_llm
+from altk.core.llm import get_llm
 
 client = get_llm("watsonx")(
     model_name="meta-llama/llama-3-3-70b-instruct",
@@ -513,7 +513,7 @@ response = client.generate("Explain quantum computing")
 
 4. **Use** it via the registry:
    ```python
-   from altk.toolkit_core.llm import get_llm
+   from altk.core.llm import get_llm
 
    Client = get_llm("myprovider")
    client = Client(api_key="…", other_args=…)

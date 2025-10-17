@@ -3,8 +3,8 @@ import asyncio
 from typing import Optional
 from pydantic import BaseModel
 
-from altk.toolkit_core.llm import get_llm, GenerationMode
-from altk.toolkit_core.llm.types import GenerationArgs
+from altk.core.llm import get_llm, GenerationMode
+from altk.core.llm.types import GenerationArgs
 
 
 # ──────────────────────────────────────────────────────────────────────────────
