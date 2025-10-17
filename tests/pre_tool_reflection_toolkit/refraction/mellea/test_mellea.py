@@ -2,9 +2,9 @@ import pytest
 from typing import List, Dict, Any
 from tests.utils.refraction.mellea.prompt import PROMPT_TEMPLATE
 from tests.utils.refraction.tools.sample_tool_specs import tools
-from altk.pre_tool_reflection_toolkit.refraction.src import refract
-from altk.pre_tool_reflection_toolkit.refraction.src.integration import Refractor
-from altk.pre_tool_reflection_toolkit.refraction.src.prompt_template import (
+from altk.pre_tool.reflection.refraction.src import refract
+from altk.pre_tool.reflection.refraction.src.integration import Refractor
+from altk.pre_tool.reflection.refraction.src.prompt_template import (
     generate_prompt,
     PromptType,
 )
@@ -14,7 +14,7 @@ try:
     from mellea.stdlib.requirement import ValidationResult
     from mellea.stdlib.sampling import RejectionSamplingStrategy
     from mellea.stdlib.base import Context
-    from altk.pre_tool_reflection_toolkit.refraction.src.integration.mellea_requirement import (
+    from altk.pre_tool.reflection.refraction.src.integration.mellea_requirement import (
         RefractionRequirement,
     )
 except ImportError:

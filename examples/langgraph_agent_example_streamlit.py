@@ -16,11 +16,11 @@ from typing_extensions import Annotated
 from langgraph.prebuilt import InjectedState
 import streamlit as st
 
-from altk.post_tool_reflection_toolkit.silent_review.silent_review import (
+from altk.post_tool.silent_review.silent_review import (
     SilentReviewForJSONDataComponent,
 )
-from altk.post_tool_reflection_toolkit.core.toolkit import SilentReviewRunInput, Outcome
-from altk.toolkit_core.core.toolkit import AgentPhase
+from altk.post_tool.core.toolkit import SilentReviewRunInput, Outcome
+from altk.core.toolkit import AgentPhase
 
 from dotenv import load_dotenv
 

@@ -3,7 +3,7 @@ from os import listdir
 from os.path import isfile, join
 from time import time
 from typing import Callable, TypeVar, Any, Optional, List, cast
-from altk.pre_tool_reflection_toolkit.refraction.src.schemas import Mapping
+from altk.pre_tool.reflection.refraction.src.schemas import Mapping
 
 import json
 

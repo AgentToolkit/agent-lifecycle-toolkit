@@ -3,17 +3,17 @@ import os
 import pytest
 from langchain_core.messages import HumanMessage, AIMessage
 
-from altk.pre_tool_reflection_toolkit.core import (
+from altk.pre_tool.reflection.core import (
     SPARCReflectionRunInput,
     SPARCReflectionDecision,
     SPARCExecutionMode,
     Track,
 )
-from altk.pre_tool_reflection_toolkit.sparc import (
+from altk.pre_tool.reflection.sparc import (
     SPARCReflectionComponent,
 )
-from altk.toolkit_core.core.toolkit import AgentPhase, ComponentConfig
-from altk.toolkit_core.llm import get_llm
+from altk.core.toolkit import AgentPhase, ComponentConfig
+from altk.core.llm import get_llm
 from dotenv import load_dotenv
 
 load_dotenv()

@@ -1,7 +1,7 @@
 import pytest
 from typing import List, Optional
 from pydantic import BaseModel
-from altk.toolkit_core.llm import get_llm
+from altk.core.llm import get_llm
 
 # Skip tests if required environment variables are not set
 pytestmark = [

@@ -1,5 +1,5 @@
 from nestful.data_handlers import get_nestful_catalog
-from altk.pre_tool_reflection_toolkit.refraction.src.batch_actions import run_all_modes
+from altk.pre_tool.reflection.refraction.src.batch_actions import run_all_modes
 from tests.utils.refraction.utils import get_cached_maps
 
 import pytest

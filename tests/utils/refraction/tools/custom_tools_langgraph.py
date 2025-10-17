@@ -1,5 +1,5 @@
 from typing_extensions import TypedDict
-from altk.pre_tool_reflection_toolkit.refraction.src.integration import (
+from altk.pre_tool.reflection.refraction.src.integration import (
     refract,
     Refractor,
 )

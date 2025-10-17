@@ -2,7 +2,7 @@ import os
 import pytest
 from typing import List, Optional
 from pydantic import BaseModel
-from altk.toolkit_core.llm import get_llm, GenerationMode
+from altk.core.llm import get_llm, GenerationMode
 
 pytestmark = [
     pytest.mark.llm,

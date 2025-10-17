@@ -1,6 +1,6 @@
-from altk.pre_tool_reflection_toolkit.refraction.src import refract
-from altk.pre_tool_reflection_toolkit.refraction.src.schemas import Mapping
-from altk.pre_tool_reflection_toolkit.refraction.src.printer import CustomPrint
+from altk.pre_tool.reflection.refraction.src import refract
+from altk.pre_tool.reflection.refraction.src.schemas import Mapping
+from altk.pre_tool.reflection.refraction.src.printer import CustomPrint
 from nl2flow.compile.options import BasicOperations
 from nestful.data_handlers import get_nestful_catalog
 

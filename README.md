@@ -32,9 +32,10 @@ from langchain_core.tools import tool
 from typing_extensions import Annotated
 from langgraph.prebuilt import InjectedState
 
-from altk.post_tool_reflection_toolkit.silent_review.silent_review import SilentReviewForJSONDataComponent
-from altk.post_tool_reflection_toolkit.core.toolkit import SilentReviewRunInput, Outcome
-from altk.toolkit_core.core.toolkit import AgentPhase
+from altk.post_tool.silent_review.silent_review import SilentReviewForJSONDataComponent
+from altk.post_tool.core.toolkit import SilentReviewRunInput, Outcome
+from altk.core.toolkit import AgentPhase
+
 
 # Ensure that the following environment variables are set:
 # ANTHROPIC_API_KEY = *** anthropic api key ***
@@ -60,6 +61,7 @@ def get_weather(city: str, state: Annotated[dict, InjectedState]) -> str:
     else:
         return result
 
+
 agent = create_react_agent(
     model="anthropic:claude-sonnet-4-20250514",
     tools=[get_weather],
@@ -83,13 +85,13 @@ print(result["messages"][-1].content)
 
 | Lifecycle Step | Component                        | Description                                                                                                                                                                                                                                          |
 |----------------|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Reasoning      | [Spotlight](altk/spotlight_toolkit)  | SpotLight enables users to emphasize important spans within their prompt and steers the LLMs attention towards those spans. It is an inference-time hook and does not involve any training or changes to model weights.                              |
-| Pre-tool       | [Refraction](altk/pre_tool_reflection_toolkit/refraction)   | Verify the syntax of tool call sequences and repair any errors that will result in execution failures                                                                                                                                                |
-| Pre-tool       | [SPARC](altk/pre_tool_reflection_toolkit/sparc)      | Evaluates tool calls before execution, identifying potential issues and suggesting corrections or transformations across multiple validation layers.                                                                                                 |
-| Post-tool      | [Code Generation for JSON Processing](altk/post_tool_reflection_toolkit/code_generation) | If the agent calls tools which generate complex JSON objects as responses, this component will use LLM based Python code generation to process those responses and extract relevant information from them.                                           |
-| Post-tool      | [Silent Error Review](altk/post_tool_reflection_toolkit/silent_review)     | A prompt-based approach to identify silent errors in tool calls (errors that do not produce any visible or explicit error message); Determines whether the tool response is relevant, accurate and complete based on the user's query                |
-| Post-tool      | [RAG Repair](altk/post_tool_reflection_toolkit/rag_repair)  | Given a failing tool call, this component attempts to use an LLM to repair the call while making use of domain documents such as documentation or troubleshooting examples via RAG. This component will require a set of related documents to ingest |
-| Output Check   | [Policy Guard](altk/policy_guard_toolkit)     | Checks to see if the output from the agent adheres to the policy statement & repair the output if it doesn’t |
+| Reasoning      | [Spotlight](altk/pre_llm)  | SpotLight enables users to emphasize important spans within their prompt and steers the LLMs attention towards those spans. It is an inference-time hook and does not involve any training or changes to model weights.                              |
+| Pre-tool       | [Refraction](altk/pre_tool/reflection/refraction)   | Verify the syntax of tool call sequences and repair any errors that will result in execution failures                                                                                                                                                |
+| Pre-tool       | [SPARC](altk/pre_tool/reflection/sparc)      | Evaluates tool calls before execution, identifying potential issues and suggesting corrections or transformations across multiple validation layers.                                                                                                 |
+| Post-tool      | [Code Generation for JSON Processing](altk/post_tool/code_generation) | If the agent calls tools which generate complex JSON objects as responses, this component will use LLM based Python code generation to process those responses and extract relevant information from them.                                           |
+| Post-tool      | [Silent Error Review](altk/post_tool/silent_review)     | A prompt-based approach to identify silent errors in tool calls (errors that do not produce any visible or explicit error message); Determines whether the tool response is relevant, accurate and complete based on the user's query                |
+| Post-tool      | [RAG Repair](altk/post_tool/rag_repair)  | Given a failing tool call, this component attempts to use an LLM to repair the call while making use of domain documents such as documentation or troubleshooting examples via RAG. This component will require a set of related documents to ingest |
+| Output Check   | [Policy Guard](altk/pre_response/policy_guard)     | Checks to see if the output from the agent adheres to the policy statement & repair the output if it doesn’t |
 
 
 
@@ -99,7 +101,7 @@ Check out ALTK's [documentation](), for details on
 installation, usage, concepts, and more (Coming Soon).
 <!-- [TODO: add link] -->
 
-The ALTK supports multiple LLM providers and two methods of configuring the providers. For more information, see the [LLMClient documentation](https://github.ibm.com/AI4BA/agent-lifecycle-toolkit/blob/oss/altk/toolkit_core/llm/README.md).
+The ALTK supports multiple LLM providers and two methods of configuring the providers. For more information, see the [LLMClient documentation](https://github.ibm.com/AI4BA/agent-lifecycle-toolkit/blob/oss/altk/core/llm/README.md).
 
 ## Examples
 Go hands-on with our [examples](examples).
