@@ -18,7 +18,7 @@ from altk.post_tool.silent_review.silent_review import (
     SilentReviewForJSONDataComponent,
 )
 from altk.post_tool.core.toolkit import SilentReviewRunInput, Outcome
-from altk.toolkit_core.core.toolkit import AgentPhase
+from altk.toolkit_core.toolkit import AgentPhase
 
 from dotenv import load_dotenv
 

@@ -1,5 +1,5 @@
 from pydantic import Field
-from altk.toolkit_core.core.toolkit import ComponentConfig
+from altk.toolkit_core.toolkit import ComponentConfig
 from typing import Literal
 
 

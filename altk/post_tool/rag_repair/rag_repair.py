@@ -12,7 +12,7 @@ from glob import glob
 from pydantic import Field
 
 from altk.post_tool.rag_repair.prompts import RAG_REPAIR_PROMPT
-from altk.toolkit_core.core.toolkit import AgentPhase
+from altk.toolkit_core.toolkit import AgentPhase
 from altk.post_tool.core.toolkit import (
     PostToolReflectionComponent,
     RAGRepairRunInput,

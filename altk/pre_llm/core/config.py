@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
 
-from altk.toolkit_core.core.toolkit import ComponentInput, ComponentOutput
+from altk.toolkit_core.toolkit import ComponentInput, ComponentOutput
 from pydantic import BaseModel, Field
 
 

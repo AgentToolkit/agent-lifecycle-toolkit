@@ -23,7 +23,7 @@ from altk.pre_tool.reflection.core import (
     Track,
 )
 from altk.pre_tool.reflection import SPARCReflectionComponent
-from altk.toolkit_core.core.toolkit import AgentPhase, ComponentConfig
+from altk.toolkit_core.toolkit import AgentPhase, ComponentConfig
 from altk.toolkit_core.llm import get_llm
 
 from dotenv import load_dotenv

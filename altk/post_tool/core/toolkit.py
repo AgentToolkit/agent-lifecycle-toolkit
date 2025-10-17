@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional, Dict, Union, Any
 from collections.abc import Callable
-from altk.toolkit_core.core.toolkit import (
+from altk.toolkit_core.toolkit import (
     ComponentBase,
     ComponentInput,
     ComponentOutput,

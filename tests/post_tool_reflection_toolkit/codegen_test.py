@@ -1,7 +1,7 @@
 import random
 import string
 from typing import cast
-from altk.toolkit_core.core.toolkit import AgentPhase
+from altk.toolkit_core.toolkit import AgentPhase
 from altk.post_tool.code_generation.code_generation import (
     CodeGenerationComponent,
     CodeGenerationComponentConfig,

@@ -25,7 +25,7 @@ Both examples will use Anthropic as an LLM provider using the claude-sonnet-4 mo
 
 ```python
 from altk.toolkit_core.llm import get_llm
-from altk.toolkit_core.core.toolkit import ComponentConfig
+from altk.toolkit_core.toolkit import ComponentConfig
 
 # Get an LLM provider
 LiteLLMClient = get_llm("litellm")
@@ -50,7 +50,7 @@ By default, ComponentConfig will use this option. Set the following environment 
 
 ```python
 from altk.toolkit_core.llm import get_llm
-from altk.toolkit_core.core.toolkit import ComponentConfig
+from altk.toolkit_core.toolkit import ComponentConfig
 
 # Get an LLM provider
 client = get_llm("auto_from_env")()
@@ -87,7 +87,7 @@ WX_URL=https://us-south.ml.cloud.ibm.com
 - `ANTHROPIC_API_KEY=*** anthropic api key ***`
 
 ```python
-from altk.toolkit_core.core.toolkit import ComponentConfig
+from altk.toolkit_core.toolkit import ComponentConfig
 
 # Directly pass the LiteLLM-style model name into ComponentConfig
 config = ComponentConfig(llm_client="anthropic/claude-sonnet-4-5-20250929")

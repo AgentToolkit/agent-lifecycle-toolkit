@@ -1,5 +1,5 @@
 from altk.toolkit_core.llm import get_llm
-from altk.toolkit_core.core.toolkit import ComponentConfig
+from altk.toolkit_core.toolkit import ComponentConfig
 
 
 class TestDirectLLMComponentConfig:

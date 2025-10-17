@@ -4,7 +4,7 @@ import logging
 import os
 from typing import Set
 
-from altk.toolkit_core.core.toolkit import AgentPhase, ComponentBase, ComponentOutput
+from altk.toolkit_core.toolkit import AgentPhase, ComponentBase, ComponentOutput
 
 from toolguard.__main__ import step2
 from toolguard.llm.tg_llmevalkit import TG_LLMEval

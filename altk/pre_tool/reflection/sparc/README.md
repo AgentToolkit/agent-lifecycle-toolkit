@@ -64,7 +64,7 @@ from altk.pre_tool.reflection.core import (
     SPARCExecutionMode,
 )
 from altk.pre_tool.reflection import SPARCReflectionComponent
-from altk.toolkit_core.core.toolkit import AgentPhase, ComponentConfig
+from altk.toolkit_core.toolkit import AgentPhase, ComponentConfig
 from langchain_core.messages import HumanMessage, AIMessage
 from altk.toolkit_core.llm import get_llm
 

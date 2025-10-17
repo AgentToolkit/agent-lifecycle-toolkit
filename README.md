@@ -34,7 +34,7 @@ from langgraph.prebuilt import InjectedState
 
 from altk.post_tool.silent_review.silent_review import SilentReviewForJSONDataComponent
 from altk.post_tool.core.toolkit import SilentReviewRunInput, Outcome
-from altk.toolkit_core.core.toolkit import AgentPhase
+from altk.toolkit_core.toolkit import AgentPhase
 
 
 # Ensure that the following environment variables are set:

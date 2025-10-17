@@ -1,6 +1,6 @@
 from typing import Union
 
-from altk.toolkit_core.core.toolkit import ComponentInput, ComponentOutput
+from altk.toolkit_core.toolkit import ComponentInput, ComponentOutput
 from altk.toolkit_core.llm import LLMClient
 from pydantic import BaseModel, Field, ConfigDict
 

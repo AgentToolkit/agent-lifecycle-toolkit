@@ -4,7 +4,7 @@ import os
 
 import pytest
 from altk.toolkit_core.llm.base import get_llm
-from altk.toolkit_core.core.toolkit import AgentPhase
+from altk.toolkit_core.toolkit import AgentPhase
 from altk.post_tool.rag_repair.rag_repair import RAGRepairComponent
 from altk.post_tool.rag_repair.rag_repair_config import (
     RAGRepairComponentConfig,

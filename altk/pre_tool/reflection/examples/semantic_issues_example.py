@@ -11,7 +11,7 @@ from altk.pre_tool.reflection.core import (
 from altk.pre_tool.reflection.sparc import (
     SPARCReflectionComponent,
 )
-from altk.toolkit_core.core.toolkit import AgentPhase, ComponentConfig
+from altk.toolkit_core.toolkit import AgentPhase, ComponentConfig
 from altk.toolkit_core.llm import get_llm
 
 

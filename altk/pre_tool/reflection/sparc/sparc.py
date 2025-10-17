@@ -3,7 +3,7 @@ import logging
 import time
 from typing import Set, List, Optional, Dict, Any
 
-from altk.toolkit_core.core.toolkit import AgentPhase, ComponentBase, ComponentConfig
+from altk.toolkit_core.toolkit import AgentPhase, ComponentBase, ComponentConfig
 from altk.toolkit_core.llm.output_parser import ValidatingLLMClient
 from altk.toolkit_core.llm.providers.auto_from_env.auto_from_env import (
     AutoFromEnvLLMClient,

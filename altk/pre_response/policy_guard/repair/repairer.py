@@ -2,7 +2,7 @@ from abc import abstractmethod
 import copy
 from typing import Set
 
-from altk.toolkit_core.core.toolkit import ComponentBase, ComponentConfig, AgentPhase
+from altk.toolkit_core.toolkit import ComponentBase, ComponentConfig, AgentPhase
 from altk.pre_response.policy_guard.core.utils import generate_params
 from altk.pre_response.policy_guard.detect.detector import Detector
 from altk.pre_response.policy_guard.repair.repair_prompts import (

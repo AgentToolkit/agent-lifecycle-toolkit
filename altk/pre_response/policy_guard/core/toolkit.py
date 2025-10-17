@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
-from altk.toolkit_core.core.toolkit import ComponentInput, ComponentOutput
+from altk.toolkit_core.toolkit import ComponentInput, ComponentOutput
 
 
 ######### Policy Guard Middleware Interfaces ##############

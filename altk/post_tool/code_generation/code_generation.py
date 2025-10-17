@@ -1,6 +1,6 @@
 from llm_sandbox import SandboxSession
 import logging
-from altk.toolkit_core.core.toolkit import AgentPhase, ComponentConfig
+from altk.toolkit_core.toolkit import AgentPhase, ComponentConfig
 from typing import Set, Any
 from altk.post_tool.core.toolkit import (
     PostToolReflectionComponent,

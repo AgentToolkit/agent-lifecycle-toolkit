@@ -3,7 +3,7 @@ import os
 
 import pytest
 from altk.toolkit_core.llm.base import get_llm
-from altk.toolkit_core.core.toolkit import AgentPhase, ComponentConfig
+from altk.toolkit_core.toolkit import AgentPhase, ComponentConfig
 from altk.pre_response.policy_guard.core.toolkit import (
     PolicyDetectorInput,
     PolicyRepairerInput,
