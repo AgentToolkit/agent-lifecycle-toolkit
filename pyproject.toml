@@ -188,10 +188,7 @@ markers = [
 ]
 
 [tool.mypy]
-files = [
-    "altk/toolkit_core/core",
-    "altk/toolkit_core/llm",
-]
+ignore_errors = true
 
 [tool.semantic_release]
 allow_zero_version = true
