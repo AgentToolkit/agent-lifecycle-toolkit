@@ -1,10 +1,10 @@
 from nestful.data_handlers import get_nestful_data_instance, get_nestful_data
-from altk.pre_tool_reflection_toolkit.refraction.src.mappings.compute_maps import Mapper
-from altk.pre_tool_reflection_toolkit.refraction.src.mappings.utils import (
+from altk.pre_tool.reflection.refraction.src.mappings.compute_maps import Mapper
+from altk.pre_tool.reflection.refraction.src.mappings.utils import (
     cache_maps,
     merge_maps,
 )
-from altk.pre_tool_reflection_toolkit.refraction.src.utils import filter_catalog
+from altk.pre_tool.reflection.refraction.src.utils import filter_catalog
 
 import json
 import pytest

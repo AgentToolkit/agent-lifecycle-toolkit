@@ -1,13 +1,13 @@
 from altk.toolkit_core.llm.types import GenerationMode
 from altk.toolkit_core.llm import LLMClient
 from altk.toolkit_core.core.toolkit import AgentPhase
-from altk.pre_tool_reflection_toolkit.core.config import (
+from altk.pre_tool.reflection.core import (
     RefractionConfig,
     RefractionMode,
 )
-from altk.pre_tool_reflection_toolkit.refraction.refraction import RefractionComponent
-from altk.pre_tool_reflection_toolkit.refraction.src.integration import Refractor
-from altk.pre_tool_reflection_toolkit.core.types import (
+from altk.pre_tool.reflection.refraction.refraction import RefractionComponent
+from altk.pre_tool.reflection.refraction.refraction import Refractor
+from altk.pre_tool.reflection.core.types import (
     RefractionBuildInput,
     RefractionRunInput,
     RefractionRunOutput,

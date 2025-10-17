@@ -1,4 +1,4 @@
-from altk.pre_tool_reflection_toolkit.refraction.src import refract
+from altk.pre_tool.reflection.refraction.src import refract
 from tests.utils.refraction.tools.sample_tool_specs_untyped import (
     tools_internal,
     tool_calls_internal,

@@ -16,11 +16,11 @@ from langchain_core.messages import BaseMessage, HumanMessage
 import operator
 from typing import TypedDict, List
 
-from altk.pre_tool_reflection_toolkit.core import (
+from altk.pre_tool.reflection.core import (
     SPARCReflectionRunInput,
     Track,
 )
-from altk.pre_tool_reflection_toolkit.sparc import SPARCReflectionComponent
+from altk.pre_tool.reflection import SPARCReflectionComponent
 from altk.toolkit_core.core.toolkit import AgentPhase, ComponentConfig
 from altk.toolkit_core.llm import get_llm
 

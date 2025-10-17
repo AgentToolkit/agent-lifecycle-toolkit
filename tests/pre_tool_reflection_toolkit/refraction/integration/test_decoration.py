@@ -1,6 +1,6 @@
 from typing import Any, Dict
-from altk.pre_tool_reflection_toolkit.refraction.src.integration import Refractor
-from altk.pre_tool_reflection_toolkit.refraction.src.schemas import DebuggingResult
+from altk.pre_tool.reflection.refraction.src.integration import Refractor
+from altk.pre_tool.reflection.refraction.src.schemas import DebuggingResult
 from nestful.data_handlers import get_nestful_catalog
 from tests.utils.refraction.tools.custom_tools import (
     SkyScrapperFlightSearch,

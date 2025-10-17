@@ -1,4 +1,4 @@
-from altk.pre_tool_reflection_toolkit.refraction.src import refract
+from altk.pre_tool.reflection.refraction.src import refract
 from nl2flow.debug.schemas import SolutionQuality
 from nl2flow.compile.schemas import Step, MemoryItem
 from tests.utils.refraction.tools.sample_tool_specs import tool_calls, tools

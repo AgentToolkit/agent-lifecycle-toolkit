@@ -1,4 +1,4 @@
-from altk.pre_tool_reflection_toolkit.refraction.src import refract
+from altk.pre_tool.reflection.refraction.src import refract
 from nl2flow.compile.schemas import MemoryItem
 from nestful.data_handlers import get_nestful_catalog
 from tests.utils.refraction.utils import get_cached_maps

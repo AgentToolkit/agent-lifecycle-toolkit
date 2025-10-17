@@ -1,6 +1,6 @@
 from nestful.data_handlers import get_nestful_data
 from nestful.errors import induce_error_in_sequence
-from altk.pre_tool_reflection_toolkit.refraction.src.integration import Refractor
+from altk.pre_tool.reflection.refraction.src.integration import Refractor
 
 import pytest
 

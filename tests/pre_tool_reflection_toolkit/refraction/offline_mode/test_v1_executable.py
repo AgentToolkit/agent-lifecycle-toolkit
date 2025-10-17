@@ -1,6 +1,6 @@
 from typing import Any
-from altk.pre_tool_reflection_toolkit.refraction.src import refract
-from altk.pre_tool_reflection_toolkit.refraction.src.schemas.results import (
+from altk.pre_tool.reflection.refraction.src import refract
+from altk.pre_tool.reflection.refraction.src.schemas.results import (
     DebuggingResult,
 )
 from nestful.data_handlers import get_nestful_data_instance

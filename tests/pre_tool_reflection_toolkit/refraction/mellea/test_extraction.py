@@ -7,7 +7,7 @@ from tests.utils.refraction.tools.sample_tool_specs import (
 )
 from tests.utils.refraction.mellea.prompt import generate_response
 
-from altk.pre_tool_reflection_toolkit.refraction.src.integration.utils import (
+from altk.pre_tool.reflection.refraction.src.integration.utils import (
     extract_tool_calls,
 )
 from nestful.schemas.tools import ToolCall, OpenAIToolCall

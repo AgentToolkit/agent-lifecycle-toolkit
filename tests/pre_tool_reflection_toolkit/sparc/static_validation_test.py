@@ -2,14 +2,14 @@ import json
 import os
 import pytest
 
-from altk.pre_tool_reflection_toolkit.core import (
+from altk.pre_tool.reflection.core import (
     SPARCReflectionRunInput,
     SPARCReflectionDecision,
     SPARCReflectionIssueType,
     SPARCExecutionMode,
     Track,
 )
-from altk.pre_tool_reflection_toolkit.sparc import (
+from altk.pre_tool.reflection.sparc import (
     SPARCReflectionComponent,
 )
 from altk.toolkit_core.core.toolkit import AgentPhase, ComponentConfig

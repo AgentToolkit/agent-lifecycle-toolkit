@@ -1,12 +1,12 @@
 from nestful.data_handlers import get_nestful_catalog
 from nestful import SequencingData, SequenceStep
-from altk.pre_tool_reflection_toolkit.refraction.src.schemas.results import (
+from altk.pre_tool.reflection.refraction.src.schemas.results import (
     PromptType,
     DebuggingResult,
 )
-from altk.pre_tool_reflection_toolkit.refraction.src.utils import pprint
-from altk.pre_tool_reflection_toolkit.refraction.src import refract, generate_prompt
-from altk.pre_tool_reflection_toolkit.refraction.src.prompt_template import (
+from altk.pre_tool.reflection.refraction.src.utils import pprint
+from altk.pre_tool.reflection.refraction.src import refract, generate_prompt
+from altk.pre_tool.reflection.refraction.src.prompt_template import (
     stringify_list_of_fixes,
 )
 from typing import Optional

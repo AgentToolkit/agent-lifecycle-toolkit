@@ -1,10 +1,10 @@
 from nestful import SequencingData, SequencingDataset
 from nestful.data_handlers import get_nestful_catalog, get_nestful_data
-from altk.pre_tool_reflection_toolkit.refraction.src.batch_actions import (
+from altk.pre_tool.reflection.refraction.src.batch_actions import (
     run_all,
     run_all_batch,
 )
-from altk.pre_tool_reflection_toolkit.refraction.src.schemas.results import BatchResults
+from altk.pre_tool.reflection.refraction.src.schemas.results import BatchResults
 from tests.utils.refraction.utils import load_data, print_results, timeit
 from typing import List, Any, Optional
 from inspect import stack
