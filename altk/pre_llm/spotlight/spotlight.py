@@ -15,7 +15,7 @@ from transformers import (
     PreTrainedTokenizerBase,
 )
 
-from altk.spotlight_toolkit.core.config import (
+from altk.pre_llm.core.config import (
     SpotLightConfig,
     SpotLightMetadata,
     SpotLightOutputSchema,

@@ -22,6 +22,7 @@ There are three options for getting LLM providers:
 Both examples will use Anthropic as an LLM provider using the claude-sonnet-4 model.
 
 ### 1. Using `get_llm` to instantiate an LLM provider
+
 ```python
 from altk.toolkit_core.llm import get_llm
 from altk.toolkit_core.core.toolkit import ComponentConfig
@@ -31,7 +32,7 @@ LiteLLMClient = get_llm("litellm")
 
 client = LiteLLMClient(
     model_name="anthropic/claude-sonnet-4-20250514",
-    api_key="*** anthropic api key ***" # or define the env var ANTHROPIC_API_KEY
+    api_key="*** anthropic api key ***"  # or define the env var ANTHROPIC_API_KEY
 )
 
 # Generate text

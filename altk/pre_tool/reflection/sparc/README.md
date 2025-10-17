@@ -59,9 +59,9 @@ This component evaluates tool calls before execution, identifying potential issu
 
 ```python
 from altk.pre_tool.reflection.core import (
-  SPARCReflectionRunInput,
-  Track,
-  SPARCExecutionMode,
+    SPARCReflectionRunInput,
+    Track,
+    SPARCExecutionMode,
 )
 from altk.pre_tool.reflection import SPARCReflectionComponent
 from altk.toolkit_core.core.toolkit import AgentPhase, ComponentConfig
@@ -72,79 +72,79 @@ from altk.toolkit_core.llm import get_llm
 # Build ComponentConfig with ValidatingLLMClient (REQUIRED)
 # NOTE: This example assumes the OPENAI_API_KEY environment variable is set
 def build_config():
-  """Build ComponentConfig with OpenAI ValidatingLLMClient."""
-  OPENAI_CLIENT = get_llm("openai.sync.output_val")  # ValidatingLLMClient
-  # Other validating LLMs: litellm.ollama.output_val, watsonx.output_val
-  return ComponentConfig(
-    llm_client=OPENAI_CLIENT(
-      model_name="o4-mini",
+    """Build ComponentConfig with OpenAI ValidatingLLMClient."""
+    OPENAI_CLIENT = get_llm("openai.sync.output_val")  # ValidatingLLMClient
+    # Other validating LLMs: litellm.ollama.output_val, watsonx.output_val
+    return ComponentConfig(
+        llm_client=OPENAI_CLIENT(
+            model_name="o4-mini",
+        )
     )
-  )
 
 
 # Initialize reflector with ComponentConfig and Track-based API
 config = build_config()
 reflector = SPARCReflectionComponent(
-  config=config,  # ComponentConfig with ValidatingLLMClient
-  track=Track.FAST_TRACK,  # Choose appropriate track
-  execution_mode=SPARCExecutionMode.ASYNC,
+    config=config,  # ComponentConfig with ValidatingLLMClient
+    track=Track.FAST_TRACK,  # Choose appropriate track
+    execution_mode=SPARCExecutionMode.ASYNC,
 )
 
 # Check initialization
 if reflector._initialization_error:
-  print(f"Failed to initialize: {reflector._initialization_error}")
-  exit(1)
+    print(f"Failed to initialize: {reflector._initialization_error}")
+    exit(1)
 
 # Define your tool specification (OpenAI format)
 tool_specs = [{
-  "type": "function",
-  "function": {
-    "name": "send_email",
-    "description": "Send an email to recipients",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "to": {"type": "array", "items": {"type": "string"}},
-        "subject": {"type": "string"},
-        "body": {"type": "string"}
-      },
-      "required": ["to", "subject", "body"]
+    "type": "function",
+    "function": {
+        "name": "send_email",
+        "description": "Send an email to recipients",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "to": {"type": "array", "items": {"type": "string"}},
+                "subject": {"type": "string"},
+                "body": {"type": "string"}
+            },
+            "required": ["to", "subject", "body"]
+        }
     }
-  }
 }]
 
 # Prepare conversation context
 messages = [
-  HumanMessage(content="Send an email to team@company.com about the meeting"),
-  AIMessage(content="I'll send that email for you.")
+    HumanMessage(content="Send an email to team@company.com about the meeting"),
+    AIMessage(content="I'll send that email for you.")
 ]
 
 # Tool call to validate (OpenAI format)
 tool_call = {
-  "id": "1",
-  "type": "function",
-  "function": {
-    "name": "send_email",
-    "arguments": '{"to": ["teams@company.com"], "subject": "Meeting Update", "body": "Meeting scheduled for tomorrow."}'
-  }
+    "id": "1",
+    "type": "function",
+    "function": {
+        "name": "send_email",
+        "arguments": '{"to": ["teams@company.com"], "subject": "Meeting Update", "body": "Meeting scheduled for tomorrow."}'
+    }
 }
 
 # Run reflection
 run_input = SPARCReflectionRunInput(
-  messages=messages,
-  tool_specs=tool_specs,
-  tool_calls=[tool_call]
+    messages=messages,
+    tool_specs=tool_specs,
+    tool_calls=[tool_call]
 )
 
 result = reflector.process(run_input, phase=AgentPhase.RUNTIME)
 
 # Check results
 if result.output.reflection_result.decision == "approve":
-  print("✅ Tool call approved")
+    print("✅ Tool call approved")
 else:
-  print("❌ Tool call rejected")
-  for issue in result.output.reflection_result.issues:
-    print(f"  - {issue.metric_name}: {issue.explanation}")
+    print("❌ Tool call rejected")
+    for issue in result.output.reflection_result.issues:
+        print(f"  - {issue.metric_name}: {issue.explanation}")
 ```
 
 ## Input Format

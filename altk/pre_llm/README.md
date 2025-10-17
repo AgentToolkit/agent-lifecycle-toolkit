@@ -26,17 +26,18 @@ Use Spotlight when your LLM is failing to follow critical instructions in comple
 ## Quick Start
 
 1. Initialize the SpotLight config and component objects.
+
 ```python
-from altk.spotlight_toolkit.core.config import SpotLightConfig
-from altk.spotlight_toolkit.spotlight.spotlight import SpotLightComponent
+from altk.pre_llm.core.config import SpotLightConfig
+from altk.pre_llm.spotlight.spotlight import SpotLightComponent
 
 # SpotLightConfig accepts the HF model path and generation arguments
 # NOTE: torch may require the PYTORCH_ENABLE_MPS_FALLBACK=1 environment variable
 config = SpotLightConfig(model_path="Qwen/Qwen2.5-1.5B-Instruct",
                          generation_kwargs={
-                            'max_new_tokens=': 128,
-                            'do_sample': False,
-                            }
+                             'max_new_tokens=': 128,
+                             'do_sample': False,
+                         }
                          )
 spotlight = SpotLightComponent(config=config)
 ```
@@ -48,9 +49,10 @@ spotlight = SpotLightComponent(config=config)
 ```python
 from langchain_core.messages import HumanMessage, AIMessage
 from altk.toolkit_core.core.toolkit import AgentPhase
-from altk.spotlight_toolkit.core.config import SpotLightMetadata, SpotLightRunInput
+from altk.pre_llm.core.config import SpotLightMetadata, SpotLightRunInput
 
-messages = [HumanMessage(content="List the capitals of the following countries - USA, Italy, Greece. Always give me the answer in JSON format.")]
+messages = [HumanMessage(
+    content="List the capitals of the following countries - USA, Italy, Greece. Always give me the answer in JSON format.")]
 emph_span = ["Always give me the answer in JSON format."]
 
 run_input = SpotLightRunInput(
