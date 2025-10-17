@@ -61,4 +61,4 @@ jobs:
       - uses: ./.github/actions/setup-python-uv
 
       - name: Check typing
-        run: uv run mypy
+        run: uv run mypy .
