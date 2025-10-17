@@ -2,11 +2,11 @@ import random
 import string
 from typing import cast
 from altk.toolkit_core.core.toolkit import AgentPhase
-from altk.post_tool_reflection_toolkit.code_generation.code_generation import (
+from altk.post_tool.code_generation.code_generation import (
     CodeGenerationComponent,
     CodeGenerationComponentConfig,
 )
-from altk.post_tool_reflection_toolkit.core.toolkit import (
+from altk.post_tool.core.toolkit import (
     CodeGenerationRunInput,
     CodeGenerationRunOutput,
 )

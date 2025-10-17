@@ -2,12 +2,12 @@ from llm_sandbox import SandboxSession
 import logging
 from altk.toolkit_core.core.toolkit import AgentPhase, ComponentConfig
 from typing import Set, Any
-from altk.post_tool_reflection_toolkit.core.toolkit import (
+from altk.post_tool.core.toolkit import (
     PostToolReflectionComponent,
     CodeGenerationRunInput,
     CodeGenerationRunOutput,
 )
-from altk.post_tool_reflection_toolkit.core.prompts import (
+from altk.post_tool.core.prompts import (
     CODE_GENERATION_ZERO_SHOT_PROMPT_WITH_RESPONSE_SCHEMA,
     CODE_GENERATION_ZERO_SHOT_PROMPT_WITH_COMPACT_RESPONSE,
     PROMPT_GET_NL_QUERY,

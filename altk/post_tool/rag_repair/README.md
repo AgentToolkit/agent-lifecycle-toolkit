@@ -25,9 +25,9 @@ Here is how you can call the code generation based tool response processing:
 
 ```Python
 from altk.toolkit_core.core.toolkit import AgentPhase
-from altk.post_tool_reflection_toolkit.rag_repair.rag_repair import RAGRepairComponent
-from altk.post_tool_reflection_toolkit.rag_repair.rag_repair_config import RAGRepairComponentConfig
-from altk.post_tool_reflection_toolkit.core.toolkit import RAGRepairRunInput, RAGRepairBuildInput
+from altk.post_tool.rag_repair.rag_repair import RAGRepairComponent
+from altk.post_tool.rag_repair.rag_repair_config import RAGRepairComponentConfig
+from altk.post_tool.core.toolkit import RAGRepairRunInput, RAGRepairBuildInput
 
 # First, the RAG is set up in the BUILD phase
 local_docs_path = "/path/to/docs"
@@ -84,8 +84,8 @@ For example:
 
 ```python
 from altk.toolkit_core.llm import get_llm
-from altk.post_tool_reflection_toolkit.rag_repair.rag_repair import RAGRepairComponent
-from altk.post_tool_reflection_toolkit.rag_repair.rag_repair_config import RAGRepairComponentConfig
+from altk.post_tool.rag_repair.rag_repair import RAGRepairComponent
+from altk.post_tool.rag_repair.rag_repair_config import RAGRepairComponentConfig
 
 OpenAIClient = get_llm("openai.sync")
 config = RAGRepairComponentConfig(

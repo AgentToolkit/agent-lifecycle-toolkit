@@ -1,6 +1,6 @@
 from typing import Tuple
 from altk.toolkit_core.llm.types import GenerationMode
-from altk.post_tool_reflection_toolkit.silent_review.review_prompts import (
+from altk.post_tool.silent_review.review_prompts import (
     REVIEW_JSON_PROMPT,
     REVIEW_TABULAR_PROMPT,
 )

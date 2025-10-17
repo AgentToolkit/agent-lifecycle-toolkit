@@ -1,12 +1,12 @@
 from typing import Set, Type, ClassVar
 from altk.toolkit_core.core.toolkit import AgentPhase
-from altk.post_tool_reflection_toolkit.core.toolkit import (
+from altk.post_tool.core.toolkit import (
     PostToolReflectionComponent,
     SilentReviewRunInput,
     SilentReviewRunOutput,
     Outcome,
 )
-from altk.post_tool_reflection_toolkit.silent_review.review_tool_output import (
+from altk.post_tool.silent_review.review_tool_output import (
     ReviewJSONToolOutputUtil,
     ReviewTabularToolOutputUtil,
 )

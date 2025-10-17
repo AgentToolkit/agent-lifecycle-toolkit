@@ -26,11 +26,11 @@ Here is how you can call the code generation based tool response processing:
 ```Python
 
 from altk.toolkit_core.core.toolkit import AgentPhase
-from altk.post_tool_reflection_toolkit.code_generation.code_generation import CodeGenerationComponent
-from altk.post_tool_reflection_toolkit.core.toolkit import CodeGenerationRunInput, CodeGenerationRunOutput
+from altk.post_tool.code_generation.code_generation import CodeGenerationComponent
+from altk.post_tool.core.toolkit import CodeGenerationRunInput, CodeGenerationRunOutput
 
 nl_query = "I need info about X from service Y."
-response = {...} # this is some tool or api response in JSON format
+response = {...}  # this is some tool or api response in JSON format
 component = CodeGenerationComponent()
 
 input_data = CodeGenerationRunInput(
@@ -47,11 +47,11 @@ output = component.process(input_data, AgentPhase.RUNTIME)
 The LLM model, provider and inference settings can be configured when creating the `CodeGenerationComponent` by supplying the relevant parameters. For example:
 
 ```python
-from altk.post_tool_reflection_toolkit.code_generation.code_generation import CodeGenerationComponent
+from altk.post_tool.code_generation.code_generation import CodeGenerationComponent
 
 component = CodeGenerationComponent(
     model_id="meta-llama/llama-3-405b-instruct",
-    provider="openai.sync", # can be one of: openai, watsonx, litellm
+    provider="openai.sync",  # can be one of: openai, watsonx, litellm
     model_kwargs={
         "temperature": 0.5,
         "max_tokens": 1000,
@@ -64,10 +64,11 @@ component = CodeGenerationComponent(
 - `use_docker_sandbox` when set to `True` will use the `DOCKER_HOST` in the environment variables to run the generated code in a container, setting to `False` will use a restricted Python interpreter locally. Running the generated code locally while faster carries some security risks.
 
 ## Examples
+
 ```python
 from altk.toolkit_core.core.toolkit import AgentPhase
-from altk.post_tool_reflection_toolkit.code_generation.code_generation import CodeGenerationComponent
-from altk.post_tool_reflection_toolkit.core.toolkit import CodeGenerationRunInput, CodeGenerationRunOutput
+from altk.post_tool.code_generation.code_generation import CodeGenerationComponent
+from altk.post_tool.core.toolkit import CodeGenerationRunInput, CodeGenerationRunOutput
 
 component = CodeGenerationComponent()
 

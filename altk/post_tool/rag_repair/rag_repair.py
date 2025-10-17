@@ -11,9 +11,9 @@ from glob import glob
 
 from pydantic import Field
 
-from altk.post_tool_reflection_toolkit.rag_repair.prompts import RAG_REPAIR_PROMPT
+from altk.post_tool.rag_repair.prompts import RAG_REPAIR_PROMPT
 from altk.toolkit_core.core.toolkit import AgentPhase
-from altk.post_tool_reflection_toolkit.core.toolkit import (
+from altk.post_tool.core.toolkit import (
     PostToolReflectionComponent,
     RAGRepairRunInput,
     RAGRepairRunOutput,

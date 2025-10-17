@@ -15,32 +15,33 @@ Best suited for tool responses that are verbose and/or based on tabular response
 
 ## Quick Start
 The below example should give you an idea of how to plug in this component into your agent pipeline:
+
 ```python
-from altk.post_tool_reflection_toolkit.silent_review.silent_review import SilentReviewForJSONDataComponent
-from altk.post_tool_reflection_toolkit.core.toolkit import SilentReviewRunInput
+from altk.post_tool.silent_review.silent_review import SilentReviewForJSONDataComponent
+from altk.post_tool.core.toolkit import SilentReviewRunInput
 from altk.toolkit_core.core.toolkit import AgentPhase
 
 input_data = SilentReviewRunInput(
-        messages=[
-            HumanMessage(content="Tell me the weather"),
-            AIMessage(content="Calling the weather tool now")
-        ],
-        toolspec={
-            "name": "get_weather",
-            "description": "Gets weather for a city",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "city": {"type": "string"}
-                },
-                "required": ["city"]
-            }
-        },
-        tool_response={
-            "name": "get_weather",
-            "result": {"city": "NYC", "temperature": "75F", "condition": "Sunny"}
+    messages=[
+        HumanMessage(content="Tell me the weather"),
+        AIMessage(content="Calling the weather tool now")
+    ],
+    toolspec={
+        "name": "get_weather",
+        "description": "Gets weather for a city",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city": {"type": "string"}
+            },
+            "required": ["city"]
         }
-    )
+    },
+    tool_response={
+        "name": "get_weather",
+        "result": {"city": "NYC", "temperature": "75F", "condition": "Sunny"}
+    }
+)
 
 reviewer = SilentReviewForJSONDataComponent()
 result = reviewer.process(data=input_data, phase=AgentPhase.RUNTIME)
