@@ -2,13 +2,13 @@ import dotenv
 
 from langchain_core.messages import HumanMessage
 
-from altk.pre_tool_guard_toolkit.core import (
+from altk.pre_tool.guard.core import (
     ToolGuardBuildInput,
     ToolGuardBuildInputMetaData,
     ToolGuardRunInput,
     ToolGuardRunInputMetaData,
 )
-from altk.pre_tool_guard_toolkit.pre_tool_guard import PreToolGuardComponent
+from altk.pre_tool.guard.pre_tool_guard import PreToolGuardComponent
 
 # Load environment variables
 dotenv.load_dotenv()

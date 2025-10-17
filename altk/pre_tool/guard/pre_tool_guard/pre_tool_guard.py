@@ -10,7 +10,7 @@ from toolguard.__main__ import step2
 from toolguard.llm.tg_llmevalkit import TG_LLMEval
 from toolguard.stages_tptd.text_tool_policy_generator import step1_main_with_tools
 
-from altk.pre_tool_guard_toolkit.core.types import (
+from altk.pre_tool.guard import (
     ToolGuardBuildInput,
     ToolGuardRunInput,
     ToolGuardRunOutput,
