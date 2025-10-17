@@ -9,11 +9,7 @@ from altk.core.llm.output_parser import (
     OutputValidationError,
     ValidatingLLMClient,
 )
-<<<<<<< HEAD
-from altk.toolkit_core.llm.base import BaseLLMClient, LLMClient
-=======
-from altk.core.llm.base import LLMClient
->>>>>>> 3e200ff (Rename toolkit core to just core)
+from altk.core.llm.base import BaseLLMClient
 
 
 class ValidationTestModel(BaseModel):

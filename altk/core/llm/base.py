@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 
 # Import from parent module to ensure singleton registry
 from altk.core.llm import _REGISTRY
-from .types import GenerationMode, GenerationArgs, ParameterMapper
+from .types import GenerationMode, GenerationArgs, LLMResponse, ParameterMapper
 
 T = TypeVar("T", bound="BaseLLMClient")
 Hook = Callable[[str, Dict[str, Any]], None]

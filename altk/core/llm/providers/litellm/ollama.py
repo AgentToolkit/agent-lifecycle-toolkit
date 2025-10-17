@@ -1,7 +1,7 @@
 import os
 from typing import Any, List, Optional, Union
 
-from altk.toolkit_core.llm.types import LLMResponse
+from altk.core.llm.types import LLMResponse
 from .litellm import (
     LiteLLMClient,
     LiteLLMClientOutputVal,
