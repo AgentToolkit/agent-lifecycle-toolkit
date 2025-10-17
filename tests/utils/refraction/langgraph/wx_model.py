@@ -18,7 +18,8 @@ import os
 import requests  # type: ignore
 
 
-class RITSModel(BaseChatModel):
+class WXModel(BaseChatModel):
+    # NOTE: This class needs to be refactored to use WX or some other LLM provider
     model_name: str
     model_url: str
     tools: List[Dict[str, Any]] = []
@@ -39,7 +40,7 @@ class RITSModel(BaseChatModel):
 
         headers: dict[str, str] = {
             "content-type": "application/json",
-            "RITS_API_KEY": str(os.environ.get("RITS_API_KEY")),
+            "WX_API_KEY": str(os.environ.get("WX_API_KEY")),
         }
 
         tools = [item["function"] for item in self.tools]

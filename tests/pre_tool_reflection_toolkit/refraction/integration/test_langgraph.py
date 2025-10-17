@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass
 from tests.utils.refraction.langgraph.utils import execute_tool_calls
-from tests.utils.refraction.langgraph.rits_model import RITSModel
+from tests.utils.refraction.langgraph.wx_model import WXModel
 from tests.utils.refraction.tools.custom_tools_langgraph import (
     State,
     search_hotels,
@@ -34,10 +34,8 @@ class TestLangGraph:
 
         self.tool_node = ToolNode(self.tools)
 
-        self.model = RITSModel(
-            model_name="ibm-granite/granite-3.3-8b-instruct",
-            model_url="https://inference-3scale-apicast-production.apps.rits.fmaas.res.ibm.com/granite-3-3-8b-instruct",
-        )
+        # NOTE: This class will need to be refactored and this instantiation changed.
+        self.model = WXModel()
 
     def test_direct_tool_call(self) -> None:
         message_with_single_tool_call = AIMessage(
