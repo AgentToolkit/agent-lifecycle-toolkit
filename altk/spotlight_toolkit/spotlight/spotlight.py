@@ -5,13 +5,6 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import torch
 import torch.nn.functional as F
-from langchain_core.messages import (
-    AIMessage,
-    BaseMessage,
-    ChatMessage,
-    HumanMessage,
-    SystemMessage,
-)
 from altk.toolkit_core.core.toolkit import AgentPhase, ComponentBase
 from pydantic import ConfigDict
 from transformers import (
@@ -112,34 +105,6 @@ class SpotLightComponent(ComponentBase):
             return {"device_map": generation_kwargs["device_map"]}
         else:
             return {"device_map": "auto"}
-
-    def langchain_to_hf_messages(
-        self, messages: List[BaseMessage]
-    ) -> List[Dict[str, str]]:
-        """Convert LangChain messages to HuggingFace chat format."""
-
-        hf_messages = []
-        for message in messages:
-            if isinstance(message, HumanMessage):
-                role = "user"
-            elif isinstance(message, AIMessage):
-                role = "assistant"
-            elif isinstance(message, SystemMessage):
-                role = "system"
-            elif isinstance(message, ChatMessage):
-                role = getattr(message, "role", "user")
-            else:
-                # Fallback for other message types
-                role = "user"
-
-            hf_messages.append(
-                {
-                    "role": role,
-                    "content": str(message.content) if message.content else "",
-                }
-            )
-
-        return hf_messages
 
     def tokenize_inputs(
         self, raw_inputs: list, tokenizer: PreTrainedTokenizerBase
@@ -371,10 +336,7 @@ class SpotLightComponent(ComponentBase):
                 emph_strings if isinstance(emph_strings, list) else [emph_strings]
             )
 
-            if any(isinstance(msg, BaseMessage) for msg in data.messages):
-                messages = self.langchain_to_hf_messages(data.messages)
-            else:
-                messages = data.messages
+            messages = data.messages
 
             chat = [
                 self.tokenizer.apply_chat_template(

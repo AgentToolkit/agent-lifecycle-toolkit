@@ -31,15 +31,7 @@ from altk.pre_tool_reflection_toolkit.core import (
     SPARCReflectionIssueType,
 )
 
-
-from langchain_core.messages import BaseMessage
-
-
 logger = logging.getLogger(__name__)
-
-
-def msgs_to_openai_dicts(msgs: list[BaseMessage]) -> list[dict]:
-    return [{"role": msg.type, "content": msg.content} for msg in msgs]
 
 
 class SPARCReflectionComponent(ComponentBase):
@@ -303,7 +295,7 @@ class SPARCReflectionComponent(ComponentBase):
 
             # Run reflection pipeline asynchronously
             pipeline_result = await self._run_async_pipeline(
-                msgs_to_openai_dicts(data.messages), tool_call
+                data.messages or [], tool_call
             )
 
             # Process pipeline result
