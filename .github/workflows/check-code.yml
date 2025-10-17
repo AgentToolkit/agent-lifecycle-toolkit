@@ -31,7 +31,7 @@ jobs:
       - uses: ./.github/actions/setup-python-uv
 
       - name: Check Linting
-        run: uvx ruff check
+        run: uv run ruff check
 
   check-formatting:
     strategy:
@@ -46,7 +46,7 @@ jobs:
       - uses: ./.github/actions/setup-python-uv
 
       - name: Check Formatting
-        run: uvx ruff format --check
+        run: uv run ruff format --check
 
   check-typing:
     strategy:
@@ -61,4 +61,4 @@ jobs:
       - uses: ./.github/actions/setup-python-uv
 
       - name: Check typing
-        run: uvx mypy .
+        run: uv run mypy
