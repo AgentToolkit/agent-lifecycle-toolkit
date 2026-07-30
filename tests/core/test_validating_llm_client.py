@@ -16,11 +16,13 @@ Covers the behaviors migrated from CLEAR's monkey-patches:
 
 from __future__ import annotations
 
+import json
 import logging
 from types import SimpleNamespace
 from typing import Any, Type
 
 import pytest
+from pydantic import BaseModel
 
 from altk.core.llm.output_parser import (
     OutputValidationError,
@@ -92,10 +94,11 @@ class TestJsonSchemaToPydantic:
         )
         assert m.model_fields["a"].annotation is str
 
-    def test_freeform_flag_keeps_nested_objects_as_dict(self):
-        # only free-form (no properties) converts; an object with properties
-        # keeps its dict shape (OpenAI can still satisfy additionalProperties
-        # when the sub-schema is fully specified).
+    def test_freeform_flag_recurses_into_nested_objects(self):
+        # Only a free-form object (no properties) becomes a str. An object that
+        # *has* properties is recursed into as a nested model, so its fields
+        # survive into the schema handed to the provider — a bare ``dict`` would
+        # erase them and let the model emit output the real schema rejects.
         m = json_schema_to_pydantic_model(
             {
                 "type": "object",
@@ -110,7 +113,9 @@ class TestJsonSchemaToPydantic:
             free_form_object_as_str=True,
         )
         assert m.model_fields["flat"].annotation is str
-        assert m.model_fields["structured"].annotation is dict
+        nested = m.model_fields["structured"].annotation
+        assert issubclass(nested, BaseModel)
+        assert set(nested.model_fields) == {"x"}
 
 
 # ---------------------------------------------------------------------------
@@ -304,3 +309,209 @@ class TestSafeParse:
             out = c2._parse_llm_response(raw)
         assert out == ""
         assert any("reasoning" in r.message.lower() for r in caplog.records)
+
+
+# ---------------------------------------------------------------------------
+# Schema fidelity: constraints must survive the Pydantic round-trip, otherwise
+# provider-native structured output is handed a weaker schema than the one the
+# response is later validated against.
+# ---------------------------------------------------------------------------
+
+
+class TestSchemaFidelity:
+    def test_numeric_bounds_survive(self):
+        m = json_schema_to_pydantic_model(
+            {
+                "type": "object",
+                "properties": {
+                    "score": {"type": "integer", "minimum": 1, "maximum": 5}
+                },
+            }
+        )
+        prop = m.model_json_schema()["properties"]["score"]
+        assert prop["minimum"] == 1
+        assert prop["maximum"] == 5
+
+    def test_enum_survives_inside_array_items(self):
+        # A Field-level constraint cannot reach into ``items``; only a real
+        # Literal type does. This is what made reasoning models emit
+        # out-of-vocabulary values that failed the original schema.
+        m = json_schema_to_pydantic_model(
+            {
+                "type": "object",
+                "properties": {
+                    "kinds": {
+                        "type": "array",
+                        "items": {"type": "string", "enum": ["A", "B"]},
+                    }
+                },
+            }
+        )
+        emitted = json.dumps(m.model_json_schema())
+        assert '"A"' in emitted and '"B"' in emitted
+
+    def test_nested_array_object_properties_survive(self):
+        m = json_schema_to_pydantic_model(
+            {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {"rationale": {"type": "string"}},
+                            "required": ["rationale"],
+                        },
+                    }
+                },
+            }
+        )
+        assert "rationale" in json.dumps(m.model_json_schema())
+
+    def test_additional_properties_false_forbids_extras(self):
+        m = json_schema_to_pydantic_model(
+            {
+                "type": "object",
+                "properties": {"a": {"type": "string"}},
+                "additionalProperties": False,
+            }
+        )
+        assert m.model_config.get("extra") == "forbid"
+
+    def test_enum_with_null_type_is_optional(self):
+        m = json_schema_to_pydantic_model(
+            {
+                "type": "object",
+                "properties": {
+                    "t": {"type": ["string", "null"], "enum": ["x", "y", None]}
+                },
+            }
+        )
+        # Must accept None without raising.
+        assert m(t=None).t is None
+
+
+# ---------------------------------------------------------------------------
+# Retry behavior for empty / truncated responses (altk-boost#115).
+# ---------------------------------------------------------------------------
+
+
+class TestEmptyResponseRetries:
+    def test_value_error_is_retried_not_propagated(self, monkeypatch):
+        """A provider raising ValueError('No content...') must consume retries."""
+        observed: list = []
+        calls = {"n": 0}
+        from altk.core.llm.base import BaseLLMClient
+
+        def fake_generate(self, **kwargs):
+            observed.append(kwargs)
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise ValueError("No content or tool calls found in response")
+            return '{"a": "ok"}'
+
+        monkeypatch.setattr(BaseLLMClient, "_generate", fake_generate, raising=True)
+        c = _FakeValidating(prompt_based_validation=True, client=object())
+        out = c.generate(
+            [],
+            schema={
+                "type": "object",
+                "properties": {"a": {"type": "string"}},
+                "required": ["a"],
+            },
+            retries=3,
+        )
+        assert out == {"a": "ok"}
+        assert calls["n"] == 2
+
+    def test_empty_reply_retries_original_prompt_not_a_growing_thread(
+        self, monkeypatch
+    ):
+        """No empty assistant turn is appended, and the retry re-sends the
+        original prompt: several backends answer a padded conversation with
+        another empty response, which would burn every attempt."""
+        observed: list = []
+        _install_scripted_generate(monkeypatch, observed, ["", '{"a": "ok"}'])
+        c = _FakeValidating(prompt_based_validation=True, client=object())
+        out = c.generate(
+            [{"role": "user", "content": "hi"}],
+            schema={
+                "type": "object",
+                "properties": {"a": {"type": "string"}},
+                "required": ["a"],
+            },
+            retries=3,
+        )
+        assert out == {"a": "ok"}
+        retry_msgs = observed[-1]["prompt"]
+        assert not any(
+            m.get("role") == "assistant" and not (m.get("content") or "")
+            for m in retry_msgs
+        ), "an empty assistant turn must never be sent"
+        assert len(retry_msgs) == len(observed[0]["prompt"])
+
+    def test_truncated_reply_escalates_max_tokens(self, monkeypatch):
+        """finish_reason='length' means the budget was too small; re-asking with
+        the same budget would truncate identically, so it must grow."""
+        observed: list = []
+        from altk.core.llm.base import BaseLLMClient
+
+        truncated = {
+            "choices": [{"message": {"content": ""}, "finish_reason": "length"}]
+        }
+        scripted = [truncated, '{"a": "ok"}']
+
+        def fake_generate(self, **kwargs):
+            observed.append(kwargs)
+            raw = scripted.pop(0)
+            return self._parse_llm_response(raw)
+
+        monkeypatch.setattr(BaseLLMClient, "_generate", fake_generate, raising=True)
+
+        class _RealisticParse(_FakeValidating):
+            """A truncated reply carries no text: a real provider parser raises
+            on the missing content and the wrapper turns that into ``""``."""
+
+            def _parse_llm_response(self, raw):
+                if isinstance(raw, dict):
+                    raise ValueError("No content or tool calls found in response")
+                return str(raw)
+
+        c = _RealisticParse(prompt_based_validation=True, client=object())
+        out = c.generate(
+            [{"role": "user", "content": "hi"}],
+            schema={
+                "type": "object",
+                "properties": {"a": {"type": "string"}},
+                "required": ["a"],
+            },
+            retries=3,
+            max_tokens=1024,
+        )
+        assert out == {"a": "ok"}
+        assert observed[0]["max_tokens"] == 1024
+        assert observed[-1]["max_tokens"] > 1024
+
+    def test_native_schema_skipped_when_model_lacks_support(self, monkeypatch):
+        """A model that ignores response_format must be steered by the prompt
+        instead — sending the kwarg is a no-op there at best."""
+        observed: list = []
+        _install_scripted_generate(monkeypatch, observed, ['{"a": "ok"}'])
+
+        class _NoNative(_FakeValidating):
+            def supports_native_structured_output(self) -> bool:
+                return False
+
+        c = _NoNative(client=object())
+        c.generate(
+            [{"role": "user", "content": "hi"}],
+            schema={
+                "type": "object",
+                "properties": {"a": {"type": "string"}},
+                "required": ["a"],
+            },
+            schema_field="response_format",
+        )
+        assert "response_format" not in observed[-1]
+        # schema went into a system message instead
+        assert observed[-1]["prompt"][0]["role"] == "system"

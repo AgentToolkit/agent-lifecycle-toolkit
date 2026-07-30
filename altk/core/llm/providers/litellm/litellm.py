@@ -158,6 +158,16 @@ class LiteLLMClient(LLMClient):
         if not content:
             content = first.get("delta", {}).get("content", first.get("text", ""))
 
+        # Chain-of-thought models (e.g. gpt-oss on watsonx) can put the answer in
+        # ``reasoning_content`` and leave ``content`` empty. Prefer it over
+        # raising, so a usable response isn't discarded as "no content".
+        if not content and not tool_calls and msg:
+            reasoning = getattr(msg, "reasoning_content", None) or (
+                msg.get("reasoning_content") if isinstance(msg, dict) else None
+            )
+            if reasoning:
+                content = reasoning
+
         if not content and not tool_calls:
             raise ValueError("No content or tool calls found in response")
 
@@ -303,6 +313,28 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
         """
         return litellm  # type: ignore
 
+    def supports_native_structured_output(self) -> bool:
+        """Whether this model honors a native ``response_format`` schema.
+
+        Uses litellm's per-model capability data, so newly supported models are
+        picked up without changes here. Models that lack it (e.g. gpt-oss on
+        watsonx, ollama, gemini) silently ignore ``response_format`` — some
+        return empty content when it is sent — so the caller falls back to
+        injecting the schema into the system prompt instead.
+        """
+        try:
+            if litellm.supports_response_schema(model=self.model_path):
+                return True
+            # ``False`` is also what litellm returns for a model it has no
+            # metadata for, which would silently downgrade every unknown model.
+            # Only trust a negative answer when the model is actually known.
+            litellm.get_model_info(model=self.model_path)
+            return False
+        except Exception:
+            # Unknown model: assume native support and let validation + retries
+            # catch it, preserving the previous behavior.
+            return True
+
     def _register_methods(self) -> None:
         """
         Register how to call litellm methods - only chat modes are supported:
@@ -420,6 +452,16 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
         # Fallback to dict lookup
         if not content:
             content = first.get("delta", {}).get("content", first.get("text", ""))
+
+        # Chain-of-thought models (e.g. gpt-oss on watsonx) can put the answer in
+        # ``reasoning_content`` and leave ``content`` empty. Prefer it over
+        # raising, so a usable response isn't discarded as "no content".
+        if not content and not tool_calls and msg:
+            reasoning = getattr(msg, "reasoning_content", None) or (
+                msg.get("reasoning_content") if isinstance(msg, dict) else None
+            )
+            if reasoning:
+                content = reasoning
 
         if not content and not tool_calls:
             raise ValueError("No content or tool calls found in response")
