@@ -81,6 +81,31 @@ class BaseOpenAIClient(LLMClient):
 class BaseValidatingOpenAIClient(ValidatingLLMClient):
     """Base class for validating OpenAI and Azure OpenAI clients with shared parameter mapping"""
 
+    def _render_native_schema(self, schema: Any) -> Any:
+        """Render *schema* as an OpenAI ``response_format`` payload.
+
+        ``chat.completions.create`` rejects a Pydantic model class outright
+        ("You tried to pass a `BaseModel` class ... use chat.completions.parse()
+        instead"), so the base implementation cannot be used as-is. Emitting the
+        equivalent ``{"type": "json_schema", ..., "strict": True}`` dict keeps
+        native structured output working on the ``create`` method that both the
+        OpenAI and Azure clients already register.
+        """
+        from openai.lib._pydantic import to_strict_json_schema
+        from pydantic import BaseModel
+
+        model = super()._render_native_schema(schema)
+        if not (isinstance(model, type) and issubclass(model, BaseModel)):
+            return model
+        return {
+            "type": "json_schema",
+            "json_schema": {
+                "name": model.__name__,
+                "strict": True,
+                "schema": to_strict_json_schema(model),
+            },
+        }
+
     def _setup_parameter_mapper(self) -> None:
         """Set up parameter mapper for OpenAI-compatible APIs"""
         self._parameter_mapper = ParameterMapper()
