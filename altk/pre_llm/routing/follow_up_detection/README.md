@@ -52,7 +52,7 @@ from altk.core.toolkit import AgentPhase, ComponentConfig
 
 WatsonXAIClient = get_llm("watsonx")
 llm_client = WatsonXAIClient(
-    model_id="ibm/granite-3-3-8b-instruct",
+    model_id="meta-llama/llama-3-3-70b-instruct",
     api_key=os.getenv("WX_API_KEY"),
     project_id=os.getenv("WX_PROJECT_ID"),
     url=os.getenv("WX_URL"),
@@ -91,7 +91,7 @@ from altk.core.toolkit import AgentPhase, ComponentConfig
 
 WatsonXAIClient = get_llm("watsonx")
 llm_client = WatsonXAIClient(
-    model_id="ibm/granite-3-3-8b-instruct",
+    model_id="meta-llama/llama-3-3-70b-instruct",
     api_key=os.getenv("WX_API_KEY"),
     project_id=os.getenv("WX_PROJECT_ID"),
     url=os.getenv("WX_URL"),
@@ -208,7 +208,7 @@ from altk.core.toolkit import AgentPhase, ComponentConfig
 
 WatsonXAIClient = get_llm("watsonx")
 llm_client = WatsonXAIClient(
-    model_id="ibm/granite-3-3-8b-instruct",
+    model_id="meta-llama/llama-3-3-70b-instruct",
     api_key=os.getenv("WX_API_KEY"),
     project_id=os.getenv("WX_PROJECT_ID"),
     url=os.getenv("WX_URL"),
