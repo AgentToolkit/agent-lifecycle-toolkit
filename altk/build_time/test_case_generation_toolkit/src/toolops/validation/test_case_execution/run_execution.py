@@ -84,7 +84,7 @@ class ToolNLTestCaseExecution:
 #     test_tool_def_str = open(os.path.join(test_data_path,'getApiV2Tickets_tool.py')).read()
 #     tool_details = [{'tool_name':'getApiV2Tickets','tool_def_str':test_tool_def_str}]
 #     tool_name = tool_details[0].get('tool_name')
-#     agent_llm_model_id="mistralai/mistral-medium-2505"
+#     agent_llm_model_id="mistralai/mistral-small-3-1-24b-instruct-2503"
 #     tool_names , tools = get_tools(tool_details)
 #     agent_llm = get_agent_llm(agent_llm_model_id)
 #     agent_with_tools = get_react_agent(agent_llm,tools)

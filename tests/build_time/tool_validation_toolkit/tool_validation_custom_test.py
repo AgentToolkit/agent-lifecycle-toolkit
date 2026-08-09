@@ -25,7 +25,7 @@ from langchain_ibm import ChatWatsonx
 from langgraph.prebuilt import create_react_agent
 
 
-def get_agent_llm(agent_llm_model_id="mistralai/mistral-medium-2505"):
+def get_agent_llm(agent_llm_model_id="mistralai/mistral-small-3-1-24b-instruct-2503"):
     WATSONX_URL = os.getenv("WX_URL", "https://us-south.ml.cloud.ibm.com")
     WATSONX_API_KEY = os.getenv("WX_API_KEY", "")
     WATSONX_PROJECT = os.getenv("WX_PROJECT_ID", "")
@@ -60,7 +60,7 @@ def get_agent_llm(agent_llm_model_id="mistralai/mistral-medium-2505"):
 def get_react_agent(
     python_tool_string,
     python_tool_name,
-    agent_llm_model_id="mistralai/mistral-medium-2505",
+    agent_llm_model_id="mistralai/mistral-small-3-1-24b-instruct-2503",
 ):
     tool = get_python_tool(python_tool_string, python_tool_name)
     tools = [tool]
@@ -208,7 +208,7 @@ tool_test_cases = [
 agent_with_tools = get_react_agent(
     python_tool_string,
     python_tool_name,
-    agent_llm_model_id="mistralai/mistral-medium-2505",
+    agent_llm_model_id="mistralai/mistral-small-3-1-24b-instruct-2503",
 )
 config = ToolValidationConfig(report_level="detailed")
 

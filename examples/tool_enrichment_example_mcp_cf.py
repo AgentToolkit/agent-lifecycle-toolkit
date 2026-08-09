@@ -12,7 +12,7 @@ from altk.build_time.tool_enrichment_toolkit.utils.tool_enrichment import (
 from altk.build_time.tool_enrichment_toolkit.core.config import MCPCFToolEnrichConfig
 
 
-def get_llm_client_obj(model_name="mistralai/mistral-medium-2505"):
+def get_llm_client_obj(model_name="mistralai/mistral-small-3-1-24b-instruct-2503"):
     WatsonXAIClient = get_llm("watsonx")
     client = WatsonXAIClient(
         model_name=model_name,
@@ -336,7 +336,9 @@ mcp_cf_tool_spec = """  {
   }"""
 
 config = MCPCFToolEnrichConfig(
-    llm_client=get_llm_client_obj(model_name="mistralai/mistral-medium-2505"),
+    llm_client=get_llm_client_obj(
+        model_name="mistralai/mistral-small-3-1-24b-instruct-2503"
+    ),
     gen_mode=GenerationMode.TEXT,
 )
 

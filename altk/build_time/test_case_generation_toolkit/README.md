@@ -33,7 +33,7 @@ import os
 
 WatsonXAIClient = get_llm("watsonx")
 client = WatsonXAIClient(
-    model_id='mistralai/mistral-medium-2505',
+    model_id='mistralai/mistral-small-3-1-24b-instruct-2503',
     api_key=os.getenv("WX_API_KEY"),
     project_id=os.getenv("WX_PROJECT_ID"),
     url=os.getenv("WX_URL", "https://us-south.ml.cloud.ibm.com")
@@ -250,7 +250,7 @@ The toolkit expects the Python langchain Tool loaded as string as the input that
 
 The toolkit provides the following default configuration:
 
-- **Model**: `mistralai/mistral-medium-2505`
+- **Model**: `mistralai/mistral-small-3-1-24b-instruct-2503`
 - **Generation Mode**: `TEXT`
 - **Maximum number of Test Cases**: `3`
 - **Maximum number of NL Utterances**: `3`

@@ -186,7 +186,7 @@ config = ToolValidationConfig(report_level='detailed')
     from langchain_ibm import ChatWatsonx
     from langgraph.prebuilt import create_react_agent
 
-    def get_agent_llm(agent_llm_model_id="mistralai/mistral-medium-2505"):
+    def get_agent_llm(agent_llm_model_id="mistralai/mistral-small-3-1-24b-instruct-2503"):
         WATSONX_URL = os.getenv("WX_URL","https://us-south.ml.cloud.ibm.com")
         WATSONX_API_KEY = os.getenv("WX_API_KEY","")
         WATSONX_PROJECT = os.getenv("WX_PROJECT_ID","")
@@ -214,7 +214,7 @@ config = ToolValidationConfig(report_level='detailed')
             print("Error in react agent llm configuration - ",e)
 
 
-    def get_react_agent(python_tool_string,python_tool_name,agent_llm_model_id="mistralai/mistral-medium-2505"):
+    def get_react_agent(python_tool_string,python_tool_name,agent_llm_model_id="mistralai/mistral-small-3-1-24b-instruct-2503"):
         tool = get_python_tool(python_tool_string,python_tool_name)
         tools = [tool]
         agent_llm = get_agent_llm(agent_llm_model_id)
@@ -222,7 +222,7 @@ config = ToolValidationConfig(report_level='detailed')
         print("Created react agent with tools")
         return react_agent_with_tools
 
-    agent_with_tools = get_react_agent(python_tool_string,python_tool_name,agent_llm_model_id="mistralai/mistral-medium-2505")
+    agent_with_tools = get_react_agent(python_tool_string,python_tool_name,agent_llm_model_id="mistralai/mistral-small-3-1-24b-instruct-2503")
     ```
 * Running tool validation module with required inputs,configuration and obtaining the tool test report
     ```python

@@ -29,7 +29,7 @@ from altk.build_time.tool_enrichment_toolkit.core.config import PythonToolEnrich
 from altk.core.llm import get_llm, GenerationMode
 import os
 
-def get_llm_client_obj(model_id='mistralai/mistral-medium-2505'):
+def get_llm_client_obj(model_id='mistralai/mistral-small-3-1-24b-instruct-2503'):
     WatsonXAIClient = get_llm("watsonx")
     client=WatsonXAIClient(
                 model_id=model_id,
@@ -39,7 +39,7 @@ def get_llm_client_obj(model_id='mistralai/mistral-medium-2505'):
             )
     return client
 
-config = PythonToolEnrichConfig(llm_client=get_llm_client_obj(model_id='mistralai/mistral-medium-2505'),
+config = PythonToolEnrichConfig(llm_client=get_llm_client_obj(model_id='mistralai/mistral-small-3-1-24b-instruct-2503'),
                               gen_mode=GenerationMode.TEXT,
                               enable_tool_description_enrichment=True,
                               enable_tool_parameter_description_enrichment=True,
@@ -93,7 +93,7 @@ The toolkit expects the Python langchain Tool loaded as string as the input that
 The component provides a pre-configured generation profile:
 
 #### `standard`
-- **Model**: `mistralai/mistral-medium-2505`
+- **Model**: `mistralai/mistral-small-3-1-24b-instruct-2503`
 - **Generation Mode**: `TEXT`
 - **enable_tool_description_enrichment**: `True`
 - **enable_tool_parameter_description_enrichment**: `True`
