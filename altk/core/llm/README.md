@@ -76,7 +76,7 @@ ALTK_MODEL_NAME=granite3.3
 _WatsonX_:
 ```bash
 ALTK_LLM_PROVIDER=watsonx
-ALTK_MODEL_NAME=ibm/granite-3.3-8b-instruct
+ALTK_MODEL_NAME=meta-llama/llama-3-3-70b-instruct
 WX_API_KEY=(watsonx api key)
 WX_PROJECT_ID=(watsonx project id)
 WX_URL=https://us-south.ml.cloud.ibm.com

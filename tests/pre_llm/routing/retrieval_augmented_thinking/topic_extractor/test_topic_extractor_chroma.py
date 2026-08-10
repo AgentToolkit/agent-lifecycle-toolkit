@@ -49,8 +49,8 @@ from altk.core.llm.base import LLMClient
                 reason="RUN_THIS env var is false",
             ),
         ),
-        ("watsonx", "ibm/granite-3-3-8b-instruct"),
-        ("litellm.watsonx", "ibm/granite-3-3-8b-instruct"),
+        ("watsonx", "meta-llama/llama-3-3-70b-instruct"),
+        ("litellm.watsonx", "meta-llama/llama-3-3-70b-instruct"),
     ],
 )
 def test_topic_extractor_same_chromadb(
@@ -162,7 +162,7 @@ def test_topic_extractor_different_chromadb(
     )
     WatsonXAIClient = get_llm("watsonx")
     llm_client = WatsonXAIClient(
-        model_id="ibm/granite-3-3-8b-instruct",
+        model_id="meta-llama/llama-3-3-70b-instruct",
         api_key=os.getenv("WX_API_KEY"),
         project_id=os.getenv("WX_PROJECT_ID"),
         url=os.getenv("WX_URL"),
@@ -215,7 +215,7 @@ def test_topic_extractor_settings(caplog, create_chroma: Callable[..., ClientAPI
 
     WatsonXAIClient = get_llm("watsonx")
     llm_client = WatsonXAIClient(
-        model_id="ibm/granite-3-3-8b-instruct",
+        model_id="meta-llama/llama-3-3-70b-instruct",
         api_key=os.getenv("WX_API_KEY"),
         project_id=os.getenv("WX_PROJECT_ID"),
         url=os.getenv("WX_URL"),
@@ -228,7 +228,7 @@ def test_topic_extractor_settings(caplog, create_chroma: Callable[..., ClientAPI
         topic_extractor=TopicExtractorSettings(
             name="llm",
             config=LLMTopicExtractorSettings(
-                model_id="ibm/granite-3-3-8b-instruct",
+                model_id="meta-llama/llama-3-3-70b-instruct",
                 content_provider=ContentProviderSettings(
                     name="altk.pre_llm.routing.retrieval_augmented_thinking.chroma.topic_sink_content_provider.ChromaDBProvider",
                     config=ChromaDBProviderSettings(
@@ -312,7 +312,7 @@ def test_topic_extractor_different_chromadb_using_dict_settings(
     }
     WatsonXAIClient = get_llm("watsonx")
     llm_client = WatsonXAIClient(
-        model_id="ibm/granite-3-3-8b-instruct",
+        model_id="meta-llama/llama-3-3-70b-instruct",
         api_key=os.getenv("WX_API_KEY"),
         project_id=os.getenv("WX_PROJECT_ID"),
         url=os.getenv("WX_URL"),
@@ -389,7 +389,7 @@ def test_topic_extractor_wo_levels_of_expertise(
     }
     WatsonXAIClient = get_llm("watsonx")
     llm_client = WatsonXAIClient(
-        model_id="ibm/granite-3-3-8b-instruct",
+        model_id="meta-llama/llama-3-3-70b-instruct",
         api_key=os.getenv("WX_API_KEY"),
         project_id=os.getenv("WX_PROJECT_ID"),
         url=os.getenv("WX_URL"),

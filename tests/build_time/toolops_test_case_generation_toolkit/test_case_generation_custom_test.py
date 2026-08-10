@@ -10,7 +10,7 @@ from altk.core.llm import get_llm, GenerationMode
 import os
 
 
-def get_llm_client_obj(model_name="mistralai/mistral-medium-2505"):
+def get_llm_client_obj(model_name="mistralai/mistral-small-3-1-24b-instruct-2503"):
     WatsonXAIClient = get_llm("watsonx")
     client = WatsonXAIClient(
         model_name=model_name,
@@ -46,7 +46,9 @@ def listIssues(owner: str, repo: str, requestBody: Optional[Dict[str, Any]] = No
     return response.json()'''
     )
     config = TestCaseGenConfig(
-        llm_client=get_llm_client_obj(model_name="mistralai/mistral-medium-2505"),
+        llm_client=get_llm_client_obj(
+            model_name="mistralai/mistral-small-3-1-24b-instruct-2503"
+        ),
         gen_mode=GenerationMode.TEXT,
         max_nl_utterances=3,
         max_testcases=3,
