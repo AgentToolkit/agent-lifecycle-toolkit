@@ -2,6 +2,55 @@
 
 <!-- version list -->
 
+## v0.11.0 (2026-08-10)
+
+### Bug Fixes
+
+- Make structured output work with reasoning models and empty responses
+  ([#116](https://github.com/AgentToolkit/altk-boost/pull/116),
+  [`ff01f86`](https://github.com/AgentToolkit/altk-boost/commit/ff01f863e60a5587840d1d4626aa456cb0de7f0a))
+
+- Remove unnecessary variable assignment in TestSafeParse
+  ([#112](https://github.com/AgentToolkit/altk-boost/pull/112),
+  [`dc56d0f`](https://github.com/AgentToolkit/altk-boost/commit/dc56d0fb11f8dc4265e849b7b5a35d82b72bcf39))
+
+- Replace deprecated watsonx model ibm/granite-3-3-8b-instruct
+  ([#117](https://github.com/AgentToolkit/altk-boost/pull/117),
+  [`ae6201b`](https://github.com/AgentToolkit/altk-boost/commit/ae6201b06862888cbfeaa5edb2697631f204a8b8))
+
+- Replace deprecated watsonx model mistralai/mistral-medium-2505
+  ([#117](https://github.com/AgentToolkit/altk-boost/pull/117),
+  [`ae6201b`](https://github.com/AgentToolkit/altk-boost/commit/ae6201b06862888cbfeaa5edb2697631f204a8b8))
+
+- Specify ValidationError in tests for invalid config modes and thresholds
+  ([#112](https://github.com/AgentToolkit/altk-boost/pull/112),
+  [`dc56d0f`](https://github.com/AgentToolkit/altk-boost/commit/dc56d0fb11f8dc4265e849b7b5a35d82b72bcf39))
+
+- Update onnxruntime version for py3.10
+  ([#112](https://github.com/AgentToolkit/altk-boost/pull/112),
+  [`dc56d0f`](https://github.com/AgentToolkit/altk-boost/commit/dc56d0fb11f8dc4265e849b7b5a35d82b72bcf39))
+
+- Update silent review examples ([#112](https://github.com/AgentToolkit/altk-boost/pull/112),
+  [`dc56d0f`](https://github.com/AgentToolkit/altk-boost/commit/dc56d0fb11f8dc4265e849b7b5a35d82b72bcf39))
+
+### Documentation
+
+- Add paper link to README ([#113](https://github.com/AgentToolkit/altk-boost/pull/113),
+  [`4d5b442`](https://github.com/AgentToolkit/altk-boost/commit/4d5b442b2aa01e645fd315fa575b02aa17d85a12))
+
+### Features
+
+- Add compact-tool-schema mode, runtime pipeline flag, and SPARC actionable recommendations
+  ([#112](https://github.com/AgentToolkit/altk-boost/pull/112),
+  [`dc56d0f`](https://github.com/AgentToolkit/altk-boost/commit/dc56d0fb11f8dc4265e849b7b5a35d82b72bcf39))
+
+- Format with black ([#112](https://github.com/AgentToolkit/altk-boost/pull/112),
+  [`dc56d0f`](https://github.com/AgentToolkit/altk-boost/commit/dc56d0fb11f8dc4265e849b7b5a35d82b72bcf39))
+
+- Ruff format ([#112](https://github.com/AgentToolkit/altk-boost/pull/112),
+  [`dc56d0f`](https://github.com/AgentToolkit/altk-boost/commit/dc56d0fb11f8dc4265e849b7b5a35d82b72bcf39))
+
+
 ## v0.10.1 (2026-03-16)
 
 ### Bug Fixes
