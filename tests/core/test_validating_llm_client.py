@@ -670,3 +670,192 @@ class TestSparcSchemasAreProviderStrict:
         rendered = json_schema_to_pydantic_model(schema).model_json_schema()
         leftover = [v for v in _strictness_violations(rendered) if "true" not in v]
         assert leftover == [], name
+
+
+# ---------------------------------------------------------------------------
+# Native-first: a provider that refuses the schema downgrades the client once,
+# instead of spending the retry budget re-sending a schema it will refuse again.
+# ---------------------------------------------------------------------------
+
+
+class _Rejects(_FakeValidating):
+    """Fails every native attempt the way a strict provider does."""
+
+    def supports_native_structured_output(self) -> bool:
+        if self._native_schema_rejected:
+            return False
+        return True
+
+
+class TestNativeSchemaDowngrade:
+    _schema = {
+        "type": "object",
+        "properties": {"a": {"type": "string"}},
+        "required": ["a"],
+    }
+
+    def _run(self, monkeypatch, error, scripted_ok='{"a": "ok"}'):
+        observed: list = []
+        from altk.core.llm.base import BaseLLMClient
+
+        def fake_generate(self, **kwargs):  # noqa: ANN001
+            observed.append(kwargs)
+            if "response_format" in kwargs:
+                raise error
+            return self._parse_llm_response(scripted_ok)
+
+        monkeypatch.setattr(BaseLLMClient, "_generate", fake_generate, raising=True)
+        c = _Rejects(client=object())
+        got = c.generate(
+            [{"role": "user", "content": "hi"}],
+            schema=self._schema,
+            schema_field="response_format",
+            retries=3,
+        )
+        return c, observed, got
+
+    def test_schema_rejection_retries_without_the_kwarg(self, monkeypatch):
+        err = Exception(
+            "litellm.BadRequestError: BedrockException - output_config.format.schema: "
+            "For 'integer' type, properties maximum, minimum are not supported"
+        )
+        c, observed, got = self._run(monkeypatch, err)
+        assert got == {"a": "ok"}
+        assert len(observed) == 2, "one native attempt, then one prompt-based"
+        assert "response_format" in observed[0]
+        assert "response_format" not in observed[1]
+        # The schema moved into a system message on the second attempt.
+        assert observed[1]["prompt"][0]["role"] == "system"
+
+    def test_rejection_is_remembered_for_later_calls(self, monkeypatch):
+        c, observed, _ = self._run(
+            monkeypatch,
+            Exception("Error code: 400 - Invalid schema for response_format"),
+        )
+        assert c._native_schema_rejected is True
+        assert c.supports_native_structured_output() is False
+        before = len(observed)
+        c.generate(
+            [{"role": "user", "content": "again"}],
+            schema=self._schema,
+            schema_field="response_format",
+            retries=3,
+        )
+        # The second call never tries native again — one request, no probe.
+        assert len(observed) == before + 1
+        assert "response_format" not in observed[-1]
+
+    def test_unrelated_provider_errors_still_propagate(self, monkeypatch):
+        # A 500 or a rate limit must not be mistaken for a schema rejection,
+        # or a transient outage would silently disable native output.
+        err = RuntimeError("InternalServerError: upstream connect error")
+        with pytest.raises(RuntimeError):
+            self._run(monkeypatch, err)
+
+    def test_empty_content_under_native_drops_the_kwarg(self, monkeypatch):
+        """A model that ignores ``response_format`` answers with empty content
+        rather than an error — the only signal available (issue #119)."""
+        observed: list = []
+        from altk.core.llm.base import BaseLLMClient
+
+        def fake_generate(self, **kwargs):  # noqa: ANN001
+            observed.append(kwargs)
+            if "response_format" in kwargs:
+                return self._parse_llm_response("")
+            return self._parse_llm_response('{"a": "ok"}')
+
+        monkeypatch.setattr(BaseLLMClient, "_generate", fake_generate, raising=True)
+        c = _Rejects(client=object())
+        got = c.generate(
+            [{"role": "user", "content": "hi"}],
+            schema=self._schema,
+            schema_field="response_format",
+            retries=3,
+        )
+        assert got == {"a": "ok"}
+        assert "response_format" in observed[0]
+        assert "response_format" not in observed[1]
+
+
+# ---------------------------------------------------------------------------
+# Bounded integers ride the wire as an enum, so the provider keeps enforcing
+# the range without the keywords strict providers reject.
+# ---------------------------------------------------------------------------
+
+
+class TestBoundedIntegerAsEnum:
+    def test_small_range_becomes_an_enum(self):
+        prop = json_schema_to_pydantic_model(
+            {
+                "type": "object",
+                "properties": {
+                    "output": {"type": "integer", "minimum": 1, "maximum": 5}
+                },
+            }
+        ).model_json_schema()["properties"]["output"]
+        assert prop["enum"] == [1, 2, 3, 4, 5]
+        assert "minimum" not in prop and "maximum" not in prop
+
+    def test_wide_range_is_left_as_a_plain_integer(self):
+        prop = json_schema_to_pydantic_model(
+            {
+                "type": "object",
+                "properties": {
+                    "count": {"type": "integer", "minimum": 0, "maximum": 1_000_000}
+                },
+            }
+        ).model_json_schema()["properties"]["count"]
+        assert "enum" not in prop
+        assert prop["type"] == "integer"
+
+    @pytest.mark.parametrize(
+        "prop_schema",
+        [
+            {"type": "number", "minimum": 0, "maximum": 1},  # confidence: not int
+            {"type": "integer", "minimum": 1},  # half-open
+            {"type": "integer", "maximum": 5},
+            {"type": "boolean"},
+        ],
+    )
+    def test_shapes_that_must_not_be_enumerated(self, prop_schema):
+        prop = json_schema_to_pydantic_model(
+            {"type": "object", "properties": {"x": prop_schema}}
+        ).model_json_schema()["properties"]["x"]
+        assert "enum" not in prop
+
+    def test_enum_value_is_accepted_and_out_of_range_rejected(self):
+        schema = {
+            "type": "object",
+            "properties": {"output": {"type": "integer", "minimum": 1, "maximum": 5}},
+            "required": ["output"],
+        }
+        c = _FakeValidating(client=object())
+        assert c._validate('{"output": 4}', schema) == {"output": 4}
+        with pytest.raises(OutputValidationError):
+            c._validate('{"output": 7}', schema)
+
+
+# ---------------------------------------------------------------------------
+# The OpenAI/Azure validating clients must reach for native structured output
+# by default — they are the providers with the strongest support for it, and
+# leaving it off meant every schema was enforced by retrying instead.
+# ---------------------------------------------------------------------------
+
+
+class TestOpenAIClientsDefaultToNative:
+    @pytest.mark.parametrize(
+        "registry_name, method",
+        [
+            ("openai.sync.output_val", "generate"),
+            ("openai.async.output_val", "generate_async"),
+            ("azure_openai.sync.output_val", "generate"),
+            ("azure_openai.async.output_val", "generate_async"),
+        ],
+    )
+    def test_schema_field_defaults_to_response_format(self, registry_name, method):
+        import inspect
+
+        from altk.core.llm import get_llm
+
+        sig = inspect.signature(getattr(get_llm(registry_name), method))
+        assert sig.parameters["schema_field"].default == "response_format"

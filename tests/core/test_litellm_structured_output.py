@@ -51,39 +51,69 @@ class TestReasoningContentFallback:
             LiteLLMClientOutputVal._parse_llm_response(client, _response(content=""))
 
 
+def _bare_client(cls, model_path):
+    """A client with only the attributes the capability gate reads.
+
+    ``__new__`` skips ``__init__`` on purpose (no provider connection), so the
+    instance state the gate consults is set explicitly here.
+    """
+    client = cls.__new__(cls)
+    client.model_path = model_path
+    client.native_structured_output = None
+    client._native_schema_rejected = False
+    return client
+
+
 class TestNativeStructuredOutputCapability:
-    """Native ``response_format`` is only used where the model honors it."""
+    """Native ``response_format`` is preferred wherever it can work."""
 
     @pytest.mark.parametrize(
         "model_name, expected",
         [
-            # Reasoning model with no response-schema support: must fall back.
+            # Known to litellm and reported as unsupported: these ignore the
+            # kwarg silently, so there is no error to learn from — skip native.
             ("openai/gpt-oss-120b", False),
-            # Model litellm reports as supporting response schemas.
+            # Known and reported as supporting response schemas.
             ("mistralai/mistral-large", True),
         ],
     )
     def test_watsonx_capability_is_per_model(self, model_name, expected):
-        client = WatsonxLiteLLMClientOutputVal.__new__(WatsonxLiteLLMClientOutputVal)
-        client.model_path = f"watsonx/{model_name}"
+        client = _bare_client(WatsonxLiteLLMClientOutputVal, f"watsonx/{model_name}")
         assert client.supports_native_structured_output() is expected
 
-    def test_unknown_model_falls_back_to_prompt(self):
-        """A model litellm has no capability data for cannot be assumed to
-        honor ``response_format``; the prompt-based path works everywhere.
-        See issue #119."""
-        client = LiteLLMClientOutputVal.__new__(LiteLLMClientOutputVal)
-        client.native_structured_output = None
-        client.model_path = "some-provider/not-a-real-model-xyz"
+    @pytest.mark.parametrize(
+        "model_path",
+        [
+            # Gateway/proxy strings litellm has no metadata for. Most honor
+            # response_format, so native is attempted; a rejection downgrades
+            # the client once rather than costing the retry budget. See #119.
+            "some-provider/not-a-real-model-xyz",
+            "watsonx/gpt-oss-120b",
+            "openai/aws/claude-haiku-4-5",
+        ],
+    )
+    def test_unknown_model_attempts_native(self, model_path):
+        assert (
+            _bare_client(
+                LiteLLMClientOutputVal, model_path
+            ).supports_native_structured_output()
+            is True
+        )
+
+    def test_rejection_latches_off_native(self):
+        """Once a provider refuses the schema, stop offering it."""
+        client = _bare_client(LiteLLMClientOutputVal, "openai/aws/claude-haiku-4-5")
+        assert client.supports_native_structured_output() is True
+        client._note_native_schema_rejected(
+            ValueError("BedrockException: output_config.format.schema not supported")
+        )
         assert client.supports_native_structured_output() is False
 
-    def test_bare_watsonx_gpt_oss_is_unknown_and_falls_back(self):
-        """``watsonx/gpt-oss-120b`` (no ``openai/`` infix) is absent from
-        litellm's cost map, which is how issue #119 was reported."""
-        client = WatsonxLiteLLMClientOutputVal.__new__(WatsonxLiteLLMClientOutputVal)
-        client.native_structured_output = None
-        client.model_path = "watsonx/gpt-oss-120b"
-        assert client.supports_native_structured_output() is False
+    def test_explicit_override_beats_a_recorded_rejection(self):
+        client = _bare_client(LiteLLMClientOutputVal, "openai/gpt-4o")
+        client._native_schema_rejected = True
+        client.native_structured_output = True
+        assert client.supports_native_structured_output() is True
 
     @pytest.mark.parametrize(
         "model_path, override, expected",
@@ -97,8 +127,7 @@ class TestNativeStructuredOutputCapability:
     def test_native_structured_output_override_wins(
         self, model_path, override, expected
     ):
-        client = LiteLLMClientOutputVal.__new__(LiteLLMClientOutputVal)
-        client.model_path = model_path
+        client = _bare_client(LiteLLMClientOutputVal, model_path)
         client.native_structured_output = override
         assert client.supports_native_structured_output() is expected
 
