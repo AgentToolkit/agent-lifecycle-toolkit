@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Union, Type
 from altk.core.llm.base import LLMClient, register_llm, Hook
 from altk.core.llm.types import GenerationMode, LLMResponse, ParameterMapper
 from pydantic import BaseModel
-from altk.core.llm.output_parser import ValidatingLLMClient
+from altk.core.llm.output_parser import VALIDATION_KWARGS, ValidatingLLMClient
 
 
 @register_llm("litellm")
@@ -301,7 +301,13 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
             lite_kwargs: Extra arguments passed when initializing the litellm client.
         """
         self.model_path = model_name
-        self._lite_kwargs = lite_kwargs
+        # ``_lite_kwargs`` is replayed on every completion call, so the
+        # validation knobs must not travel with it — a provider rejects them
+        # as unknown request arguments ("Unrecognized request arguments
+        # supplied: free_form_object_as_str").
+        self._lite_kwargs = {
+            k: v for k, v in lite_kwargs.items() if k not in VALIDATION_KWARGS
+        }
         super().__init__(client=None, hooks=hooks, **lite_kwargs)
 
     @classmethod
@@ -321,19 +327,21 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
         watsonx, ollama, gemini) silently ignore ``response_format`` — some
         return empty content when it is sent — so the caller falls back to
         injecting the schema into the system prompt instead.
+
+        A model litellm has *no* capability data for is treated the same way:
+        ALTK cannot know ``response_format`` will be honored, and the
+        prompt-based path works everywhere at some cost in strictness, whereas
+        guessing native support costs a full set of retries and then fails.
+        Gateway/proxy model strings are the common unknown case — pass
+        ``native_structured_output=True`` (constructor or
+        ``configure_validation``) for one that does honor it.
         """
+        if self.native_structured_output is not None:
+            return self.native_structured_output
         try:
-            if litellm.supports_response_schema(model=self.model_path):
-                return True
-            # ``False`` is also what litellm returns for a model it has no
-            # metadata for, which would silently downgrade every unknown model.
-            # Only trust a negative answer when the model is actually known.
-            litellm.get_model_info(model=self.model_path)
-            return False
+            return bool(litellm.supports_response_schema(model=self.model_path))
         except Exception:
-            # Unknown model: assume native support and let validation + retries
-            # catch it, preserving the previous behavior.
-            return True
+            return False
 
     def _register_methods(self) -> None:
         """

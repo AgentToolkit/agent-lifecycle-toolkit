@@ -81,6 +81,14 @@ class BaseOpenAIClient(LLMClient):
 class BaseValidatingOpenAIClient(ValidatingLLMClient):
     """Base class for validating OpenAI and Azure OpenAI clients with shared parameter mapping"""
 
+    #: ``strict: True`` requires ``additionalProperties: false`` on *every*
+    #: object schema, which a free-form object cannot satisfy while staying an
+    #: object ("'additionalProperties' is required to be supplied and to be
+    #: false"). Rendering those fields as JSON strings is the only shape this
+    #: API accepts; ``_validate`` widens the schema to match (see
+    #: ``relax_freeform_object_schema``). Override per instance to opt out.
+    free_form_object_as_str: bool = True
+
     def _render_native_schema(self, schema: Any) -> Any:
         """Render *schema* as an OpenAI ``response_format`` payload.
 

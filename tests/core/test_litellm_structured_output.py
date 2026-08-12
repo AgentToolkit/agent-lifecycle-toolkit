@@ -68,9 +68,62 @@ class TestNativeStructuredOutputCapability:
         client.model_path = f"watsonx/{model_name}"
         assert client.supports_native_structured_output() is expected
 
-    def test_unknown_model_assumes_native_support(self):
-        """Unknown models keep the previous behavior rather than silently
-        switching every call to prompt-based validation."""
+    def test_unknown_model_falls_back_to_prompt(self):
+        """A model litellm has no capability data for cannot be assumed to
+        honor ``response_format``; the prompt-based path works everywhere.
+        See issue #119."""
         client = LiteLLMClientOutputVal.__new__(LiteLLMClientOutputVal)
+        client.native_structured_output = None
         client.model_path = "some-provider/not-a-real-model-xyz"
-        assert client.supports_native_structured_output() is True
+        assert client.supports_native_structured_output() is False
+
+    def test_bare_watsonx_gpt_oss_is_unknown_and_falls_back(self):
+        """``watsonx/gpt-oss-120b`` (no ``openai/`` infix) is absent from
+        litellm's cost map, which is how issue #119 was reported."""
+        client = WatsonxLiteLLMClientOutputVal.__new__(WatsonxLiteLLMClientOutputVal)
+        client.native_structured_output = None
+        client.model_path = "watsonx/gpt-oss-120b"
+        assert client.supports_native_structured_output() is False
+
+    @pytest.mark.parametrize(
+        "model_path, override, expected",
+        [
+            # Unknown proxy/gateway model the caller knows does honor it.
+            ("openai/some-gateway-model-xyz", True, True),
+            # Known-supporting model the caller wants steered by prompt anyway.
+            ("openai/gpt-4o", False, False),
+        ],
+    )
+    def test_native_structured_output_override_wins(
+        self, model_path, override, expected
+    ):
+        client = LiteLLMClientOutputVal.__new__(LiteLLMClientOutputVal)
+        client.model_path = model_path
+        client.native_structured_output = override
+        assert client.supports_native_structured_output() is expected
+
+
+class TestValidationKwargsDoNotReachTheProvider:
+    """Validation knobs configure ALTK, not the completion request.
+
+    ``_lite_kwargs`` is replayed on every call, so a knob passed to the
+    constructor used to travel with it and the provider rejected the request:
+    "Unrecognized request arguments supplied: free_form_object_as_str,
+    native_structured_output".
+    """
+
+    def test_knobs_are_stripped_from_replayed_kwargs(self):
+        # No request is made here, so the client needs no credentials.
+        client = LiteLLMClientOutputVal(
+            model_name="openai/gpt-4o",
+            api_base="https://example.invalid/v1",
+            native_structured_output=True,
+            free_form_object_as_str=True,
+            prompt_based_validation=False,
+            default_generation_kwargs={"max_tokens": 32},
+        )
+        assert set(client._lite_kwargs) == {"api_base"}
+        # ...while still taking effect on the client itself.
+        assert client.native_structured_output is True
+        assert client.free_form_object_as_str is True
+        assert client.default_generation_kwargs == {"max_tokens": 32}

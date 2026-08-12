@@ -130,12 +130,15 @@ def json_schema_to_pydantic_model(
 
     # JSON Schema keyword -> Pydantic ``Field`` argument. Carrying these over
     # keeps provider-native structured output faithful to the source schema
-    # (a dropped ``minimum``/``enum`` shows up later as a validation failure).
+    # (a dropped ``enum``/``maxLength`` shows up later as a validation failure).
+    #
+    # Numeric bounds (``minimum``/``maximum``/``exclusive*``) are deliberately
+    # NOT carried over. This model is only ever the wire ``response_format``
+    # value, while local validation runs ``jsonschema`` against the *original*
+    # schema dict (see ``_validate``) — so the bounds buy no strictness here,
+    # and Bedrock hard-rejects them ("For 'integer' type, properties maximum,
+    # minimum are not supported") while strict OpenAI ignores them.
     _CONSTRAINT_ARGS = {
-        "minimum": "ge",
-        "maximum": "le",
-        "exclusiveMinimum": "gt",
-        "exclusiveMaximum": "lt",
         "minLength": "min_length",
         "maxLength": "max_length",
         "minItems": "min_length",
@@ -156,8 +159,11 @@ def json_schema_to_pydantic_model(
     model = create_model(model_name, **fields)  # type: ignore
     # Mirror ``additionalProperties: false`` — providers with strict structured
     # output need it, and without it the model may invent extra keys that the
-    # original schema then rejects.
-    if schema.get("additionalProperties") is False:
+    # original schema then rejects. Forbid is the *default* rather than
+    # opt-in: nested sub-schemas rarely repeat the keyword, and a rendered
+    # object schema with no ``additionalProperties`` at all is what strict
+    # providers reject. Only an explicit ``true`` opts back out.
+    if schema.get("additionalProperties") is not True:
         model.model_config["extra"] = "forbid"
     return model
 
@@ -173,19 +179,43 @@ def relax_freeform_object_schema(schema: Dict[str, Any]) -> Dict[str, Any]:
     helper widens those fields so the same schema accepts both object-literal
     and stringified forms. Schemas where the object has sub-``properties`` are
     left alone.
+
+    The walk is recursive: ``json_schema_to_pydantic_model`` stringifies
+    free-form objects at *any* depth (nested ``properties``, ``items``,
+    ``$defs``), so widening only the top level would leave those replies
+    failing validation.
     """
     import copy
 
+    def _widen(node: Any) -> None:
+        if isinstance(node, dict):
+            if node.get("type") == "object" and "properties" not in node:
+                node["type"] = ["object", "string"]
+            for value in node.values():
+                _widen(value)
+        elif isinstance(node, list):
+            for item in node:
+                _widen(item)
+
     relaxed = copy.deepcopy(schema)
-    for _prop, prop_schema in relaxed.get("properties", {}).items():
-        t = prop_schema.get("type")
-        if t == "object" and "properties" not in prop_schema:
-            prop_schema["type"] = ["object", "string"]
+    _widen(relaxed)
     return relaxed
 
 
 class OutputValidationError(Exception):
     """Raised when LLM output cannot be validated against the provided schema."""
+
+
+#: Constructor kwargs that configure *validation* rather than the provider
+#: call. Clients that stash ``**kwargs`` to replay on every request must strip
+#: these, or they reach the provider as unknown request arguments ("Azure:
+#: Unrecognized request arguments supplied: free_form_object_as_str").
+VALIDATION_KWARGS = (
+    "free_form_object_as_str",
+    "prompt_based_validation",
+    "native_structured_output",
+    "default_generation_kwargs",
+)
 
 
 def _is_truncated(raw: Any) -> bool:
@@ -232,6 +262,14 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
         injected into the system prompt and no native ``response_format``
         kwarg is forwarded. Use for providers that don't support OpenAI-style
         structured output (e.g. watsonx).
+      - ``native_structured_output``: tri-state override of the per-model
+        capability probe. ``None`` (default) auto-detects — providers that
+        can tell decide, and a model the provider has no data about is
+        treated as *not* supporting it, because prompt-based validation
+        works everywhere. Set ``True`` for a model the probe cannot see but
+        you know honors ``response_format`` (a gateway/proxy model string is
+        the common case), or ``False`` to force the prompt-based path for
+        one model without disabling native output client-wide.
       - ``default_generation_kwargs``: dict of kwargs merged into every
         ``generate``/``generate_async`` call (e.g. ``{"max_tokens": 8096,
         "temperature": 0}``). Caller-provided kwargs override the defaults.
@@ -241,12 +279,14 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
     # ``configure_validation`` / constructor kwargs.
     free_form_object_as_str: bool = False
     prompt_based_validation: bool = False
+    native_structured_output: Optional[bool] = None
 
     def __init__(
         self,
         *,
         free_form_object_as_str: Optional[bool] = None,
         prompt_based_validation: Optional[bool] = None,
+        native_structured_output: Optional[bool] = None,
         default_generation_kwargs: Optional[Dict[str, Any]] = None,
         **base_kwargs: Any,
     ) -> None:
@@ -254,6 +294,8 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
             self.free_form_object_as_str = free_form_object_as_str
         if prompt_based_validation is not None:
             self.prompt_based_validation = prompt_based_validation
+        if native_structured_output is not None:
+            self.native_structured_output = native_structured_output
         self.default_generation_kwargs: Dict[str, Any] = dict(
             default_generation_kwargs or {}
         )
@@ -276,6 +318,7 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
         *,
         free_form_object_as_str: Optional[bool] = None,
         prompt_based_validation: Optional[bool] = None,
+        native_structured_output: Optional[bool] = None,
         default_generation_kwargs: Optional[Dict[str, Any]] = None,
     ) -> "ValidatingLLMClient":
         """Update the validation knobs after construction (chainable)."""
@@ -283,6 +326,8 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
             self.free_form_object_as_str = free_form_object_as_str
         if prompt_based_validation is not None:
             self.prompt_based_validation = prompt_based_validation
+        if native_structured_output is not None:
+            self.native_structured_output = native_structured_output
         if default_generation_kwargs is not None:
             self.default_generation_kwargs = dict(default_generation_kwargs)
         return self
@@ -352,7 +397,11 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
         models support it override this; when it returns ``False`` the schema is
         injected into the system prompt instead, because a model that ignores
         ``response_format`` cannot be constrained by it.
+
+        An explicit ``native_structured_output`` always wins over the probe.
         """
+        if self.native_structured_output is not None:
+            return self.native_structured_output
         return True
 
     def _render_native_schema(

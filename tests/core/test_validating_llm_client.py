@@ -117,6 +117,39 @@ class TestJsonSchemaToPydantic:
         assert issubclass(nested, BaseModel)
         assert set(nested.model_fields) == {"x"}
 
+    def test_nested_models_forbid_extras_without_repeating_the_keyword(self):
+        # Strict providers require ``additionalProperties: false`` on *every*
+        # object schema; nested sub-schemas rarely repeat the keyword, so
+        # forbid is the default. See issue #120.
+        rendered = json_schema_to_pydantic_model(
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "sub": {"type": "object", "properties": {"x": {"type": "string"}}}
+                },
+            }
+        ).model_json_schema()
+        assert rendered["additionalProperties"] is False
+        assert all(
+            d["additionalProperties"] is False for d in rendered["$defs"].values()
+        )
+
+    def test_explicit_additional_properties_true_is_respected(self):
+        rendered = json_schema_to_pydantic_model(
+            {
+                "type": "object",
+                "properties": {
+                    "sub": {
+                        "type": "object",
+                        "additionalProperties": True,
+                        "properties": {"x": {"type": "string"}},
+                    }
+                },
+            }
+        ).model_json_schema()
+        assert "additionalProperties" not in next(iter(rendered["$defs"].values()))
+
 
 # ---------------------------------------------------------------------------
 # relax_freeform_object_schema
@@ -144,6 +177,36 @@ class TestRelaxFreeformObjectSchema:
         schema = {"type": "object", "properties": {"a": {"type": "object"}}}
         _ = relax_freeform_object_schema(schema)
         assert schema["properties"]["a"]["type"] == "object"
+
+    _nested = {
+        "type": "object",
+        "properties": {
+            "issues": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {"corrected_value": {"type": "object"}},
+                },
+            }
+        },
+    }
+
+    def test_relaxes_freeform_objects_at_any_depth(self):
+        # ``json_schema_to_pydantic_model`` stringifies free-form objects at
+        # every depth, so widening only the top level left nested replies
+        # failing validation. See issue #120.
+        out = relax_freeform_object_schema(self._nested)
+        inner = out["properties"]["issues"]["items"]["properties"]["corrected_value"]
+        assert inner["type"] == ["object", "string"]
+
+    def test_relaxed_validation_accepts_nested_json_string(self):
+        c = _FakeValidating(free_form_object_as_str=True, client=object())
+        payload = '{"issues": [{"corrected_value": "{\\"p\\": 1}"}]}'
+        assert c._validate(payload, self._nested)["issues"][0]["corrected_value"] == (
+            '{"p": 1}'
+        )
+        # The object-literal form still validates against the same schema.
+        assert c._validate('{"issues": [{"corrected_value": {"p": 1}}]}', self._nested)
 
 
 # ---------------------------------------------------------------------------
@@ -319,18 +382,52 @@ class TestSafeParse:
 
 
 class TestSchemaFidelity:
-    def test_numeric_bounds_survive(self):
-        m = json_schema_to_pydantic_model(
+    _bounded = {
+        "type": "object",
+        "properties": {"score": {"type": "integer", "minimum": 1, "maximum": 5}},
+        "required": ["score"],
+    }
+
+    def test_numeric_bounds_stripped_from_wire_schema(self):
+        # Bedrock rejects an ``integer`` carrying minimum/maximum outright
+        # ("For 'integer' type, properties maximum, minimum are not
+        # supported"), and this model is *only* the wire schema — so the
+        # bounds must not survive into it. See issue #118.
+        prop = json_schema_to_pydantic_model(self._bounded).model_json_schema()[
+            "properties"
+        ]["score"]
+        assert "minimum" not in prop
+        assert "maximum" not in prop
+        assert prop["type"] == "integer"
+
+    def test_out_of_range_value_is_still_rejected(self):
+        # Strictness lives in ``jsonschema`` against the *original* schema,
+        # not in the generated model, so dropping the bounds above costs
+        # nothing: an out-of-range score is still invalid and gets retried.
+        c = _FakeValidating(client=object())
+        with pytest.raises(OutputValidationError):
+            c._validate('{"score": 9}', self._bounded)
+        assert c._validate('{"score": 3}', self._bounded) == {"score": 3}
+
+    def test_string_and_array_constraints_still_survive(self):
+        # Only the numeric bounds are dropped; the rest keep the wire schema
+        # faithful to the source.
+        props = json_schema_to_pydantic_model(
             {
                 "type": "object",
                 "properties": {
-                    "score": {"type": "integer", "minimum": 1, "maximum": 5}
+                    "name": {"type": "string", "minLength": 2, "pattern": "^[a-z]+$"},
+                    "tags": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1,
+                    },
                 },
             }
-        )
-        prop = m.model_json_schema()["properties"]["score"]
-        assert prop["minimum"] == 1
-        assert prop["maximum"] == 5
+        ).model_json_schema()["properties"]
+        assert props["name"]["minLength"] == 2
+        assert props["name"]["pattern"] == "^[a-z]+$"
+        assert props["tags"]["minItems"] == 1
 
     def test_enum_survives_inside_array_items(self):
         # A Field-level constraint cannot reach into ``items``; only a real
@@ -515,3 +612,61 @@ class TestEmptyResponseRetries:
         assert "response_format" not in observed[-1]
         # schema went into a system message instead
         assert observed[-1]["prompt"][0]["role"] == "system"
+
+
+# ---------------------------------------------------------------------------
+# Provider-strictness of the rendered wire schema, pinned against ALTK's own
+# SPARC metric schemas — the shapes that issues #118 and #120 were filed on.
+# ---------------------------------------------------------------------------
+
+
+def _sparc_runtime_schemas() -> list[tuple[str, dict]]:
+    import glob
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    pattern = str(
+        root / "altk/pre_tool/sparc/function_calling/metrics/*/*_runtime.json"
+    )
+    out = []
+    for path in sorted(glob.glob(pattern)):
+        for metric in json.loads(Path(path).read_text()):
+            out.append((metric["name"], metric["jsonschema"]))
+    return out
+
+
+def _strictness_violations(node: Any, path: str = "$") -> list[str]:
+    """Report every object schema a strict provider would reject."""
+    bad: list[str] = []
+    if isinstance(node, dict):
+        if node.get("additionalProperties") is True:
+            bad.append(f"additionalProperties: true at {path}")
+        if node.get("type") == "object" and "additionalProperties" not in node:
+            bad.append(f"additionalProperties missing at {path}")
+        if "minimum" in node or "maximum" in node:
+            bad.append(f"numeric bound at {path}")
+        for key, value in node.items():
+            bad += _strictness_violations(value, f"{path}.{key}")
+    elif isinstance(node, list):
+        for i, value in enumerate(node):
+            bad += _strictness_violations(value, f"{path}[{i}]")
+    return bad
+
+
+class TestSparcSchemasAreProviderStrict:
+    @pytest.mark.parametrize("name, schema", _sparc_runtime_schemas())
+    def test_rendered_schema_is_strict_safe(self, name, schema):
+        rendered = json_schema_to_pydantic_model(
+            schema, free_form_object_as_str=True
+        ).model_json_schema()
+        assert _strictness_violations(rendered) == [], name
+
+    @pytest.mark.parametrize("name, schema", _sparc_runtime_schemas())
+    def test_no_numeric_bounds_or_missing_keyword_by_default(self, name, schema):
+        # Without the free-form-as-string workaround, free-form objects still
+        # render as ``additionalProperties: true`` (that is the documented
+        # trade-off of the knob) — but the #118 bounds and the #120 missing
+        # keyword must be gone on the default path too.
+        rendered = json_schema_to_pydantic_model(schema).model_json_schema()
+        leftover = [v for v in _strictness_violations(rendered) if "true" not in v]
+        assert leftover == [], name
