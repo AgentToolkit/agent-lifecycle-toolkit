@@ -70,25 +70,36 @@ class TestNativeStructuredOutputCapability:
     @pytest.mark.parametrize(
         "cls, model_path",
         [
-            # Reported by litellm as supporting response schemas.
-            (WatsonxLiteLLMClientOutputVal, "watsonx/mistralai/mistral-large"),
-            # Reported as *un*supported — attempted anyway, because measuring
-            # these found native no worse and sometimes far better
-            # (granite-4-h-small: 1/14 prompt-based vs 13/14 native).
-            (WatsonxLiteLLMClientOutputVal, "watsonx/openai/gpt-oss-120b"),
-            (WatsonxLiteLLMClientOutputVal, "watsonx/ibm/granite-4-h-small"),
             # No metadata at all: gateway/proxy strings, and the model from
-            # issue #119 that turned out to honor response_format fully.
+            # issue #119 that turned out to honor response_format fully. Native
+            # is attempted — it costs one request per call instead of several,
+            # and a refusal self-corrects.
             (WatsonxLiteLLMClientOutputVal, "watsonx/mistral-large-2512"),
             (LiteLLMClientOutputVal, "some-provider/not-a-real-model-xyz"),
             (LiteLLMClientOutputVal, "openai/aws/claude-haiku-4-5"),
+            # Known and reported as supporting response schemas.
+            (WatsonxLiteLLMClientOutputVal, "watsonx/mistralai/mistral-large"),
         ],
     )
-    def test_native_is_attempted_by_default(self, cls, model_path):
-        """A schema the provider enforces costs one request; one enforced by
-        re-asking costs several. So native is tried wherever it might work, and
-        a refusal downgrades the client once instead of per call."""
+    def test_native_is_attempted_when_not_known_unsupported(self, cls, model_path):
         assert _bare_client(cls, model_path).supports_native_structured_output() is True
+
+    @pytest.mark.parametrize(
+        "model_path",
+        [
+            # Known-unsupported is trusted: forcing native on the smaller
+            # watsonx models made them worse, because constrained decoding
+            # drives them to emit whitespace until the token budget is gone.
+            "watsonx/openai/gpt-oss-120b",
+            "watsonx/mistralai/mistral-small-3-1-24b-instruct-2503",
+        ],
+    )
+    def test_known_unsupported_skips_native(self, model_path):
+        client = _bare_client(WatsonxLiteLLMClientOutputVal, model_path)
+        assert client.supports_native_structured_output() is False
+        # ...but a caller who measured otherwise can still opt in.
+        client.native_structured_output = True
+        assert client.supports_native_structured_output() is True
 
     def test_rejection_latches_off_native(self):
         """Once a provider refuses the schema, stop offering it."""
