@@ -68,37 +68,27 @@ class TestNativeStructuredOutputCapability:
     """Native ``response_format`` is preferred wherever it can work."""
 
     @pytest.mark.parametrize(
-        "model_name, expected",
+        "cls, model_path",
         [
-            # Known to litellm and reported as unsupported: these ignore the
-            # kwarg silently, so there is no error to learn from — skip native.
-            ("openai/gpt-oss-120b", False),
-            # Known and reported as supporting response schemas.
-            ("mistralai/mistral-large", True),
+            # Reported by litellm as supporting response schemas.
+            (WatsonxLiteLLMClientOutputVal, "watsonx/mistralai/mistral-large"),
+            # Reported as *un*supported — attempted anyway, because measuring
+            # these found native no worse and sometimes far better
+            # (granite-4-h-small: 1/14 prompt-based vs 13/14 native).
+            (WatsonxLiteLLMClientOutputVal, "watsonx/openai/gpt-oss-120b"),
+            (WatsonxLiteLLMClientOutputVal, "watsonx/ibm/granite-4-h-small"),
+            # No metadata at all: gateway/proxy strings, and the model from
+            # issue #119 that turned out to honor response_format fully.
+            (WatsonxLiteLLMClientOutputVal, "watsonx/mistral-large-2512"),
+            (LiteLLMClientOutputVal, "some-provider/not-a-real-model-xyz"),
+            (LiteLLMClientOutputVal, "openai/aws/claude-haiku-4-5"),
         ],
     )
-    def test_watsonx_capability_is_per_model(self, model_name, expected):
-        client = _bare_client(WatsonxLiteLLMClientOutputVal, f"watsonx/{model_name}")
-        assert client.supports_native_structured_output() is expected
-
-    @pytest.mark.parametrize(
-        "model_path",
-        [
-            # Gateway/proxy strings litellm has no metadata for. Most honor
-            # response_format, so native is attempted; a rejection downgrades
-            # the client once rather than costing the retry budget. See #119.
-            "some-provider/not-a-real-model-xyz",
-            "watsonx/gpt-oss-120b",
-            "openai/aws/claude-haiku-4-5",
-        ],
-    )
-    def test_unknown_model_attempts_native(self, model_path):
-        assert (
-            _bare_client(
-                LiteLLMClientOutputVal, model_path
-            ).supports_native_structured_output()
-            is True
-        )
+    def test_native_is_attempted_by_default(self, cls, model_path):
+        """A schema the provider enforces costs one request; one enforced by
+        re-asking costs several. So native is tried wherever it might work, and
+        a refusal downgrades the client once instead of per call."""
+        assert _bare_client(cls, model_path).supports_native_structured_output() is True
 
     def test_rejection_latches_off_native(self):
         """Once a provider refuses the schema, stop offering it."""

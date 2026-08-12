@@ -319,42 +319,6 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
         """
         return litellm  # type: ignore
 
-    def supports_native_structured_output(self) -> bool:
-        """Whether this model honors a native ``response_format`` schema.
-
-        Uses litellm's per-model capability data, so newly supported models are
-        picked up without changes here. Models that lack it (e.g. gpt-oss on
-        watsonx, ollama, gemini) silently ignore ``response_format`` — some
-        return empty content when it is sent — so the caller falls back to
-        injecting the schema into the system prompt instead.
-
-        A model litellm has *no* capability data for is attempted natively:
-        gateway/proxy model strings are the common unknown case and most of them
-        do honor ``response_format``, so assuming otherwise would give up
-        provider-side enforcement for the majority to spare a single request for
-        the minority. If the provider does reject the schema, the caller
-        downgrades to prompt-based validation and latches that answer for the
-        rest of the client's life (see ``_note_native_schema_rejected``), so the
-        wrong guess costs one request rather than the retry budget.
-
-        A model litellm knows and reports as *unsupported* still skips the
-        native path outright: those ignore ``response_format`` silently instead
-        of rejecting it, so there is no error to learn from.
-        """
-        if self.native_structured_output is not None:
-            return self.native_structured_output
-        if self._native_schema_rejected:
-            return False
-        try:
-            if litellm.supports_response_schema(model=self.model_path):
-                return True
-            # ``False`` is also what litellm returns for a model it has no
-            # metadata for, so only a *known* negative is trusted.
-            litellm.get_model_info(model=self.model_path)
-            return False
-        except Exception:
-            return True
-
     def _register_methods(self) -> None:
         """
         Register how to call litellm methods - only chat modes are supported:

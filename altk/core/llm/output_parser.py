@@ -465,14 +465,19 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
     def supports_native_structured_output(self) -> bool:
         """Whether the target model honors a native structured-output kwarg.
 
-        Defaults to ``True`` (previous behavior). Providers that can tell which
-        models support it override this; when it returns ``False`` the schema is
-        injected into the system prompt instead, because a model that ignores
-        ``response_format`` cannot be constrained by it.
+        Defaults to ``True``: a schema the provider enforces costs one request,
+        while the same schema enforced by re-asking on a validation failure
+        costs several, so native output is worth attempting wherever it might
+        work. When this returns ``False`` the schema is injected into the system
+        prompt instead, because a model that ignores ``response_format`` cannot
+        be constrained by it.
 
-        An explicit ``native_structured_output`` always wins over the probe, and
-        a provider that has already rejected this client's schema is not asked
-        again.
+        A wrong guess is self-correcting: a provider that refuses the schema, or
+        a model that answers a native request with empty content, downgrades the
+        call in flight and latches the answer for this client's remaining calls
+        (see ``_note_native_schema_rejected``) — one request, once. Set
+        ``native_structured_output=False`` to skip the attempt for a model known
+        to waste it.
         """
         if self.native_structured_output is not None:
             return self.native_structured_output
