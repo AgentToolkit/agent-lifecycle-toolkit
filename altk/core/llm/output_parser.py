@@ -25,6 +25,35 @@ from .base import BaseLLMClient
 
 T = TypeVar("T")
 
+#: Widest integer range still worth enumerating on the wire. A rating scale
+#: fits comfortably; an unbounded id or a byte count does not, and spelling one
+#: out would bloat the schema for no gain.
+_MAX_INT_ENUM_SPAN = 24
+
+
+def _int_range_as_enum(
+    type_def: Union[str, List[str], None], prop_schema: Dict[str, Any]
+) -> Optional[List[int]]:
+    """Return ``[minimum..maximum]`` when an integer property is narrowly bounded.
+
+    Strict providers reject ``minimum``/``maximum`` on an ``integer`` ("For
+    'integer' type, properties maximum, minimum are not supported") but accept
+    ``enum``, so enumerating a short range is how the bound survives onto the
+    wire and keeps being enforced by the provider instead of by a retry.
+    """
+    types = type_def if isinstance(type_def, list) else [type_def]
+    if "integer" not in types:
+        return None
+    low, high = prop_schema.get("minimum"), prop_schema.get("maximum")
+    if not (isinstance(low, int) and isinstance(high, int)):
+        return None
+    # ``bool`` is an ``int`` subclass in Python; a true/false bound is not a range.
+    if isinstance(low, bool) or isinstance(high, bool):
+        return None
+    if not 0 <= high - low < _MAX_INT_ENUM_SPAN:
+        return None
+    return list(range(low, high + 1))
+
 
 def json_schema_to_pydantic_model(
     schema: Dict[str, Any],
@@ -103,9 +132,15 @@ def json_schema_to_pydantic_model(
             item_type = parse_type(items.get("type"), items)
             return List[item_type]  # type: ignore[valid-type]
 
-        # ``enum`` becomes a real ``Literal`` type so the choices survive even
-        # inside ``items``, where a Field-level constraint could not reach.
+        # A small bounded integer range is expressed as an ``enum`` instead of
+        # ``minimum``/``maximum``. Strict providers reject those two keywords on
+        # an integer but accept ``enum``, so this is the only way to keep the
+        # range enforced *by the provider* — which is what stops an
+        # out-of-range score from costing a retry. Bounded scores (SPARC's 1-5
+        # metrics) are exactly this shape.
         enum_values = prop_schema.get("enum")
+        if enum_values is None:
+            enum_values = _int_range_as_enum(type_def, prop_schema)
         if enum_values and all(
             isinstance(v, (str, int, bool)) or v is None for v in enum_values
         ):
@@ -130,12 +165,15 @@ def json_schema_to_pydantic_model(
 
     # JSON Schema keyword -> Pydantic ``Field`` argument. Carrying these over
     # keeps provider-native structured output faithful to the source schema
-    # (a dropped ``minimum``/``enum`` shows up later as a validation failure).
+    # (a dropped ``enum``/``maxLength`` shows up later as a validation failure).
+    #
+    # Numeric bounds (``minimum``/``maximum``/``exclusive*``) are deliberately
+    # NOT carried over. This model is only ever the wire ``response_format``
+    # value, while local validation runs ``jsonschema`` against the *original*
+    # schema dict (see ``_validate``) — so the bounds buy no strictness here,
+    # and Bedrock hard-rejects them ("For 'integer' type, properties maximum,
+    # minimum are not supported") while strict OpenAI ignores them.
     _CONSTRAINT_ARGS = {
-        "minimum": "ge",
-        "maximum": "le",
-        "exclusiveMinimum": "gt",
-        "exclusiveMaximum": "lt",
         "minLength": "min_length",
         "maxLength": "max_length",
         "minItems": "min_length",
@@ -156,8 +194,11 @@ def json_schema_to_pydantic_model(
     model = create_model(model_name, **fields)  # type: ignore
     # Mirror ``additionalProperties: false`` — providers with strict structured
     # output need it, and without it the model may invent extra keys that the
-    # original schema then rejects.
-    if schema.get("additionalProperties") is False:
+    # original schema then rejects. Forbid is the *default* rather than
+    # opt-in: nested sub-schemas rarely repeat the keyword, and a rendered
+    # object schema with no ``additionalProperties`` at all is what strict
+    # providers reject. Only an explicit ``true`` opts back out.
+    if schema.get("additionalProperties") is not True:
         model.model_config["extra"] = "forbid"
     return model
 
@@ -173,19 +214,77 @@ def relax_freeform_object_schema(schema: Dict[str, Any]) -> Dict[str, Any]:
     helper widens those fields so the same schema accepts both object-literal
     and stringified forms. Schemas where the object has sub-``properties`` are
     left alone.
+
+    The walk is recursive: ``json_schema_to_pydantic_model`` stringifies
+    free-form objects at *any* depth (nested ``properties``, ``items``,
+    ``$defs``), so widening only the top level would leave those replies
+    failing validation.
     """
     import copy
 
+    def _widen(node: Any) -> None:
+        if isinstance(node, dict):
+            if node.get("type") == "object" and "properties" not in node:
+                node["type"] = ["object", "string"]
+            for value in node.values():
+                _widen(value)
+        elif isinstance(node, list):
+            for item in node:
+                _widen(item)
+
     relaxed = copy.deepcopy(schema)
-    for _prop, prop_schema in relaxed.get("properties", {}).items():
-        t = prop_schema.get("type")
-        if t == "object" and "properties" not in prop_schema:
-            prop_schema["type"] = ["object", "string"]
+    _widen(relaxed)
     return relaxed
 
 
 class OutputValidationError(Exception):
     """Raised when LLM output cannot be validated against the provided schema."""
+
+
+#: Constructor kwargs that configure *validation* rather than the provider
+#: call. Clients that stash ``**kwargs`` to replay on every request must strip
+#: these, or they reach the provider as unknown request arguments ("Azure:
+#: Unrecognized request arguments supplied: free_form_object_as_str").
+VALIDATION_KWARGS = (
+    "free_form_object_as_str",
+    "prompt_based_validation",
+    "native_structured_output",
+    "default_generation_kwargs",
+)
+
+#: Substrings that identify a provider refusing the *schema itself* rather than
+#: disliking the model's answer. Matching one means retrying the same request is
+#: pointless — the schema will be refused identically every time — so the call
+#: downgrades to prompt-based injection instead of burning the retry budget.
+_SCHEMA_REJECTION_MARKERS = (
+    "response_format",
+    "additionalproperties",
+    "output_config.format.schema",
+    "invalid schema",
+    "json_schema",
+    "not supported",
+    "unsupported",
+    "unrecognized request argument",
+)
+
+
+def _is_schema_rejection(exc: BaseException) -> bool:
+    """Whether *exc* is the provider rejecting our native schema.
+
+    Deliberately narrow: only a client error (HTTP 4xx / ``BadRequest``) whose
+    message also names a schema concern counts. A 500, a rate limit, or a plain
+    content-validation failure must stay retryable.
+    """
+    text = str(exc).lower()
+    looks_client_side = (
+        "badrequest" in type(exc).__name__.lower()
+        or "badrequest" in text
+        or "400" in text
+        or "422" in text
+    )
+    if not looks_client_side:
+        return False
+    return any(marker in text for marker in _SCHEMA_REJECTION_MARKERS)
 
 
 def _is_truncated(raw: Any) -> bool:
@@ -232,6 +331,14 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
         injected into the system prompt and no native ``response_format``
         kwarg is forwarded. Use for providers that don't support OpenAI-style
         structured output (e.g. watsonx).
+      - ``native_structured_output``: tri-state override of the per-model
+        capability probe. ``None`` (default) auto-detects — providers that
+        can tell decide, and a model the provider has no data about is
+        treated as *not* supporting it, because prompt-based validation
+        works everywhere. Set ``True`` for a model the probe cannot see but
+        you know honors ``response_format`` (a gateway/proxy model string is
+        the common case), or ``False`` to force the prompt-based path for
+        one model without disabling native output client-wide.
       - ``default_generation_kwargs``: dict of kwargs merged into every
         ``generate``/``generate_async`` call (e.g. ``{"max_tokens": 8096,
         "temperature": 0}``). Caller-provided kwargs override the defaults.
@@ -241,12 +348,14 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
     # ``configure_validation`` / constructor kwargs.
     free_form_object_as_str: bool = False
     prompt_based_validation: bool = False
+    native_structured_output: Optional[bool] = None
 
     def __init__(
         self,
         *,
         free_form_object_as_str: Optional[bool] = None,
         prompt_based_validation: Optional[bool] = None,
+        native_structured_output: Optional[bool] = None,
         default_generation_kwargs: Optional[Dict[str, Any]] = None,
         **base_kwargs: Any,
     ) -> None:
@@ -254,6 +363,8 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
             self.free_form_object_as_str = free_form_object_as_str
         if prompt_based_validation is not None:
             self.prompt_based_validation = prompt_based_validation
+        if native_structured_output is not None:
+            self.native_structured_output = native_structured_output
         self.default_generation_kwargs: Dict[str, Any] = dict(
             default_generation_kwargs or {}
         )
@@ -261,6 +372,9 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
         # token limit? Retries use it to grow ``max_tokens`` instead of
         # re-asking with a budget already known to be too small.
         self._last_response_truncated: bool = False
+        # Latched once a provider rejects the native schema, so the downgrade to
+        # prompt-based validation is paid for once per client, not per call.
+        self._native_schema_rejected: bool = False
         super().__init__(**base_kwargs)
         # Wrap the subclass's _parse_llm_response so empty / malformed LLM
         # outputs retry gracefully (the retry loop treats "" as invalid)
@@ -276,6 +390,7 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
         *,
         free_form_object_as_str: Optional[bool] = None,
         prompt_based_validation: Optional[bool] = None,
+        native_structured_output: Optional[bool] = None,
         default_generation_kwargs: Optional[Dict[str, Any]] = None,
     ) -> "ValidatingLLMClient":
         """Update the validation knobs after construction (chainable)."""
@@ -283,6 +398,8 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
             self.free_form_object_as_str = free_form_object_as_str
         if prompt_based_validation is not None:
             self.prompt_based_validation = prompt_based_validation
+        if native_structured_output is not None:
+            self.native_structured_output = native_structured_output
         if default_generation_kwargs is not None:
             self.default_generation_kwargs = dict(default_generation_kwargs)
         return self
@@ -348,12 +465,44 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
     def supports_native_structured_output(self) -> bool:
         """Whether the target model honors a native structured-output kwarg.
 
-        Defaults to ``True`` (previous behavior). Providers that can tell which
-        models support it override this; when it returns ``False`` the schema is
-        injected into the system prompt instead, because a model that ignores
-        ``response_format`` cannot be constrained by it.
+        Defaults to ``True``: a schema the provider enforces costs one request,
+        while the same schema enforced by re-asking on a validation failure
+        costs several, so native output is worth attempting wherever it might
+        work. When this returns ``False`` the schema is injected into the system
+        prompt instead, because a model that ignores ``response_format`` cannot
+        be constrained by it.
+
+        A wrong guess is self-correcting: a provider that refuses the schema, or
+        a model that answers a native request with empty content, downgrades the
+        call in flight and latches the answer for this client's remaining calls
+        (see ``_note_native_schema_rejected``) — one request, once. Set
+        ``native_structured_output=False`` to skip the attempt for a model known
+        to waste it.
         """
+        if self.native_structured_output is not None:
+            return self.native_structured_output
+        if self._native_schema_rejected:
+            return False
         return True
+
+    def _note_native_schema_rejected(self, exc: BaseException) -> None:
+        """Remember that this provider refuses our native schema.
+
+        Set when a request is rejected for the schema itself, so subsequent
+        calls on this client go straight to prompt-based injection rather than
+        spending a request rediscovering it.
+        """
+        import logging as _logging
+
+        if not self._native_schema_rejected:
+            _logging.getLogger("altk.core.llm.output_parser").warning(
+                "Provider rejected the native structured-output schema (%s); "
+                "falling back to prompt-based validation for this client. "
+                "Details: %s",
+                type(exc).__name__,
+                str(exc)[:300],
+            )
+        self._native_schema_rejected = True
 
     def _render_native_schema(
         self, schema: Union[Dict[str, Any], Type[BaseModel], Type[Any]]
@@ -565,7 +714,21 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
                 if isinstance(raw, str):
                     return self._validate(raw, schema)
                 return raw
-            except (OutputValidationError, ValueError) as e:
+            except Exception as e:
+                # The provider refused the schema itself. Re-sending it would be
+                # refused identically, so switch this call to prompt-based
+                # injection and remember the answer for the client's later
+                # calls. Costs one request, not the whole retry budget.
+                if schema_field and _is_schema_rejection(e):
+                    self._note_native_schema_rejected(e)
+                    include_schema_in_system_prompt = True
+                    kwargs.pop(schema_field, None)
+                    schema_field = None
+                    instr = self._make_instruction(schema)
+                    current = self._inject_system(prompt, instr)
+                    continue
+                if not isinstance(e, (OutputValidationError, ValueError)):
+                    raise
                 # ValueError covers providers whose ``_parse_llm_response``
                 # rejects an empty/contentless response ("No content or tool
                 # calls found in response"). Without it, a single blank reply
@@ -578,6 +741,17 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
                 # would grow a conversation that several backends answer with
                 # another empty response, burning every remaining attempt.
                 if not (isinstance(raw, str) and raw.strip()):
+                    # A model that silently ignores ``response_format`` answers
+                    # it with empty content instead of an error, so there is
+                    # nothing to detect but this. Re-asking with the kwarg still
+                    # attached tends to return empty again, so drop it now and
+                    # steer by the prompt — the schema is honored from here on.
+                    if schema_field and not self._last_response_truncated:
+                        self._note_native_schema_rejected(e)
+                        include_schema_in_system_prompt = True
+                        kwargs.pop(schema_field, None)
+                        schema_field = None
+                        instr = self._make_instruction(schema)
                     # Truncated by the token limit? Re-asking with the same
                     # budget yields the identical truncation, so grow it. This
                     # is the common failure for reasoning models, whose
@@ -671,7 +845,19 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
                 if isinstance(raw, str):
                     return self._validate(raw, schema)
                 return raw
-            except (OutputValidationError, ValueError) as e:
+            except Exception as e:
+                # See the sync path: a schema rejection is permanent, so
+                # downgrade to prompt-based injection instead of retrying it.
+                if schema_field and _is_schema_rejection(e):
+                    self._note_native_schema_rejected(e)
+                    include_schema_in_system_prompt = True
+                    kwargs.pop(schema_field, None)
+                    schema_field = None
+                    instr = self._make_instruction(schema)
+                    current = self._inject_system(prompt, instr)
+                    continue
+                if not isinstance(e, (OutputValidationError, ValueError)):
+                    raise
                 # ValueError covers providers whose ``_parse_llm_response``
                 # rejects an empty/contentless response ("No content or tool
                 # calls found in response"). Without it, a single blank reply
@@ -684,6 +870,17 @@ class ValidatingLLMClient(BaseLLMClient, ABC):
                 # would grow a conversation that several backends answer with
                 # another empty response, burning every remaining attempt.
                 if not (isinstance(raw, str) and raw.strip()):
+                    # A model that silently ignores ``response_format`` answers
+                    # it with empty content instead of an error, so there is
+                    # nothing to detect but this. Re-asking with the kwarg still
+                    # attached tends to return empty again, so drop it now and
+                    # steer by the prompt — the schema is honored from here on.
+                    if schema_field and not self._last_response_truncated:
+                        self._note_native_schema_rejected(e)
+                        include_schema_in_system_prompt = True
+                        kwargs.pop(schema_field, None)
+                        schema_field = None
+                        instr = self._make_instruction(schema)
                     # Truncated by the token limit? Re-asking with the same
                     # budget yields the identical truncation, so grow it. This
                     # is the common failure for reasoning models, whose

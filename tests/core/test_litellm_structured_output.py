@@ -51,26 +51,109 @@ class TestReasoningContentFallback:
             LiteLLMClientOutputVal._parse_llm_response(client, _response(content=""))
 
 
+def _bare_client(cls, model_path):
+    """A client with only the attributes the capability gate reads.
+
+    ``__new__`` skips ``__init__`` on purpose (no provider connection), so the
+    instance state the gate consults is set explicitly here.
+    """
+    client = cls.__new__(cls)
+    client.model_path = model_path
+    client.native_structured_output = None
+    client._native_schema_rejected = False
+    return client
+
+
 class TestNativeStructuredOutputCapability:
-    """Native ``response_format`` is only used where the model honors it."""
+    """Native ``response_format`` is preferred wherever it can work."""
 
     @pytest.mark.parametrize(
-        "model_name, expected",
+        "cls, model_path",
         [
-            # Reasoning model with no response-schema support: must fall back.
-            ("openai/gpt-oss-120b", False),
-            # Model litellm reports as supporting response schemas.
-            ("mistralai/mistral-large", True),
+            # No metadata at all: gateway/proxy strings, and the model from
+            # issue #119 that turned out to honor response_format fully. Native
+            # is attempted — it costs one request per call instead of several,
+            # and a refusal self-corrects.
+            (WatsonxLiteLLMClientOutputVal, "watsonx/mistral-large-2512"),
+            (LiteLLMClientOutputVal, "some-provider/not-a-real-model-xyz"),
+            (LiteLLMClientOutputVal, "openai/aws/claude-haiku-4-5"),
+            # Known and reported as supporting response schemas.
+            (WatsonxLiteLLMClientOutputVal, "watsonx/mistralai/mistral-large"),
         ],
     )
-    def test_watsonx_capability_is_per_model(self, model_name, expected):
-        client = WatsonxLiteLLMClientOutputVal.__new__(WatsonxLiteLLMClientOutputVal)
-        client.model_path = f"watsonx/{model_name}"
+    def test_native_is_attempted_when_not_known_unsupported(self, cls, model_path):
+        assert _bare_client(cls, model_path).supports_native_structured_output() is True
+
+    @pytest.mark.parametrize(
+        "model_path",
+        [
+            # Known-unsupported is trusted: forcing native on the smaller
+            # watsonx models made them worse, because constrained decoding
+            # drives them to emit whitespace until the token budget is gone.
+            "watsonx/openai/gpt-oss-120b",
+            "watsonx/mistralai/mistral-small-3-1-24b-instruct-2503",
+        ],
+    )
+    def test_known_unsupported_skips_native(self, model_path):
+        client = _bare_client(WatsonxLiteLLMClientOutputVal, model_path)
+        assert client.supports_native_structured_output() is False
+        # ...but a caller who measured otherwise can still opt in.
+        client.native_structured_output = True
+        assert client.supports_native_structured_output() is True
+
+    def test_rejection_latches_off_native(self):
+        """Once a provider refuses the schema, stop offering it."""
+        client = _bare_client(LiteLLMClientOutputVal, "openai/aws/claude-haiku-4-5")
+        assert client.supports_native_structured_output() is True
+        client._note_native_schema_rejected(
+            ValueError("BedrockException: output_config.format.schema not supported")
+        )
+        assert client.supports_native_structured_output() is False
+
+    def test_explicit_override_beats_a_recorded_rejection(self):
+        client = _bare_client(LiteLLMClientOutputVal, "openai/gpt-4o")
+        client._native_schema_rejected = True
+        client.native_structured_output = True
+        assert client.supports_native_structured_output() is True
+
+    @pytest.mark.parametrize(
+        "model_path, override, expected",
+        [
+            # Unknown proxy/gateway model the caller knows does honor it.
+            ("openai/some-gateway-model-xyz", True, True),
+            # Known-supporting model the caller wants steered by prompt anyway.
+            ("openai/gpt-4o", False, False),
+        ],
+    )
+    def test_native_structured_output_override_wins(
+        self, model_path, override, expected
+    ):
+        client = _bare_client(LiteLLMClientOutputVal, model_path)
+        client.native_structured_output = override
         assert client.supports_native_structured_output() is expected
 
-    def test_unknown_model_assumes_native_support(self):
-        """Unknown models keep the previous behavior rather than silently
-        switching every call to prompt-based validation."""
-        client = LiteLLMClientOutputVal.__new__(LiteLLMClientOutputVal)
-        client.model_path = "some-provider/not-a-real-model-xyz"
-        assert client.supports_native_structured_output() is True
+
+class TestValidationKwargsDoNotReachTheProvider:
+    """Validation knobs configure ALTK, not the completion request.
+
+    ``_lite_kwargs`` is replayed on every call, so a knob passed to the
+    constructor used to travel with it and the provider rejected the request:
+    "Unrecognized request arguments supplied: free_form_object_as_str,
+    native_structured_output".
+    """
+
+    def test_knobs_are_stripped_from_replayed_kwargs(self):
+        # No request is made here, so the client needs no credentials.
+        client = LiteLLMClientOutputVal(
+            model_name="openai/gpt-4o",
+            api_base="https://example.invalid/v1",
+            native_structured_output=True,
+            free_form_object_as_str=True,
+            prompt_based_validation=False,
+            default_generation_kwargs={"max_tokens": 32},
+        )
+        assert set(client._lite_kwargs) == {"api_base"}
+        # ...while still taking effect on the client itself.
+        assert client.native_structured_output is True
+        assert client.free_form_object_as_str is True
+        assert client.default_generation_kwargs == {"max_tokens": 32}

@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Union, Type
 from altk.core.llm.base import LLMClient, register_llm, Hook
 from altk.core.llm.types import GenerationMode, LLMResponse, ParameterMapper
 from pydantic import BaseModel
-from altk.core.llm.output_parser import ValidatingLLMClient
+from altk.core.llm.output_parser import VALIDATION_KWARGS, ValidatingLLMClient
 
 
 @register_llm("litellm")
@@ -301,7 +301,13 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
             lite_kwargs: Extra arguments passed when initializing the litellm client.
         """
         self.model_path = model_name
-        self._lite_kwargs = lite_kwargs
+        # ``_lite_kwargs`` is replayed on every completion call, so the
+        # validation knobs must not travel with it — a provider rejects them
+        # as unknown request arguments ("Unrecognized request arguments
+        # supplied: free_form_object_as_str").
+        self._lite_kwargs = {
+            k: v for k, v in lite_kwargs.items() if k not in VALIDATION_KWARGS
+        }
         super().__init__(client=None, hooks=hooks, **lite_kwargs)
 
     @classmethod
@@ -316,23 +322,37 @@ class LiteLLMClientOutputVal(ValidatingLLMClient):
     def supports_native_structured_output(self) -> bool:
         """Whether this model honors a native ``response_format`` schema.
 
-        Uses litellm's per-model capability data, so newly supported models are
-        picked up without changes here. Models that lack it (e.g. gpt-oss on
-        watsonx, ollama, gemini) silently ignore ``response_format`` — some
-        return empty content when it is sent — so the caller falls back to
-        injecting the schema into the system prompt instead.
+        Native output is preferred wherever it works — the provider enforces the
+        schema in one request, where prompt-based validation is enforced by
+        re-asking. So a model litellm has *no* capability data for is attempted
+        natively: unknown covers gateway/proxy strings and
+        ``watsonx/mistral-large-2512``, which honor ``response_format`` fully,
+        and a wrong guess self-corrects after one request (see
+        ``_note_native_schema_rejected``).
+
+        A model litellm *knows* to be unsupported is not attempted, and that
+        negative is worth trusting even though it is imperfect. Measured over
+        the SPARC metric schemas, forcing native on the smaller watsonx models
+        made them markedly worse, not better: constrained decoding drives
+        ``mistral-small-3-1-24b`` and ``llama-3-3-70b`` to emit thousands of
+        whitespace lines until they exhaust the token budget, taking them from
+        7/7 and 6/7 down to 1/7 and 3/7. Some known-negative models do better
+        natively (``ibm/granite-4-h-small``: 1/14 prompt-based vs 13/14 native),
+        so this is a per-deployment trade-off rather than a rule — pass
+        ``native_structured_output=True`` for a model measured to prefer it.
         """
+        if self.native_structured_output is not None:
+            return self.native_structured_output
+        if self._native_schema_rejected:
+            return False
         try:
             if litellm.supports_response_schema(model=self.model_path):
                 return True
             # ``False`` is also what litellm returns for a model it has no
-            # metadata for, which would silently downgrade every unknown model.
-            # Only trust a negative answer when the model is actually known.
+            # metadata for, so only a *known* negative skips the native path.
             litellm.get_model_info(model=self.model_path)
             return False
         except Exception:
-            # Unknown model: assume native support and let validation + retries
-            # catch it, preserving the previous behavior.
             return True
 
     def _register_methods(self) -> None:

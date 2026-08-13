@@ -267,6 +267,45 @@ sparc = SPARCReflectionComponent(config=config, track=Track.SYNTAX)
 # TypeError: LLM client must be of type ValidatingLLMClient
 ```
 
+### Structured output: native vs prompt-based
+
+SPARC's metric schemas are nested, enum-bearing, and strict, so how they reach
+the model matters. The client sends a native `response_format` schema whenever
+the provider is expected to honour it — that way the provider enforces the
+schema in a single request, instead of ALTK re-asking on a validation failure.
+Measured over SPARC's seven runtime metrics, every model on the native path
+needed exactly **one request per call**, and all retry overhead came from
+prompt-based models.
+
+Two knobs cover the cases where the default guesses wrong:
+
+```python
+CLIENT = get_llm("litellm.watsonx.output_val")
+
+# A model litellm reports as unsupported that is in fact far better natively
+# (ibm/granite-4-h-small: 1/21 prompt-based vs 21/21 native on these schemas).
+config = ComponentConfig(
+    llm_client=CLIENT(model_name="ibm/granite-4-h-small",
+                      native_structured_output=True)
+)
+
+# ...and the reverse: force the prompt-based path for a model that wastes the
+# native attempt.
+config = ComponentConfig(
+    llm_client=CLIENT(model_name="some/model", native_structured_output=False)
+)
+```
+
+Both are also settable after construction via
+`client.configure_validation(...)`. If a provider rejects the schema outright,
+no configuration is needed — the call downgrades to the prompt-based path and
+remembers the answer for that client, so the discovery costs one request.
+
+For providers whose structured output is strict about `additionalProperties`
+(Azure OpenAI, Bedrock), also pass `free_form_object_as_str=True` so SPARC's
+free-form `correction` fields are rendered in a shape those APIs accept. The
+OpenAI and Azure clients default to this already.
+
 ## Configuration
 
 ### Track-Based Configuration

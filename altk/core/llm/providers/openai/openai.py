@@ -81,6 +81,14 @@ class BaseOpenAIClient(LLMClient):
 class BaseValidatingOpenAIClient(ValidatingLLMClient):
     """Base class for validating OpenAI and Azure OpenAI clients with shared parameter mapping"""
 
+    #: ``strict: True`` requires ``additionalProperties: false`` on *every*
+    #: object schema, which a free-form object cannot satisfy while staying an
+    #: object ("'additionalProperties' is required to be supplied and to be
+    #: false"). Rendering those fields as JSON strings is the only shape this
+    #: API accepts; ``_validate`` widens the schema to match (see
+    #: ``relax_freeform_object_schema``). Override per instance to opt out.
+    free_form_object_as_str: bool = True
+
     def _render_native_schema(self, schema: Any) -> Any:
         """Render *schema* as an OpenAI ``response_format`` payload.
 
@@ -332,11 +340,17 @@ class SyncOpenAIClientOutputVal(BaseValidatingOpenAIClient, ValidatingLLMClient)
         self,
         prompt: Union[str, List[Dict[str, str]]],
         schema: Optional[Any] = None,
-        schema_field: Optional[str] = None,
+        schema_field: Optional[str] = "response_format",
         retries: int = 3,
         **kwargs: Any,
     ) -> Union[str, LLMResponse]:
-        """Generate with OpenAI structured output support"""
+        """Generate with OpenAI structured output support.
+
+        ``schema_field`` defaults to ``"response_format"`` so a schema is
+        enforced by OpenAI itself rather than by re-asking on a
+        validation failure. Pass ``schema_field=None`` to force the
+        prompt-based path.
+        """
         # Convert string prompts to message format for chat
         if isinstance(prompt, str):
             prompt = [{"role": "user", "content": prompt}]
@@ -392,11 +406,17 @@ class AsyncOpenAIClientOutputVal(BaseValidatingOpenAIClient, ValidatingLLMClient
         self,
         prompt: Union[str, List[Dict[str, str]]],
         schema: Optional[Any] = None,
-        schema_field: Optional[str] = None,
+        schema_field: Optional[str] = "response_format",
         retries: int = 3,
         **kwargs: Any,
     ) -> Any:
-        """Generate with OpenAI structured output support"""
+        """Generate with OpenAI structured output support.
+
+        ``schema_field`` defaults to ``"response_format"`` so a schema is
+        enforced by OpenAI itself rather than by re-asking on a
+        validation failure. Pass ``schema_field=None`` to force the
+        prompt-based path.
+        """
         # Convert string prompts to message format for chat
         if isinstance(prompt, str):
             prompt = [{"role": "user", "content": prompt}]
@@ -516,11 +536,17 @@ class SyncAzureOpenAIClientOutputVal(BaseValidatingOpenAIClient):
         self,
         prompt: Union[str, List[Dict[str, str]]],
         schema: Optional[Any] = None,
-        schema_field: Optional[str] = None,
+        schema_field: Optional[str] = "response_format",
         retries: int = 3,
         **kwargs: Any,
     ) -> Any:
-        """Generate with Azure OpenAI structured output support"""
+        """Generate with Azure OpenAI structured output support.
+
+        ``schema_field`` defaults to ``"response_format"`` so a schema is
+        enforced by Azure OpenAI itself rather than by re-asking on a
+        validation failure. Pass ``schema_field=None`` to force the
+        prompt-based path.
+        """
         # Convert string prompts to message format for chat
         if isinstance(prompt, str):
             prompt = [{"role": "user", "content": prompt}]
@@ -576,11 +602,17 @@ class AsyncAzureOpenAIClientOutputVal(BaseValidatingOpenAIClient):
         self,
         prompt: Union[str, List[Dict[str, str]]],
         schema: Optional[Any] = None,
-        schema_field: Optional[str] = None,
+        schema_field: Optional[str] = "response_format",
         retries: int = 3,
         **kwargs: Any,
     ) -> Any:
-        """Generate with Azure OpenAI structured output support"""
+        """Generate with Azure OpenAI structured output support.
+
+        ``schema_field`` defaults to ``"response_format"`` so a schema is
+        enforced by Azure OpenAI itself rather than by re-asking on a
+        validation failure. Pass ``schema_field=None`` to force the
+        prompt-based path.
+        """
         # Convert string prompts to message format for chat
         if isinstance(prompt, str):
             prompt = [{"role": "user", "content": prompt}]
