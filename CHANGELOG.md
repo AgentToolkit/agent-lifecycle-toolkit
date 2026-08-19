@@ -2,6 +2,39 @@
 
 <!-- version list -->
 
+## v0.12.0 (2026-08-19)
+
+### Bug Fixes
+
+- Make native structured output work with strict providers
+  ([#121](https://github.com/AgentToolkit/altk-boost/pull/121),
+  [`2889f6b`](https://github.com/AgentToolkit/altk-boost/commit/2889f6b5bbbea6422efaeb07a503b259b9246863))
+
+- Make native structured output work with strict providers (#118, #119, #120)
+  ([#121](https://github.com/AgentToolkit/altk-boost/pull/121),
+  [`2889f6b`](https://github.com/AgentToolkit/altk-boost/commit/2889f6b5bbbea6422efaeb07a503b259b9246863))
+
+- Trust litellm's known-unsupported verdict again
+  ([#121](https://github.com/AgentToolkit/altk-boost/pull/121),
+  [`2889f6b`](https://github.com/AgentToolkit/altk-boost/commit/2889f6b5bbbea6422efaeb07a503b259b9246863))
+
+### Documentation
+
+- Document native vs prompt-based structured output for SPARC
+  ([#121](https://github.com/AgentToolkit/altk-boost/pull/121),
+  [`2889f6b`](https://github.com/AgentToolkit/altk-boost/commit/2889f6b5bbbea6422efaeb07a503b259b9246863))
+
+### Performance Improvements
+
+- Attempt native structured output for every model
+  ([#121](https://github.com/AgentToolkit/altk-boost/pull/121),
+  [`2889f6b`](https://github.com/AgentToolkit/altk-boost/commit/2889f6b5bbbea6422efaeb07a503b259b9246863))
+
+- Prefer native structured output so schemas cost no retries
+  ([#121](https://github.com/AgentToolkit/altk-boost/pull/121),
+  [`2889f6b`](https://github.com/AgentToolkit/altk-boost/commit/2889f6b5bbbea6422efaeb07a503b259b9246863))
+
+
 ## v0.11.0 (2026-08-10)
 
 ### Bug Fixes
